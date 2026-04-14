@@ -10,4 +10,6 @@ web.root/application/config/mailgun.ini
 /html/prototype/
 /config/
 *.js
+!/web.root/nutshell/pnut/core/peanut-core.min.js
+!/web.root/nutshell/pnut/core/peanut-loader.min.js
 *.js.map
