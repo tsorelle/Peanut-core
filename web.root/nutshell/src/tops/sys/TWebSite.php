@@ -14,28 +14,68 @@ class TWebSite
     private static $baseUrl=null;
     public static function GetSiteUrl() {
         global $_SERVER;
+        if (isset($_SERVER['REQUEST_SCHEME'])) {
+            $protocol = $_SERVER['REQUEST_SCHEME'];
+        }
+        else {
+            if(isset($_SERVER['HTTPS'])){
+                $protocol = ($_SERVER['HTTPS'] && $_SERVER['HTTPS'] != "off") ? "https" : "http";
+            }
+            else{
+                $protocol = 'http';
+            }
+        }
         if (!isset($_SERVER['HTTP_HOST'])) {
             return '';
-        }
-        if(isset($_SERVER['HTTPS'])){
-            $protocol = ($_SERVER['HTTPS'] && $_SERVER['HTTPS'] != "off") ? "https" : "http";
-        }
-        else{
-            $protocol = 'http';
         }
         return $protocol . "://" . $_SERVER['HTTP_HOST'];
     }
 
     public static function ExpandUrl($url) {
-        $scheme = strtolower(parse_url($url,4)); // PHP_URL_SCHEME
-        if ($scheme=='http' || $scheme =='https:') {
-            return $url;
+        if (empty($url)) {
+            return self::GetBaseUrl();
+        }
+        $scheme = parse_url($url,4);
+        if (!empty($scheme)) {
+            $scheme = strtolower($url); // PHP_URL_SCHEME
+            if ($scheme=='http' || $scheme =='https:') {
+                return $url;
+            }
         }
         $base = self::GetBaseUrl();
         if (empty($url)) {
             return $base;
         }
         return strpos($url,'/') === 0 ? $base.$url : "$base/$url";
+    }
+
+    public static function GetLocalUrl($path, $filename = ''): string
+    {
+        $path = trim((string)($path ?? ''));
+        $filename = trim((string)($filename ?? ''));
+
+        if ($path === '' && $filename === '') {
+            return '';
+        }
+
+        $normalize = static function (string $value): string {
+            $value = str_replace('\\', '/', $value);
+            $value = preg_replace('#^https?://[^/]+#i', '', $value) ?? $value;
+            return trim($value, " /\t\n\r\0\x0B");
+        };
+
+        $path = $normalize($path);
+        $filename = $normalize($filename);
+
+        if ($filename === '') {
+            return $path === '' ? '' : '/' . $path;
+        }
+
+        if ($path === '') {
+            return '/' . $filename;
+        }
+
+        return '/' . $filename . '/' . $path;
     }
 
     public static function GetBaseUrl(){
@@ -93,4 +133,33 @@ class TWebSite
         }
         return $url;
     }
+
+    public static function GetClientIp(): ?string
+    {
+        $keys = [
+            'HTTP_CF_CONNECTING_IP', // Cloudflare
+            'HTTP_X_FORWARDED_FOR',  // Standard proxy chain
+            'HTTP_X_REAL_IP',        // Nginx
+            'REMOTE_ADDR'            // Always present
+        ];
+
+        foreach ($keys as $key) {
+            if (!empty($_SERVER[$key])) {
+                $ip = $_SERVER[$key];
+
+                // X-Forwarded-For may contain multiple IPs
+                if ($key === 'HTTP_X_FORWARDED_FOR') {
+                    $ip = trim(explode(',', $ip)[0]);
+                }
+
+                if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                    return $ip;
+                }
+            }
+        }
+
+        return '';
+    }
+
+
 }

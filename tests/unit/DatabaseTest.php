@@ -7,6 +7,7 @@
  */
 
 use PHPUnit\Framework\TestCase;
+use Tops\db\TDatabase;
 
 class DatabaseTest extends TestCase
 {
@@ -21,8 +22,16 @@ class DatabaseTest extends TestCase
         $actual = \Tops\db\TDatabase::getDbConfigurationForTest();
         $this->assertNotNull($actual);
         $this->assertNotEmpty($actual->connections);
-        $keyExists=array_key_exists('concrete',$actual->connections);
+        $keyExists=array_key_exists('bookstore',$actual->connections);
         $this->assertTrue($keyExists);
-        $this->assertEquals($actual->default,'concrete');
+        $this->assertEquals($actual->default,'bookstore');
     }
+    public function testGetConnection()
+    {
+        $db = new TDatabase();
+        $dbh = $db->getConnection();
+        $this->assertNotNull($dbh);
+
+    }
+
 }
