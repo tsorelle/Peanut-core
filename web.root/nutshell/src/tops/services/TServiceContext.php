@@ -55,7 +55,7 @@ class TServiceContext implements IMessageContainer {
     }
 
     public function AddWarningMessage($text,$arg1=null, $arg2=null) {
-        $this->AddMessage(MessageType::Error,$text,$arg1, $arg2);
+        $this->AddMessage(MessageType::Warning,$text,$arg1, $arg2);
         if ($this->response->Result < ResultType::Warnings)
             $this->response->Result = ResultType::Warnings;
     }

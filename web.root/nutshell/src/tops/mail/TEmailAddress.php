@@ -51,13 +51,19 @@ class TEmailAddress {
     }
 
     public function __toString() {
+        return $this->toString(false);
+    }
+
+    public function toString($noQuotes=true)
+    {
         if (empty($this->address)) {
             return '';
         }
         if (empty($this->name)) {
             return $this->address;
         }
-        return  sprintf('"%s" <%s>',$this->name,$this->address);
+        return  sprintf($noQuotes ?  '%s <%s>' : '"%s" <%s>',
+            $this->name,$this->address);
     }
 
     public function toArray() {

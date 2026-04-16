@@ -18,6 +18,8 @@
 
 namespace Tops\sys;
 
+// use phpseclib3\Exception\FileNotFoundException;
+
 class TParseDown
 {
     # ~
@@ -46,8 +48,11 @@ class TParseDown
         return $parser->text($mdText);
     }
 
+    private $bookmarks = array();
+
     function text($text)
     {
+        $this->bookmarks = [];
         $Elements = $this->textElements($text);
 
         # convert to markup
@@ -59,6 +64,11 @@ class TParseDown
         // add targets - TLS
         if ($this->newWindowForExternalUrl) {
             $markup = str_replace('<a href="http','<a target="_blank" href="http',$markup);
+        }
+
+        // fix bookmarks
+        if (sizeof($this->bookmarks) > 0) {
+            $markup =$this->fixBookmarks($markup);
         }
 
         return $markup;
@@ -1466,6 +1476,9 @@ class TParseDown
         if (preg_match('/^[(]\s*+((?:[^ ()]++|[(][^ )]+[)])++)(?:[ ]+("[^"]*+"|\'[^\']*+\'))?\s*+[)]/', $remainder, $matches))
         {
             $Element['attributes']['href'] = $matches[1];
+            if (strpos($matches[1], '#') === 0) {
+                $this->bookmarks[] = $matches[1];
+            }
 
             if (isset($matches[2]))
             {
@@ -2061,5 +2074,39 @@ class TParseDown
 
         }
         return $s;
+    }
+
+    public function parseFile(string $inputFile)
+    {
+        if (!file_exists($inputFile)) {
+            return "<p><strong>Error: </strong> File $inputFile does not exist.</p>";
+        }
+        $ext = pathinfo($inputFile,PATHINFO_EXTENSION);
+        if (strtolower($ext) !== 'md') {
+            return "<p><strong>Error: </strong> File $inputFile is not a markdown file.</p>";;
+        }
+        $source = file_get_contents($inputFile);
+        return $this->text($source);
+    }
+
+    public static function ParseMdFile(string $file)
+    {
+        return self::getInstance()->parseFile($file);
+    }
+
+    private function fixBookmarks(array|string $markup)
+    {
+        foreach ($this->bookmarks as $bookmark) {
+            $bookmark = substr($bookmark,1); // strip '#'
+            $searchmark = '>'.str_replace('-',' ',$bookmark).'<';
+            for ($i = 1; $i < 5; $i++) {
+                $searchTag = "<h".$i.$searchmark;
+                $p = stripos($markup, $searchTag);
+                if ($p !== false) {
+                    $markup = TStrings::Insert(' id="'.$bookmark.'"',$markup,$p+3);
+                }
+            }
+        }
+        return $markup;
     }
 }

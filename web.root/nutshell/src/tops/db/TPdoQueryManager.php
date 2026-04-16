@@ -30,6 +30,7 @@ abstract class TPdoQueryManager
     }
 
     /**
+     * Prepare and execute a PDO statement
      * @param $sql
      * @param array $params
      * @return PDOStatement
@@ -45,18 +46,32 @@ abstract class TPdoQueryManager
         return $stmt;
     }
 
+    /**
+     * Execute a PDO statememt to return a single numeric value
+     * @param $sql
+     * @param $params
+     * @return false|mixed
+     */
     public function getValue($sql, $params = array()) {
         $stmt = $this->executeStatement($sql,$params);
         $result = $stmt->fetch(PDO::FETCH_NUM);
         return empty($result) ? false : $result[0];
     }
 
+    /**
+     * Begin a transaction
+     * @return void
+     */
     public function startTransaction()
     {
         $this->connection = TDatabase::getPersistentConnection($this->getDatabaseId());
         $this->connection->beginTransaction();
     }
 
+    /**
+     * End a transaction
+     * @return void
+     */
     public function commitTransaction()
     {
         if ($this->connection != null) {
@@ -65,6 +80,10 @@ abstract class TPdoQueryManager
         }
     }
 
+    /**
+     * Roll back a transaction
+     * @return void
+     */
     public function rollbackTransaction()
     {
         if ($this->connection != null) {

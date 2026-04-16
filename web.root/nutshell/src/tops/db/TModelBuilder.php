@@ -21,20 +21,90 @@ class TModelBuilder
     /**
      * @var \PDO
      */
-    private static $dbh;
-    private static $modelsPath;
-    private static $dbPath;
-    private static $appNamespace;
-    private static $tempNamespace = 'Peanut\ORM';
-    private static $prefix;
-    private static $overwrite;
+    private $dbh;
+    private $databasekey = null;
+    private  $namespace;
+    private  $tempNamespace = 'Peanut\ORM';
+    private  $prefixed;
+    private  $overwrite;
+    private $toolsRoot;
+    private $plural;
 
-    private static function buildSource($tableName,$params,$databaseId=null)
+    public static function Build($config, $toolsRoot) {
+        (new TModelBuilder())->doBuild($config, $toolsRoot);
+    }
+    private function doBuild($config, $toolsRoot) {
+
+        // $srcRoot=@$config['settings']['sourcePath'];
+
+        // dset defaults from config
+        $this->toolsRoot = $this->normalizePath($toolsRoot);
+        $this->prefixed= $this->getArrayValueAsBool($config['settings'],'prefixed');
+        $this->overwrite= $this->getArrayValueAsBool($config['settings'],'overwrite');
+        $this->plural = $this->getArrayValue($config['settings'],'plural',1);
+        $this->namespace = $this->getArrayValue($config['settings'],'namespace');
+
+
+        // $include=array_keys($config['tables']);
+        $tables = $config['tables'];
+        $include = array_filter($tables, function($flag) {
+            return $flag === '1'; // Change condition as needed
+        });
+
+        /*        $q  = $this->dbh->prepare("SHOW TABLES");
+                $q->execute();
+                $tables = $q->fetchAll(PDO::FETCH_COLUMN);
+
+                foreach ($tables as $table) {
+                    if (array_key_exists($table,$include)) {
+                        $tableInfo = @$config[$table];
+                        if (!is_array($tableInfo)) {
+                            $tableInfo = [];
+                        }
+                        $this->buildSource($table,$tableInfo,$databaseKey);
+                    }
+                }*/
+
+        $tables = array_keys($include);
+        foreach ($tables as $table) {
+            if (array_key_exists($table,$config)) {
+                $tableInfo =  $config[$table] ;
+            }
+            else {
+                $tableInfo = [];
+            }
+
+            $this->databasekey =  $config['settings']['databaseKey'] ?? null;
+            $this->dbh = TDatabase::getConnection($this->databasekey);
+            $this->buildSource($table,$tableInfo);
+        }
+
+        // var_dump($tables);
+
+        print("\n\nBuild complete.\n");
+    }
+
+    private function getArrayValueAsBool($array,$key, $default=false) : bool {
+        $value = $this->getArrayValue($array,$key);
+        return ($value == '1') ? true: $default;
+    }
+
+    private function getArrayValue($array,$key,$default=null)
     {
-        $dbh = self::$dbh;
-        $dbPath = self::$dbPath;
-        $modelsPath = self::$modelsPath;
-        $databaseId = empty($databaseId) ? 'null' : "'$databaseId'";
+        $result = $array[$key] ?? null;
+        if (empty($result)) {
+            return $default;
+        }
+        return $result;
+    }
+
+    private function buildSource($tableName,$params)
+    {
+        $namespace = $this->getArrayValue($params,'namespace',$this->namespace);
+
+        $entityPath = $this->makeDirectory($this->toolsRoot,$namespace,'entity');
+        $repositoryPath = $this->makeDirectory($this->toolsRoot,$namespace,'repository');
+
         $date = new \DateTime();
         if (empty($params)) {
             $params = array();
@@ -42,30 +112,34 @@ class TModelBuilder
 
         print "\nBuilding $tableName...";
 
-        $q = $dbh->prepare("DESCRIBE $tableName");
+        $databasekey = $this->getArrayValue($params,'databaseKey',null);
+        $databaseId = empty($databasekey) ? 'null' : "'$databasekey'";
+
+        $dbh = ($databasekey !== $this->databasekey) ?
+            TDatabase::getConnection($databasekey) : $this->dbh;
+        $q = $this->dbh->prepare("DESCRIBE $tableName");
         $q->execute();
         $fields = $q->fetchAll(PDO::FETCH_OBJ);
 
         $dtoTypes = [];
 
-        $repository = @$params['repository'];
-
-        if (empty($repository)) {
-            $repository = self::entityNameFromTableName($tableName);
+        $baseName = $this->getArrayValue($params,'basename');
+        if (empty($baseName)) {
+            $prefixed = $this->getArrayValueAsBool($params,'prefixed',$this->prefixed);
+            $baseName = $this->baseNameFromTableName($tableName,$prefixed);
         }
 
-        $entityName = @$params['entity'];
+        $repositoryName = $this->getArrayValue($params,'repository',$baseName.'Repository');
+
+        $entityName = $this->getArrayValue($params,'entity');
         if (empty($entityName)) {
-            $len = strlen($repository);
-            if (substr($repository, $len - 2) == 'es') {
-                $entityName = substr($repository, 0, $len - 2);
-            } else if (substr($repository, $len - 1) == 's') {
-                $entityName = substr($repository, 0, $len - 1);
-            }
+            $plural = $this->getArrayValue($params,'plural',$this->plural);
+            $entityName = substr($baseName,0,0-(int)$plural);
         }
 
-        $buildEntity = strpos($entityName, '\\') === false;
-        $lookupField = @$params['lookupField'];
+        // $buildEntity = strpos($entityName, '\\') === false;
+
+        $lookupField = $this->getArrayValue($params,'lookupField');
 
         $entityProperties = array();
         $fieldDefs = array();
@@ -74,21 +148,13 @@ class TModelBuilder
             'id','name','description','code'
         );
         foreach ($fields as $field) {
+
             $fieldName = $field->Field;
             switch ($field->Field) {
+                case 'createdon':
+                case 'changedby':
+                case 'changedon':
                 case 'createdby' :
-                    $isTimestamped = true;
-                    $fieldDefs[] = "'$fieldName'=>PDO::PARAM_STR";
-                    break;
-                case 'createdon' :
-                    $isTimestamped = true;
-                    $fieldDefs[] = "'$fieldName'=>PDO::PARAM_STR";
-                    break;
-                case 'changedby' :
-                    $isTimestamped = true;
-                    $fieldDefs[] = "'$fieldName'=>PDO::PARAM_STR";
-                    break;
-                case 'changedon' :
                     $isTimestamped = true;
                     $fieldDefs[] = "'$fieldName'=>PDO::PARAM_STR";
                     break;
@@ -111,7 +177,8 @@ class TModelBuilder
                     }
                     $entityProperties[$field->Field] = '    public $' . $field->Field . ";";
                     $type = explode('(', $field->Type)[0];
-                    $type = $type == 'int' ? 'INT' : 'STR';
+
+                    $type = (($type == 'int' || $type=='int unsigned') && $field->Null === 'NO') ? 'INT' : 'STR';
                     $fieldDefs[] = "'$fieldName'=>PDO::PARAM_$type";
                     break;
             }
@@ -145,43 +212,44 @@ class TModelBuilder
                 }
             }
             else {
-                $superclass = 'TimeStampedEntity';
+                if (array_key_exists('id',$entityProperties)) {
+                    $superclass = 'TEntity';
+                    unset($entityProperties['id']);
+                }
+                else {
+                    $superclass =  'TimeStampedEntity';
+                }
             }
         }
         else {
             $superclass = 'TAbstractEntity';
         }
 
-        if ($buildEntity) {
-            $superclass =  isset($superclass) ?  ' extends \Tops\db\\'.$superclass : '';
-            $dto ='$dto';
-            $entity =
-                "<?php \n" .
-                "/** \n" .
-                " * Created by /tools/create-model.php \n" .
-                " * Time:  " . $date->format('Y-m-d H:i:s') . "\n" .
-                " */ \n\n" .
-                "// Deployment namespace: "."namespace " . self::$appNamespace . "\\entity;" . "\n\n" .
-                "namespace Peanut\\ORM\\entity;" . "\n\n" .
-                "class $entityName $superclass \n" .
-                "{ \n" .
-                join("\n", array_values($entityProperties))."\n\n";
+        $superclass =  isset($superclass) ?  ' extends \Tops\db\\'.$superclass : '';
+        $dto ='$dto';
+        $entity =
+            "<?php \n" .
+            "/** \n" .
+            " * Created by /tools/create-model.php \n" .
+            " * Time:  " . $date->format('Y-m-d H:i:s') . "\n" .
+            " */ \n\n" .
+            "namespace ". $namespace ."\\entity;" . "\n\n" .
+            // "namespace Peanut\\ORM\\entity;" . "\n\n" .
+            "class $entityName $superclass \n" .
+            "{ \n" .
+            join("\n", array_values($entityProperties))."\n\n";
 
-            if (!empty($dtoTypes)) {
-                $entity .= "    public function getDtoDataTypes()\n    {\n        ".'$'."types = parent::getDtoDataTypes();\n";
-                foreach ($dtoTypes as $propertyName => $dtoType) {
-                    $entity .= '        $'.sprintf("types['%s'] = \Tops\sys\TDataTransfer::dataType%s;\n",$propertyName,$dtoType);
-            }
-                $entity .= '        return $types;'."\n    }\n";
-            }
-
-            $entity .= "}\n";
-
-            $fullClassName = self::$appNamespace."\\entity\\" . $entityName;
+        if (!empty($dtoTypes)) {
+            $entity .= "    public function getDtoDataTypes()\n    {\n        ".'$'."types = parent::getDtoDataTypes();\n";
+            foreach ($dtoTypes as $propertyName => $dtoType) {
+                $entity .= '        $'.sprintf("types['%s'] = \Tops\sys\TDataTransfer::dataType%s;\n",$propertyName,$dtoType);
         }
-        else if (!isset($fullClassName)){
-            $fullClassName =   $entityName;
+            $entity .= '        return $types;'."\n    }\n";
         }
+
+        $entity .= "}\n";
+
+        $fullClassName = $namespace."\\entity\\" . $entityName;
 
         $code = array(
             "<?php ",
@@ -189,15 +257,16 @@ class TModelBuilder
             " * Created by /tools/create-model.php ",
             " * Time:  " . $date->format('Y-m-d H:i:s'),
             " */ \n" .
-            " // Deployment NS: "."namespace ".self::$appNamespace."\\repository;\n",
-            "namespace Peanut\\ORM\\repository;\n",
+            "namespace $namespace;\n",
+            // "namespace Peanut\\ORM\\repository;\n",
             '',
             'use \PDO;',
             'use PDOStatement;',
             'use Tops\db\TDatabase;',
             "use $repositorySuperclass;",
+            "use $fullClassName;",
             '',
-            "class $repository" . "Repository extends $repositorySuperclass",
+            "class $repositoryName extends $repositorySuperclass",
             "{",
             "    protected function getTableName() {",
             "        return '$tableName';",
@@ -211,8 +280,8 @@ class TModelBuilder
 
         if ($propertyCount > 0) {
             $code[] = "    protected function getClassName() {";
-            $code[] ="       // return '$fullClassName';";
-            $code[] ="        return null; // delete and uncomment above for deployment";
+            $code[] ="         return '$fullClassName';";
+            // $code[] ="        return null; // delete and uncomment above for deployment";
             $code[] ="    }";
             $code[] ="";
             $code[] ="    protected function getFieldDefinitionList()";
@@ -234,25 +303,22 @@ class TModelBuilder
             }
         }
 
-
-
         $code[] = '}';
 
         $repos = join("\n",$code);
 
-        if ($buildEntity) {
-            self::writeFile($modelsPath,$entityName.'.php',$entity);
-        }
-        self::writeFile($dbPath,$repository.'Repository.php',$repos);
+        $this->writeFile($entityPath,$entityName,$entity);
+        $this->writeFile($repositoryPath,$repositoryName,$repos);
         print("\n");
     }
 
-    private static function writeFile($filePath,$classFile, $data)
+    private  function writeFile($filePath,$classFile, $data)
     {
         print "\nWriting '$classFile'...";
+        $fileName = sprintf("%s/%s.php",$filePath,$classFile);
 
-        if (self::$overwrite || !file_exists($filePath.$classFile)) {
-            file_put_contents($filePath.$classFile,$data);
+        if ($this->overwrite || !file_exists($fileName)) {
+            file_put_contents($fileName,$data);
         }
         else {
             print "\nFile '$classFile' exists. Skipping...";
@@ -260,97 +326,54 @@ class TModelBuilder
     }
 
 
-    private static function makeDirectory($dirname)
+    private  function makeDirectory($root,$dirname,$sub='')
     {
+        $dirname = $root . '/output/'.$dirname;;
+        if ($sub) {
+            $dirname .= '/'.$sub;
+        }
+        $dirname = str_replace('\\','/',$dirname);
         if (!file_exists($dirname)) {
-            mkdir($dirname, 0777);
+            mkdir($dirname, 0777,true);
         }
+        return $dirname;
     }
 
-    public static function Build($config=array(),$toolsRoot) {
-        $databaseKey =  @$config['settings']['databaseKey'];
-        $srcRoot=@$config['settings']['sourcePath'];
-        $appNamespace = @$config['settings']['namespace'];
-        self::$prefix=empty($config['settings']['prefix']) ? '' : $config['settings']['prefix'];
-        self::$overwrite=empty($config['settings']['overwrite']) ? false : true;
-
-        $include=$config['tables'];
-
-        if ($srcRoot == null) {
-            $appSrc = TConfiguration::getValue('application','locations');
-            $srcRoot = TPath::getFileRoot().$appSrc.'/';
+    private  function normalizePath($path)
+    {
+        $path = trim($path);
+        if (strpos($path,':') === 1) {
+            $path = substr($path,2);
         }
-        else {
-            // $fileroot = TPath::getFileRoot();
-            $srcRoot = "$toolsRoot/$srcRoot";
-            if (substr($srcRoot,-1) !== '/') {
-                $srcRoot .= '/';
-            }
-            //$srcRoot = TPath::normalize($srcPath);
-
-        }
-        if (!file_exists($srcRoot)) {
-            throw new \Exception("Application directory '$srcRoot' does not exist");
-        }
-
-        self::$appNamespace = $appNamespace == null ?
-            TConfiguration::getValue('applicationNamespace','services') :
-            $appNamespace;
-
-
-        self::$modelsPath = $srcRoot.'entity/';
-        self::$dbPath = $srcRoot.'repository/';
-        self::makeDirectory(self::$modelsPath);
-        self::makeDirectory(self::$dbPath);
-        // self::$dbPath = $srcRoot.'db/';
-        self::$dbh = TDatabase::getConnection($databaseKey);
-        if (substr(self::$appNamespace,0,1) == '\\') {
-            self::$appNamespace = substr(self::$appNamespace,1);
-        }
-        print("Building model\n");
-        print ("Entity path: ".self::$modelsPath."\n");
-        print("Repository path: ".self::$dbPath."\n");
-
-        $q  = self::$dbh->prepare("SHOW TABLES");
-        $q->execute();
-        $tables = $q->fetchAll(PDO::FETCH_COLUMN);
-
-        foreach ($tables as $table) {
-            if (array_key_exists($table,$include)) {
-                $tableInfo = @$config[$table];
-                if (!is_array($tableInfo)) {
-                    $tableInfo = [];
-                }
-                self::buildSource($table,$tableInfo,$databaseKey);
-            }
-        }
-
-        // var_dump($tables);
-
-        print("\n\nBuild complete.\n");
+        return str_replace('\\','/',$path);
     }
+
 
     /**
      * @param $tableName
      * @return bool|string
      */
-    private static function entityNameFromTableName($tableName)
+    private function entityNameFromBaaeName($baseName)
     {
-        $className = '';
+        $plural = substr($baseName, strlen($baseName) - 1);
+        if ($plural == 's') {
+            return  substr($baseName, 0, strlen($baseName) - 1);
+        }
+        return $baseName;
+    }
+
+    private function baseNameFromTableName($tableName,$prefixed) : String
+    {
+        $result = '';
         $parts = explode('_', $tableName);
-        if (sizeof($parts) > 1 && $parts[0] == self::$prefix) {
+        if (sizeof($parts) > 1 && $prefixed) {
             array_shift($parts);
         }
         foreach ($parts as $part) {
-            $className .= strtoupper(substr($part, 0, 1)) . substr($part, 1);
+            $result .= strtoupper(substr($part, 0, 1)) . substr($part, 1);
         }
-        /*
-                $plural = substr($className, strlen($className) - 1);
-                if ($plural == 's') {
-                    $className = substr($className, 0, strlen($className) - 1);
-                }
-        */
-        return $className;
+
+        return $result;
     }
 
 }

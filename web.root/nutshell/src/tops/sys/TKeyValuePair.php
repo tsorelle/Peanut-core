@@ -83,9 +83,11 @@ class TKeyValuePair
 
 
     public static function CreateCookie(array $a,$cookieName) {
+        if (!headers_sent()) {
         $encoded = self::CreateArray($a,true,array('+' => '[plus]'));
         $cookie =  '['. join(',',$encoded).']';
         setcookie($cookieName,$cookie);
+        }
     }
 
     public function getKey()

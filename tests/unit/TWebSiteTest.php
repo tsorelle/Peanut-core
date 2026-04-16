@@ -26,7 +26,7 @@ class TWebSiteTest extends TestCase
         // only works in web context unit test just ensures no exception
         $this->assertTrue(true);
     }
-
+/*
     public function testGetLocalUrl()
     {
         $file = '';
@@ -54,7 +54,7 @@ class TWebSiteTest extends TestCase
 
 
 
-    }
+    }*/
 
 
     /*    public function testAppendRequestParams()

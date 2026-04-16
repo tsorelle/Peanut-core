@@ -125,6 +125,7 @@ class TDatabase
         return $dbh;
     }
 
+    // for running a SQL script
     public static function ExecuteSql($token, $script, $connection=null) {
         if ($token != TSession::GetSecurityToken()) {
             throw new \Exception('Unauthorized database access');
@@ -135,10 +136,10 @@ class TDatabase
         if (gettype($connection) !== 'object') {
             $connection = self::getConnection($connection);
         }
-        $sql = @file_get_contents($script);
-        if (empty($sql)) {
+        if (!file_exists($script)) {
             throw new \Exception('SQL Script not found.');
         }
+        $sql = file_get_contents($script);
         $query = $connection->prepare($sql);
         $result = $query->execute();
         return $result;

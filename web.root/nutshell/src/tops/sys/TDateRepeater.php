@@ -83,13 +83,19 @@ class TDateRepeater
         $calendarPage->start = clone $calendarPage->start;
         $calendarPage->end = clone $calendarPage->end;
 
-        @list($pattern, $range) = explode(';', $repeatSpec);
+        // list($pattern, $range) = explode(';', $repeatSpec);
+        list($pattern, $range) = TStrings::Split($repeatSpec,';');
         if (empty($range)) {
             return false;
         }
         $patternType = substr($pattern, 0, 2);
         $pattern = substr($pattern, 2);
-        @list($startDate, $endDate) = explode(',', $range);
+        $dates = explode(',', $range);
+        if (empty($dates)) {
+            return false;
+        }
+        // @list($startDate, $endDate) = explode(',', $range);
+        list($startDate, $endDate) = TStrings::Split($range);
         $startDate = TDates::CreateDateTime($startDate);
         if ($startDate === false) {
             return [];
@@ -172,7 +178,8 @@ class TDateRepeater
                 }
                 break;
             case 'wk' :
-                @list($interval, $days) = explode(',', $pattern);
+                // list($interval, $days) = explode(',', $pattern);
+                list($interval, $days) = TStrings::Split($pattern);
                 $count = strlen($days);
                 $startWeek = TDates::GetSundayThisWeek($startDate);
                 $startDay = null;
@@ -195,7 +202,8 @@ class TDateRepeater
 
                 break;
             case 'md' :
-                @list($interval, $day) = explode(',', $pattern);
+                // list($interval, $day) = explode(',', $pattern);
+                list($interval, $days) = TStrings::Split($pattern);
                 $startDay = $startDate->format('d');
                 $startMonth = TDates::GetFirstOfMonth($startDate);
                 if ($startDay > $day) {
@@ -213,7 +221,8 @@ class TDateRepeater
 
                 break;
             case 'mo' :
-                @list($interval, $ordinals, $dow) = explode(',', $pattern);
+                // list($interval, $ordinals, $dow) = explode(',', $pattern);
+                list($interval, $ordinals, $dow) = TStrings::Split($pattern,',',3);
                 $startMonth = TDates::GetFirstOfMonth($startDate);
                 $ordinal = substr($ordinals,0,1);
                 $lastOrd = substr($ordinals,-1);
@@ -236,8 +245,8 @@ class TDateRepeater
 
                 break;
             case 'yd' :
-                @list($interval, $month, $day) = explode(',', $pattern);
-
+                // list($interval, $month, $day) = explode(',', $pattern);
+                list($interval, $ordinals, $dow) = TStrings::Split($pattern,',',3);
                 $firstDate = TDates::CreateDateTime($startDate->format("Y-$month-$day"));
                 if ($firstDate < $startDate) {
                     $startDate->modify('+1 year');
@@ -252,7 +261,7 @@ class TDateRepeater
 
                 break;
             case 'yo' :
-                @list($interval, $ordinal, $dow, $month) = explode(',', $pattern);
+                list($interval, $ordinal, $dow, $month) = explode(',', $pattern);
 
                 $firstDate = TDates::CreateDateTime($startDate->format("Y-$month-1"));
                 TDates::SetOrdinalDayOfMonth($firstDate, $ordinal, $dow, TDates::ConstrainEndOfMonth);

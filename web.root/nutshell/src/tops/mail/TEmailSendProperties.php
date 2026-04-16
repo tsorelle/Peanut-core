@@ -18,4 +18,6 @@ class TEmailSendProperties
     public $attachments;
     public $subject;
     public $contentType;
+    public $cc;
+    public $bcc;
 }

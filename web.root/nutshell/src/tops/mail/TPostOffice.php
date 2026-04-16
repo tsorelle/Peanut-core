@@ -10,6 +10,8 @@ namespace Tops\mail;
 
 use Tops\sys\TConfiguration;
 use Tops\sys\TObjectContainer;
+use Tops\sys\TWebSite;
+
 // use Tops\mail\TContentType;
 
 /**
@@ -118,8 +120,7 @@ class TPostOffice {
 
     /**
      * @param string $recipientAddressId
-     * @return TEMailMessage
-     * @throws \Exception
+     * @return TEMailMessage | False
      */
     private function _createMessageToUs($recipientAddressId=self::SupportMailbox)
     {
@@ -128,14 +129,17 @@ class TPostOffice {
         $recipients = explode(',',$recipientAddressId);
         $count = 0;
         foreach ($recipients as $addressId) {
-            $mailbox = self::GetMailboxAddress($addressId);
-            if ($mailbox != null) {
-                $result->addRecipient($mailbox->getAddress(),$mailbox->getName());
-                $count++;
+            $list = self::GetMailboxAddressList($addressId);
+            $count += count($list);
+            /**
+             * @var $recipientAddress TEmailAddress
+             */
+            foreach ($list as $recipientAddress) {
+                $result->addRecipient($recipientAddress);
             }
         }
         if ($count == 0) {
-            throw new \Exception('No mailboxes found.');
+            return false;
         }
 
         $result->setReturnAddress($this->_getBounceAddress());
@@ -144,23 +148,52 @@ class TPostOffice {
     }
 
 
+    public static function GetMailboxAddressList($addressId) {
+        $mailbox = self::GetMailbox($addressId);
+        if ($mailbox === false) {
+            return false;
+        }
+        $addressList = [];
+        $defaultAddress = $mailbox->getEmail();
+        $parts = explode('@', $defaultAddress);
+        if (count($parts) < 2) {
+            return false; // invalid mailbox address
+        }
+        if ($parts[1] == 'distribution.mail') {
+            $distCode = $parts[0];
+            if (TObjectContainer::HasDefinition('tops.maildistribution')) {
     /**
-     * @param $addressId
-     * @return false|TEmailAddress
+                 * @var IDistributionListProvider
      */
-    public static function GetMailboxAddress($addressId)
+                $provider = TObjectContainer::Get('tops.maildistribution');
+                $addressList = $provider->GetDistributionEmails($distCode);
+            }
+        }
+        else {
+            $address = new TEmailAddress($defaultAddress,$mailbox->getName());
+            $addressList = [$address];
+        }
+
+        return $addressList;
+
+    }
+
+    public static function GetMailboxAddress($addressId) : TEmailAddress | false
     {
         $mailbox = self::GetMailbox($addressId);
         if ($mailbox === false) {
             return false;
         }
-        return new TEmailAddress($mailbox->getEmail(),$mailbox->getName());
-    }
-    
-    public static function GetDefaultMailboxAddress() {
-        return self::GetMailboxAddress(self::DefaultMailbox);
+        $address = $mailbox->getEmail();
+        if (empty($address)) {
+            return false;
+        }
+        return new TEmailAddress($address,$mailbox->getName());
     }
 
+    public static function GetDefaultMailboxAddress($name = null) : TEmailAddress | false {
+        throw new \Exception('not implemented');
+    }
 
     /**
      * @param $code
@@ -176,8 +209,54 @@ class TPostOffice {
 
     }
 
-    public static function CreateMessageFromUs($addressId=self::SupportMailbox,$subject=null,$body=null,$contentType=TContentType::Text) {
+    public static function CreateMessageFromUs($addressId=self::SupportMailbox,$subject=null,$body=null,$contentType=TContentType::Text) : TEmailMessage {
         return self::getInstance()->_createMessageFromUs($addressId,$subject,$body,$contentType);
+    }
+
+    private static $defaultSenderAddress;
+    private static function getDefaultSenderEmail() : string {
+        if (!isset(self::$defaultSenderAddress)) {
+            $defaultKey='defaultsenderaddress';
+            self::$defaultSenderAddress = TConfiguration::getValue($defaultKey,'mail',null);
+            if ( empty(self::$defaultSenderAddress)) {
+                self::$defaultSenderAddress = 'noreply@'.TWebSite::GetDomain();
+            }
+        }
+        return self::$defaultSenderAddress;
+    }
+
+    private static function getDefaultEmailObject($name = null) : TEmailAddress  {
+        $result = new TEmailAddress(self::getDefaultSenderEmail());
+        if (empty($name)) {
+            $name = TConfiguration::getValue('organizationname','site','Friends Meeting');
+        }
+        $result->setName($name);
+        $result->setAddress(self::getDefaultSenderEmail());
+        return $result;
+    }
+
+    public static function GetDefaultMailbox() : TMailbox
+    {
+        $mailbox = self::GetMailbox('default');
+        if (empty($mailbox)) {
+            $mailbox = new TMailbox();
+            $mailbox->setEmail(self::getDefaultSenderEmail());
+            $name = TConfiguration::getValue('organizationname','site','Friends Meeting');
+            $mailbox->setName($name);
+        }
+        return $mailbox;
+    }
+
+    public static function GetSenderAddress($addressId) : TEmailAddress | false
+    {
+        $senderAddress = self::GetMailboxAddress($addressId);
+        if (empty($senderAddress)) {
+            $senderAddress = self::getDefaultEmailObject();
+        }
+        else if (strstr($senderAddress->getAddress() ,'@distribution.mail') !== false) {
+            $senderAddress->setAddress(self::getDefaultSenderEmail());
+        }
+        return $senderAddress;
     }
 
     /**
@@ -193,11 +272,11 @@ class TPostOffice {
         // TTracer::Trace("CreateMessageFromUs($addressId) address: $address; name: $identity");
         $result = new TEMailMessage();
 
-        $mailbox = self::GetMailboxAddress($addressId);
-        if (empty($mailbox)) {
+        $senderAddress = self::GetSenderAddress($addressId);
+        if (empty($senderAddress)) {
             return false;
         }
-        $result->setFromAddress($mailbox);
+        $result->setFromAddress($senderAddress);
         if ($bounce===null) {
             $result->setReturnAddress($this->_getBounceAddress());
         }
@@ -251,9 +330,12 @@ class TPostOffice {
             $senderId = self::DefaultMailbox;
         }
         if (strpos($senderId,'@') === false) {
-            $senderAddress = self::GetMailboxAddress($senderId);
+            $senderAddress = self::GetSenderAddress($senderId);
         }
         else {
+            if (strpos($senderId,'.distribution.mail') !== false) {
+                $senderId = self::getDefaultSenderEmail($senderId);
+            }
             $senderAddress = TEmailAddress::FromString($senderId);
         }
         if (!empty($senderAlias)) {
@@ -315,13 +397,18 @@ class TPostOffice {
      * @param string $senderId
      * @param string $addressId
      * @return bool|string
-     * @throws \Exception
      */
     private function _sendMessageToUs($fromAddress, $subject, $bodyText, $contentType='html',
                                       $recipientAddressId=self::DefaultMailbox, $senderId=self::DefaultMailbox)
     {
         $message = $this->_createMessageToUs($recipientAddressId);
-        $senderAddress = self::GetMailboxAddress($senderId);
+        if ($message === false) {
+            return false;
+        }
+        $senderAddress = self::GetSenderAddress($senderId);
+        if (empty($senderAddress)) {
+            return false;
+        }
         $message->setFromAddress($senderAddress);
         $message->setReplyTo($fromAddress);
         $message->setSubject($subject);

@@ -20,6 +20,31 @@ class TStrings
     const pascalCaseFormat = 6;
     const wordFormat = 7;
 
+    /**
+     * @param $string  - The string containint a comma seperated list.
+     * @param $minParts - minimum lenth of the resulting array
+     * @param $default - value to pad the array with if to short.
+     * @return array
+     *
+     * example:
+     *  list($var1,$var2) = TStrings::Split($input, 2);
+     *
+     *  This statement requires the array be at least 2 elements long
+     *  if $input = 'One', $var1 is 'One' $var2 is null
+     *  if $input = 'One,Two', $var1 is 'One' $var2 is 'Two'
+     */
+    public static function Split($string, $delimiter = ',', $minParts = 2, $default = null) : array
+    {
+        // in case of null
+        $result = empty($string) ? [] : explode($delimiter,$string);
+        $count =  $count = count($result);
+        for ($i = $count; $i < $minParts; $i++) {
+            // pad end of array
+            $result[] = $default;
+        }
+        return $result;
+    }
+
     public static function ListToArray($value,$seperator=',') {
         if (empty($value)) {
             return array();
@@ -257,5 +282,58 @@ class TStrings
         return implode(' ',$result).'...';
     }
 
+    /**
+     * @param $source // string to be inserted
+     * @param $target  // string in which to insert $source
+     * @param $position // position of insertion
+     * @param int $length // length of section to be replaced
+     * @return string // result
+     */
+    public static function Insert(string $source, string $target, int $position, int $length=0): string
+    {
+        $target = $target ?? '';
+        if (empty($source)) {
+            // nothing to insert
+            return $target;
+        }
+        if ($position > strlen($target)) {
+            // append to end
+            $length = 0;
+        }
+        else if ($position + $length > strlen($target)) {
+            // do not remove characters beyond the end
+            $length -= strlen($target) - $position;
+        }
 
+        // section and insert
+        return  substr($target,0, $position).
+                $source.
+                substr($target,$position+$length);
+    }
+
+    public static function isEmail(&$value, bool $stripSpaces=true): bool
+    {
+        if (empty($value)) {
+            return false;
+        }
+        if ($stripSpaces) {
+            if (str_word_count(trim($value)) > 4) {
+                // allow spaces between parts of address, e.g. 'terry.sorelle @ gmail . com'
+                // but anything longer assumes probably a phrase with an email address in it
+                return false;
+            };
+            // strip whitespace
+            $address = preg_replace('/\s+/', '', $value);
+        }
+        else {
+            $address = $value;
+        }
+
+        $isEmail =  (preg_match("/^[\w\.-]+@[\w\.-]+\.\w+$/", $value));
+        if ($isEmail) {
+            $value = $address;
+            return true;
+        }
+        return false;
+    }
 }

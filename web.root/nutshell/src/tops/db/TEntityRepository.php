@@ -17,10 +17,22 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
 
     private $fieldDefinitions;
 
+    /**
+     * Subclasses return a list that defines the data structure.
+     * You can use "ModelBuilder" to generate this function for a given table.
+     */
     protected abstract function getFieldDefinitionList();
 
+    /**
+     * return full class name for associated entity class.  Used to instatiate objects returned
+     * by queries. You can use "ModelBuilder" to generate this function for a sub-class.
+     */
     protected abstract function getClassName();
 
+    /**
+     * return name of associated table
+     * You can use "ModelBuilder" to generate this function for a sub-class.
+     */
     protected abstract function getTableName();
 
     private function getFieldDefinitions()
@@ -31,6 +43,10 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
         return $this->fieldDefinitions;
     }
 
+    /**
+     * Name of the primary key of other unique lookup field.
+     * Almost always 'id' but can be overridden
+     */
     protected function getLookupField()
     {
         return 'id';
@@ -43,13 +59,24 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
 
     /**
      * @param $id
-     * @return object | bool
+     * Return single instance of the associated Entity class selected by id
      */
     public function get($id)
     {
         return $this->getSingleEntity('id = ?', [$id], true);
     }
 
+
+    /**
+     * @param $where
+     * @param $params
+     * @param $includeInactive
+     * @param $orderAndLimit
+     * @return PDOStatement
+     *
+     * Execute a select query returning a collection of instances of the associated entity class.
+     * The "fetch" instruction to retrieve the result must be invoked by the calling method
+     */
     protected function executeEntityQuery($where, $params, $includeInactive = false,$orderAndLimit = '')
     {
         $sql = $this->addSqlConditionals(
@@ -66,6 +93,14 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
         return $stmt;
     }
 
+    /**
+     * @param array $ids
+     * @param $condition
+     * @param $delete
+     * @return PDOStatement|void
+     *
+     * Remove records per the SQL condition.
+     */
     public function filterRecordSet(array $ids,$condition='',$delete=false) {
         $count = @count($ids);
         if ($count > 0) {
@@ -88,6 +123,14 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
         }
     }
 
+    /**
+     * @param array $entities
+     * @param $condition
+     * @param $delete
+     * @return PDOStatement|null
+     *
+     * Perform filterRecordset based on an entity collection
+     */
     public function filterEntities(array $entities,$condition='',$delete=false) {
         $ids = [];
         foreach ($entities as $entity) {
@@ -101,7 +144,7 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
      * @param $params - array of replaceable parameters
      * @param $clauses - clauses to be appended to the query like 'ORDER BY postdate DEC'
      * @param $includeInactive - true to include where active = 1
-     * @return single entity instance
+     * return single entity instance
      *
      * This replaces getSingleEntity, when clauses are to be included.
      * Did not want to mess with getSingleEntity for backward compatibility reasons
@@ -164,12 +207,27 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
         return $sql;
     }
 
+    /**
+     * @param $where
+     * @param $params
+     * @param $includeInactive
+     * @return mixed
+     *
+     * Return a single instance of associated entity class based on SQL conditionals and parameters
+     */
     public function getSingleEntity($where, $params, $includeInactive = false)
     {
         $stmt = $this->executeEntityQuery($where, $params, $includeInactive);
         return $stmt->fetch();
     }
 
+    /**
+     * @param $where
+     * @param $params
+     * @param $includeInactive
+     * @return array|false
+     * Return a collection of instances of the associated entity class based on SQL conditionals and parameters
+     */
     protected function getEntityCollection($where, $params, $includeInactive = false)
     {
         $stmt = $this->executeEntityQuery($where, $params, $includeInactive);
@@ -238,6 +296,13 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
         return $result;
     }
 
+    /**
+     * @param $dto
+     * @param $userName
+     * @return int
+     *
+     * Update table based on entity object
+     */
     public function update($dto, $userName = 'admin')
     {
         $updateValues = array();
@@ -250,6 +315,13 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
         return $this->updateValues($dto->id, $updateValues, $userName);
     }
 
+    /**
+     * @param $dto
+     * @param $userName
+     * @return false|string
+     *
+     * Insert values from entity object
+     */
     public function insert($dto, $userName = 'admin')
     {
         $dbh = $this->getConnection();
@@ -317,6 +389,13 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
         return false;
     }
 
+    /**
+     * @param $includeInactive
+     * @param $orderField
+     * @return array
+     *
+     * Return all recordss as instances of the associated entity class
+     */
     public function getAll($includeInactive = false,$orderField=false)
     {
         $dbh = $this->getConnection();
@@ -342,6 +421,12 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
     }
 
 
+    /**
+     * @param $id
+     * @return false|int
+     *
+     * Delete record by id
+     */
     public function delete($id)
     {
         $dbh = $this->getConnection();
@@ -359,6 +444,14 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
         return false;
     }
 
+    /**
+     * @param $key
+     * @param $value
+     * @param $filterCondition
+     * @return false|int
+     *
+     * Delete record(s_ by foreigh key
+     */
     public function deleteByForeignKey($key,$value,$filterCondition = null) {
         $dbh = $this->getConnection();
         $sql = "DELETE FROM ".$this->getTableName()." WHERE $key = ?";
@@ -373,18 +466,38 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
         return false;
     }
 
+    /**
+     * @param $id
+     * @return int
+     *
+     * Set 'active flag' to false
+     */
     public function remove($id)
     {
         $dbh = $this->getConnection();
         return $this->updateValues($id, array('active' => 0));
     }
 
+    /**
+     * @param $id
+     * @return int
+     *
+     * Change active flag to true
+     */
     public function restore($id)
     {
         $dbh = $this->getConnection();
         return $this->updateValues($id, array('active' => 1));
     }
 
+    /**
+     * @param $value
+     * @param $includeInactive
+     * @param $fieldName
+     * @return mixed
+     *
+     * Return single instance of associated entity by id or other key
+     */
     public function getEntity($value, $includeInactive = false, $fieldName = null)
     {
         if ($fieldName === null) {
@@ -393,6 +506,13 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
         return $this->getSingleEntity("$fieldName = ?", [$value], $includeInactive);
     }
 
+    /**
+     * @param $value
+     * @param $includeInactive
+     * @return false|mixed
+     *
+     * Return single instance of associated entity by globally unique id
+     */
     public function getEntityByUid($value, $includeInactive = false)
     {
         $fieldDefinitions = $this->getFieldDefinitions();
@@ -402,6 +522,12 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
         return false;
     }
 
+    /**
+     * @param $value
+     * @return false|mixed
+     *
+     * Get id for unique id field
+     */
     public function getIdForUid($value)
     {
         if (TIdentifier::IsValid($value)) {
@@ -410,6 +536,12 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
         return false;
     }
 
+    /**
+     * @param $value
+     * @return false|mixed
+     *
+     * Get id for unique code field
+     */
     public function getIdForCode($value)
     {
         return $this->getIdForFieldValue('code', $value);
@@ -424,6 +556,13 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
         return false;
     }
 
+    /**
+     * @param $fieldName
+     * @param $id
+     * @return mixed
+     *
+     * Return value of one field for id
+     */
     public function getFieldValue($fieldName,$id) {
         $sql = "SELECT $fieldName FROM ".$this->getTableName().' WHERE id=?';
         $stmt = $this->executeStatement($sql,[$id]);

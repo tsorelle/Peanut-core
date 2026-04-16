@@ -11,9 +11,9 @@ namespace Tops\sys;
 
 class TStringTokenizer
 {
-    const defaultIgnoreWords = 'the,a,an,and,or,of,is,for,at,in';
+    const defaultIgnoreWords = '';
     const ignoreWordsTranslationCode = 'tokenizer-ignored-words';
-    const defaultRemoveChars = '?,!,.,:,;,-,&,_';
+    const defaultRemoveChars = '?,!,.,:,;,-,&,_,(,),[,],{,}';
     const removeCharsTranslationCode = 'tokenizer-removed-chars';
     private $removeChars = array();
     private $ignoredWords = array();
@@ -137,6 +137,7 @@ class TStringTokenizer
     function extractWords($string,$minLength=0)
     {
         $string = trim(strtolower(str_replace($this->removeChars, " ", $string)));
+        $string = str_replace(["“", "”"], '"', $string);
         $results = array();
         $delimiters = " \n\t";
         $phrase = null;

@@ -132,6 +132,7 @@ abstract class TLanguage
      */
     public function getText($resourceCode, $defaultText = false)
     {
+        // changed for PHP 8 compatibility
         $result = array_key_exists($resourceCode, $this->cached) ? $this->cached[$resourceCode] : $defaultText;
         if (empty($result)) {
             $result = $this->getTranslation($resourceCode,$defaultText);
@@ -154,8 +155,11 @@ abstract class TLanguage
     }
 
     protected function getCoreTranslations() {
-        $result =  @parse_ini_file( __DIR__.'/translations.ini',true);
-        return $result === false? array() : $result;
+        $path = __DIR__.'/translations.ini';
+        if (!file_exists($path)) {
+            return array();
+        }
+        return parse_ini_file($path,true);
     }
 
     private $languages;

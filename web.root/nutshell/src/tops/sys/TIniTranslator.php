@@ -46,10 +46,12 @@ class TIniTranslator extends TLanguage
     }
 
     private function findTranslation($section,$key) {
-        if (empty($section) || empty($key)) {
-            return false;
+        if (empty($section) || empty($key) || !array_key_exists($key,$section)) {
+            $result = $key;
         }
-        $result = @$section[$key];
+        else {
+            $result = $section[$key];
+        }
         return empty($result) ? false : $result;
     }
 

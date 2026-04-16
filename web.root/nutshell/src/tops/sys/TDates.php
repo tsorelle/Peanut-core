@@ -9,6 +9,7 @@
 namespace Tops\sys;
 
 
+use DateInterval;
 use DateTime;
 
 class TDates
@@ -88,7 +89,8 @@ class TDates
 
     public static function formatMySqlDate($dateString, $includeTime = false)
     {
-        if ($dateString === null || empty(trim($dateString))) {
+        if ($dateString === null || empty(trim($dateString))
+            || $dateString === '0000-00-00' || $dateString === '0000-00-00 00:00:00') {
             return null;
         }
         $format = $includeTime ? self::MySqlDateTimeFormat : self::MySqlDateFormat;
@@ -200,7 +202,7 @@ class TDates
      *
      * Complex intervals like one hour and thirty minutes are not supported.
      */
-    public static function StringToInterval($intervalString)
+    public static function StringToInterval($intervalString) : DateInterval | false
     {
         $parts = array_filter(explode(' ', $intervalString));
         if (sizeof($parts) != 2
@@ -519,6 +521,18 @@ class TDates
     public static function GetLastDayOfMonth($year,$month) {
         $year = ltrim($year,'0');
         $month = ltrim($month,'0');
+
+        if (!is_numeric($year) || !is_numeric($month)) {
+            return false;
+        }
+
+        $year = (int) $year;
+        $month = (int) $month;
+
+        if ($month < 1 || $month > 12) {
+            return false;
+        }
+
         if (function_exists('cal_days_in_month')) {
             return @cal_days_in_month(CAL_GREGORIAN, $month, $year);
         }
@@ -756,4 +770,57 @@ class TDates
         }
     }
 
+    public static function offsetMinutesToOffsetString(int $minutes): string {
+        $sign = $minutes >= 0 ? '+' : '-';
+        $minutes = abs($minutes);
+        $hours = intdiv($minutes, 60);
+        $mins  = $minutes % 60;
+        return sprintf('%s%02d:%02d', $sign, $hours, $mins);
+    }
+    /**
+     * @param int $minutes
+     * @return \DateTimeZone
+     * @throws \DateInvalidTimeZoneException
+     *
+     * In javascript, the offset in minutes can be obtained as:
+     *      new Date().getTimezoneOffset();
+     *
+     * This value can be passed to a service which can use this function to convert to
+     * a string that php can use to get the timezone
+     */
+    public static function getTimezoneForOffsetMinutes(int $minutes): \DateTimeZone {
+        $offset = self::offsetMinutesToOffsetString($minutes);
+        return new \DateTimeZone($offset);
+    }
+    public static function getLocalTimeZone(mixed $localTz)
+    {
+        if (is_numeric($localTz)) {
+            return self::getTimezoneForOffsetMinutes($localTz);
+        }
+        return new \DateTimeZone($localTz);
+    }
+    public static function localDateTimeToUtc(string $dtString, mixed $timezone) : \DateTime
+    {
+        if ($timezone instanceof \DateTimeZone) {
+            $localTz = $timezone;
+        }
+        else {
+            $localTz = self::getLocalTimeZone($timezone);
+        }
+        $localDt =  new \DateTime($dtString, $localTz);
+        $utc = clone $localDt;
+        $utc->setTimezone($localTz);
+        return $utc;
+    }
+    // not used?
+    public static function numericOffsetToString(mixed $tz) : string
+    {
+        if (is_numeric($tz)) {
+            $offset = intdiv($tz, 60);
+            $hrs = intdiv($tz, 60);
+            $mins = $offset % $hrs;
+            return sprintf('%02d:%02d', $hrs, $mins);
+        }
+        return $tz;
+    }
 }

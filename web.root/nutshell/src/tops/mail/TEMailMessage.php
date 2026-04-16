@@ -125,7 +125,7 @@ class TEMailMessage {
 
 
     /**
-     * @return TEmailSendProperties
+     * @return TEmailSendProperties | false
      */
     public function getSendProperties() {
         // $result = new \stdClass();
@@ -142,7 +142,20 @@ class TEMailMessage {
         $result->html = $this->htmlContent;
         $result->attachments = $this->attachments;
         $result->subject = $this->getSubject();
-
+        if ($this->ccList) {
+            $cc = [];
+            foreach ($this->ccList as $address) {
+                $cc[] = $address->toString();
+            }
+            $result->cc = implode(',', $cc);
+        }
+        if ($this->bccList) {
+            $bcc = [];
+            foreach ($this->bccList as $address) {
+                $bcc[] = $address->toString();
+            }
+            $result->bcc = implode(',', $bcc);
+        }
         if ($result->to && $result->from && $result->subject) {
             return $result;
         }
@@ -414,7 +427,9 @@ class TEMailMessage {
      */
     public function addRecipient($recipient, $name=null)
     {
-        $recipient = $this->toEmailAddress($recipient,$name);
+        if (!$recipient instanceof TEmailAddress) {
+            $recipient = $this->toEmailAddress($recipient,$name);
+        }
         if ($recipient === null) {
             return false;
         }
@@ -497,7 +512,7 @@ class TEMailMessage {
      */
     public function setFromAddress($sender, $name=null)
     {
-        $this->fromAddress = $this->toEmailAddress($sender);
+        $this->fromAddress = $this->toEmailAddress($sender,$name);
         return $this->fromAddress;
     }  //  setFromAddress
 
@@ -552,12 +567,11 @@ class TEMailMessage {
     }
 
     /**
-     * @return TEmailAddress
+     * @return string
      */
-    public function getFromAddressAsString() {
+    public function getFromAddressAsString() : string {
         return $this->fromAddress->__toString();
     }
-
 
     /**
      * @param $address

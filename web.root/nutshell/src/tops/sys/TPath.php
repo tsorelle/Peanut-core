@@ -46,6 +46,11 @@ class TPath
         return self::$fileRoot;
     }
 
+    public static function getProjectRoot()
+    {
+        $fileRoot = self::getFileRoot();
+        return realpath("$fileRoot..");
+    }
     private static function getPaths($offset = false)
     {
         if (empty(self::$fileRoot)) {
@@ -118,6 +123,10 @@ class TPath
 
     public static function fromFileRoot($path,$normalize=false) {
         $root = self::getFileRoot();
+        return self::combine($root,$path,$normalize);
+    }
+    public static function fromProjectRoot($path,$normalize=false) {
+        $root = self::getProjectRoot();
         return self::combine($root,$path,$normalize);
     }
 

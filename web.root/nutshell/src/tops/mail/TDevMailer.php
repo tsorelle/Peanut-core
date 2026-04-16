@@ -2,6 +2,7 @@
 
 namespace Tops\mail;
 
+use Laminas\Mail\Header\ContentType;
 use Tops\mail\TNullMailer;
 use Tops\sys\TConfiguration;
 use Tops\sys\TPath;
@@ -29,15 +30,27 @@ class TDevMailer implements IMailer
     {
         $msg = $message->getSendProperties();
         $toList = str_replace(['<','>'],['(',')'],$msg->to );
-        $content = '<p>'."\nTo:".$toList."\n<br>Subject: ". $msg->subject.
-            "\n</p><br>\n".$msg->html;
+
+        $body = (empty($msg->html)) ? '<pre>'.$msg->text.'</pre>' : $msg->html;
+
+        $content = "<p>To:".$toList."\n<br>Subject: ". $msg->subject."</p>\n";
+
+        if ($msg->cc) {
+            $ccList =  str_replace(['<','>'],['(',')'],$msg->cc );
+            $content .= "<p>Cc:".$ccList."</p>\n";
+        }
+        if ($msg->bcc) {
+            $bccList = str_replace(['<','>'],['(',')'],$msg->bcc );
+            $content .= "<p>Bcc:".$bccList."</p>\n";
+        }
+        $content .=  "\n<div>".$body.'</div>';
         $mailDrop = $this->getMaildropPath();
         $fn = $mailDrop.'/'.uniqid().'.html';
         file_put_contents($fn,$content);
         return true;
     }
 
-    private function getMaildropPath()
+    public function getMaildropPath()
     {
         if (!isset(self::$maildropPath)) {
             $default=  TPath::getFileRoot().'../maildrop';

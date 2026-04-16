@@ -153,6 +153,23 @@ class TMailgunMailer implements IMailer
             if (!empty($sendProperties->html)) {
                 $parameters['html'] = $sendProperties->html;
             }
+            if (!empty($sendProperties->cc)) {
+                $parameters['cc'] = explode(',', $sendProperties->cc);
+            }
+            if (!empty($sendProperties->bcc)) {
+                $parameters['bcc'] = explode(',',$sendProperties->bcc);
+            }
+
+            if (!empty($sendProperties->attachments)) {
+                //trigger_error("Experimental: Add attachments feature for this mailer has not been tested. ", E_USER_WARNING);
+                $parameters['attachments'] = [];
+                foreach ($sendProperties->attachments as $attachment) {
+                    $parameters['attachments'][] = [
+                        'filePath' => dirname($attachment),
+                        'filename' => basename($attachment)
+                    ];
+                }
+            }
 
             if (!empty($this->sendOptions)) {
                 $parameters = array_merge($parameters, $this->sendOptions);
