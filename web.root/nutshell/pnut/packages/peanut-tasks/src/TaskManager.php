@@ -12,6 +12,7 @@ namespace Peanut\PeanutTasks;
 use Tops\db\EntityRepositoryFactory;
 use Tops\services\MessageType;
 use Tops\services\TServiceCommand;
+use Tops\services\TServiceMessage;
 use Tops\services\TServiceResponse;
 use Tops\sys\TConfiguration;
 use Tops\sys\TDates;
@@ -136,6 +137,7 @@ class TaskManager
             return "No service command for '$entry->taskname'";
         }
         $input = $this->decodeInput($input ?? $entry->inputs);
+
         $response = $cmd->execute($input,false);
         if ($response === null) {
             return 'No service response';
@@ -145,6 +147,7 @@ class TaskManager
         }
         return $response;
     }
+
     private $notifyLevel;
     private $notifyEmail;
     private function notify($message,$subject,$level=3) {
@@ -270,25 +273,17 @@ class TaskManager
         try {
             ini_set('max_execution_time', 1800);
             $environment = TWebSite::GetEnvironmentName();
-
-            // temporarily disabled  - Enable in production?
-
-            if ($environment !== 'local') {
+/*            if ($environment !== 'local') {
                 $secure = TConfiguration::getBoolean('secured', 'site', true);
                 if ($secure) {
                     // If remote address not in $_SERVER, we are running a test in dev environment.
                     // Otherwise running script on server.  Ensure no remote access.
                     if (isset($_SERVER['REMOTE_ADDR']) && ($_SERVER['SERVER_ADDR'] !== @$_SERVER['REMOTE_ADDR'])) {
-                        $message = 'Posibile remote login from remote IP: '. $_SERVER['REMOTE_ADDR'].
-                            '  Server address: '.$_SERVER['SERVER_ADDR'];
-                        $this->notify($message,'Document indexing on dev.scym.org',1);
-
-
-//                        $error = 'Remote script login attempted from remote IP: ' . $_SERVER['REMOTE_ADDR'];
-//                        $this->Exit($error);
+                        $error = 'Remote script login attempted from remote IP: ' . $_SERVER['REMOTE_ADDR'];
+                        $this->Exit($error);
                     }
                 }
-            }
+            }*/
 
             TUser::setCurrentUser(new TSystemUser());
             $tz = TConfiguration::getValue('timezone', 'site');

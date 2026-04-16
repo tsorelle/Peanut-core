@@ -25,6 +25,18 @@ class ProcessLogRepository extends \Tops\db\TEntityRepository
         return 'Tops\db\model\entity\ProcessLogEntry';
     }
 
+    public function truncateEntries($timeFrame = '-2 months') {
+        $date = new \DateTime();
+        $date->modify($timeFrame);
+        $dateStr =  $date->format('Y-m-d H:i:s');
+        $sql = "delete from ".$this->getTableName().' WHERE posted < ?' ;
+        $stmt = $this->executeStatement($sql, [$dateStr]);
+        $lastErrorCode = $stmt->errorCode();
+        if ($lastErrorCode == PDO::ERR_NONE) {
+            return $stmt->rowCount();
+        }
+        return -1;
+    }
     protected function getFieldDefinitionList()
     {
         return array(

@@ -12,8 +12,7 @@ namespace Mailboxes {
             let me = this;
             Peanut.logger.write('Mailboxes form Init');
             me.application.loadResources([
-                '@lib:fontawesome',
-                '@lib:lodash',
+                // '@lib:fontawesome',
                 '@pnut/ViewModelHelpers.js'
                 , '@pkg/mailboxes/MailboxListObservable.js'
             ], () => {

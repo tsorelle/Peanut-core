@@ -64,7 +64,7 @@ if ($embed===1) {
             print $title?? ''
         ?>
     </title>
-    <script src="https://kit.fontawesome.com/e3f06c8db4.js" crossorigin="anonymous"></script>
+    <script src="<?php print $fasrc?>" crossorigin="anonymous"></script>
     <?php if ($embed === 1) { ?>
     <style>
         #page-content {
@@ -108,7 +108,7 @@ if ($embed===1) {
 
 
     <!-- main content -->
-    <div  id="nutshell-main-section" style="padding-bottom: 2ex"> <!-- todo: this goes in stylesheet -->
+    <div  id="nutshell-main-section">
         <div class="container" id="page-content">
             <div class="row pagecontent-row">
                 <?php

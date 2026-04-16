@@ -10,6 +10,7 @@ namespace Peanut\PeanutMailings\services;
 
 
 use Peanut\PeanutMailings\db\DirectoryManager;
+use Peanut\PeanutMailings\sys\SubscriptionManager;
 use Tops\services\TServiceCommand;
 use Tops\sys\TConfiguration;
 use Tops\sys\TL;
@@ -43,7 +44,9 @@ class UnsubscribeListCommand extends TServiceCommand
             return;
         }
 
-        $result = (new DirectoryManager())->unsubscribeEmail($request->uid,$request->listId);
+        $submanager = SubscriptionManager::getInstance();
+        $result = $submanager->unsubscribeByUid($request->uid,$request->listId);
+        // $result = (new DirectoryManager())->unsubscribeEmail($request->uid,$request->listId);
         if (empty($result->personName)) {
             $this->addErrorMessage('dir-no-person-found');
             return;

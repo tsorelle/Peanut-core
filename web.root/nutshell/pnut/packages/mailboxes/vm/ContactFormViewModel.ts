@@ -3,6 +3,7 @@
 /// <reference path='../../../../pnut/core/Peanut.d.ts' />
 /// <reference path='../../../../pnut/js/ViewModelHelpers.ts' />
 /// <reference path='mailboxes.d.ts' />
+/// <reference path='../../../../pnut/js/Recaptcha.ts' />
 
 
 namespace Mailboxes {
@@ -32,25 +33,55 @@ namespace Mailboxes {
         selectRecipientCaption = ko.observable('');
 
 
+        enabled = ko.observable(true);
+
         userIsAnonymous = ko.observable(false);
 
         mailboxCode: string;
+        // recaptcha: Peanut.Recaptcha;
+        protector: Peanut.formProtector;
+
+        messageForm = {
+            subjectError: ko.observable(false),
+            bodyError: ko.observable(false),
+            subject: ko.observable(''),
+            editor: null
+        };
 
 
         init(successFunction?: () => void) {
             let me = this;
             Peanut.logger.write('ContactForm Init');
             me.mailboxCode = me.getRequestVar('box', 'all');
+            if (me.mailboxCode == 'inqueries') {
+                // oops, correct spelling error!
+                me.mailboxCode = 'inquiries';
+            }
             me.showLoadWaiter();
             me.application.loadResources([
-                '@pnut/ViewModelHelpers.js'
+                '@pnut/ViewModelHelpers.js',
+                '@pnut/htmlEditContainer'
+                // ,'@pnut/Recaptcha.js'
             ], () => {
+                me.protector = new Peanut.formProtector();
+                // me.recaptcha = new Peanut.Recaptcha();
                 me.getMailbox(() => {
-                    me.application.registerComponents(['@pkg/peanut-riddler/riddler-captcha'], () => {
-                        me.application.hideWaiter();
+                    me.application.hideWaiter();
+
+                    if (me.userIsAnonymous()) {
+                        me.protector.start();
                         me.bindDefaultSection();
                         successFunction();
-                    });
+                    }
+                    else {
+                        me.messageForm.editor = new Peanut.htmlEditContainer(me);
+                        me.messageForm.editor.initialize('messagehtml', () => {
+                            me.bindDefaultSection();
+                            successFunction();
+                        })
+
+                    }
+
                 });
             });
         }
@@ -69,6 +100,7 @@ namespace Mailboxes {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                             let response = <IGetContactFormResponse>serviceResponse.Value;
+                            // me.recaptcha.setSitekey(response.grsitekey);
                             me.addTranslations(response.translations);
                             me.selectRecipientCaption(response.translations['mail-select-recipient']);
                             me.fromAddress(response.fromAddress);
@@ -81,19 +113,25 @@ namespace Mailboxes {
 
                             if (response.mailboxList.length > 1) {
                                 me.mailboxCode = 'all';
-/*
-                                if (me.userIsAnonymous) {
-                                    me.selectedMailbox(response.mailboxList[0]);
-                                }
-                                else {
-                                    me.selectedMailbox(null);
-                                }
-*/
-                                me.selectedMailbox(null);
+                                /*
+                                                                if (me.userIsAnonymous) {
+                                                                    me.selectedMailbox(response.mailboxList[0]);
+                                                                }
+                                                                else {
+                                                                    me.selectedMailbox(null);
+                                                                }
+                                */
+                                let inquiries = response.mailboxList.find((box : IMailBox) => {
+                                        return box.mailboxcode == 'inquiries';
+                                    }
+                                );
+
+                                inquiries = inquiries || null;
+
+                                me.selectedMailbox(inquiries);
                                 me.mailboxSelectSubscription = me.selectedMailbox.subscribe(me.onMailBoxSelected);
                                 me.headerMessage(response.translations['mail-header-select']);
-                            }
-                            else {
+                            } else {
                                 let mailbox = response.mailboxList.pop();
                                 me.mailboxCode = mailbox.mailboxcode;
                                 me.selectedMailbox(mailbox);
@@ -102,8 +140,7 @@ namespace Mailboxes {
                             }
                             me.mailboxList(response.mailboxList);
                             me.formVisible(true);
-                        }
-                        else {
+                        } else {
                             me.formVisible(false);
                         }
                     }
@@ -115,10 +152,11 @@ namespace Mailboxes {
                 }
             });
         };
-
-
-        createMessage = () => {
+        createMessage = (token = null) => {
             let me = this;
+            if (!me.protector.likelyHuman()) {
+                return null;
+            }
 
             me.mailboxSelectError('');
             me.subjectError('');
@@ -134,13 +172,16 @@ namespace Mailboxes {
                 }
                 me.mailboxCode = box.mailboxcode;
             }
-            let message = <IMailMessage> {
+
+
+            let message = <IMailMessage>{
                 toName: '',
                 mailboxCode: me.mailboxCode,
                 fromName: me.fromName(),
                 fromAddress: me.fromAddress(),
                 subject: me.messageSubject(),
-                body: me.messageBody()
+                body: me.userIsAnonymous() ? me.messageBody() : me.messageForm.editor.getContent(),
+                token: token
             };
 
             let valid = true;
@@ -148,29 +189,29 @@ namespace Mailboxes {
             if (message.fromAddress.trim() == '') {
                 me.fromAddressError(': ' + me.translate('form-error-your-email-blank'));
                 valid = false;
-            }
-            else {
+            } else {
                 let fromAddressOk = Peanut.Helper.ValidateEmail(message.fromAddress);
                 if (!fromAddressOk) {
-                    me.fromAddressError(': '+me.translate('form-error-email-invalid'));
+                    me.fromAddressError(': ' + me.translate('form-error-email-invalid'));
                     valid = false;
                 }
             }
 
             if (message.fromName.trim() == '') {
-                me.fromNameError(': '+me.translate('form-error-your-name-blank')); //
-                valid=false;
+                me.fromNameError(': ' + me.translate('form-error-your-name-blank')); //
+                valid = false;
             }
 
             if (message.subject.trim() == '') {
-                me.subjectError(': '+me.translate('form-error-email-subject-blank')); //A subject is required
+                me.subjectError(': ' + me.translate('form-error-email-subject-blank')); //A subject is required
                 valid = false;
             }
 
             if (message.body.trim() == '') {
-                me.bodyError(': '+me.translate('form-error-email-message-blank')); // Message text is required.);
+                me.bodyError(': ' + me.translate('form-error-email-message-blank')); // Message text is required.);
                 valid = false;
             }
+
             if (valid) {
                 return message;
             }
@@ -181,22 +222,28 @@ namespace Mailboxes {
             let me = this;
             let message = me.createMessage();
             if (message) {
-                me.application.hideServiceMessages();
-                me.application.showWaiter(me.translate('wait-sending-message')); //'Sending message...');
-                me.services.executeService('peanut.Mailboxes::SendContactMessage', message,
-                    function (serviceResponse: Peanut.IServiceResponse) {
-                        if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                            me.formVisible(false);
-                            me.headerMessage(me.translate('mail-thanks-message'));//'Thanks for your message.')
-                        }
+                        // message.token = token;
+                        me.application.hideServiceMessages();
+                        me.application.showWaiter(me.translate('wait-sending-message')); //'Sending message...');
+                        me.services.executeService('peanut.Mailboxes::SendContactMessage', message,
+                            function (serviceResponse: Peanut.IServiceResponse) {
+                                if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                                    me.headerMessage(me.translate('mail-thanks-message'));//'Thanks for your message.')
+                                } else if (serviceResponse.Value == 'denied') {
+                                    me.headerMessage('Not able to send your message. Please sign in if you have an account');
+                                }
+                                me.formVisible(false);
+                                window.scrollTo(0, 0);
+                            }
+                        ).fail(function () {
+                            let trace = me.services.getErrorInformation();
+                        }).always(function () {
+                            me.application.hideWaiter();
+                            me.protector.start();
+                        });
                     }
-                ).fail(function () {
-                    let trace = me.services.getErrorInformation();
-                }).always(function () {
-                    me.application.hideWaiter();
-                });
-            }
-        };
+
+        }
 
         onMailBoxSelected = (selected: IMailBox) => {
             let me = this;

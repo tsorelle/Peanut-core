@@ -1,8 +1,8 @@
 /// <reference path="../../../../pnut/core/ViewModelBase.ts" />
 /// <reference path='../../../../typings/knockout/knockout.d.ts' />
-/// <reference path='../../../../typings/tinymce/tinymce.d.ts' />
 /// <reference path='../../../../pnut/core/Peanut.d.ts' />
 /// <reference path='../../../../pnut/js/ViewModelHelpers.ts' />
+/// <reference path='../../../js/htmlEditContainer.ts' />
 /// <reference path='../../mailboxes/vm/mailboxes.d.ts' />
 
 namespace PeanutMailings {
@@ -78,6 +78,7 @@ namespace PeanutMailings {
         sendAddress = ko.observable('');
 
 
+        private htmlEditor : Peanut.htmlEditContainer;
         private queuePageSize = 10;
 
         currentQueuePage = ko.observable(1);
@@ -147,11 +148,12 @@ namespace PeanutMailings {
             me.showLoadWaiter();
             me.application.loadResources([
                 '@lib:tinymce',
-                '@pnut/ViewModelHelpers.js'
+                '@pnut/ViewModelHelpers.js',
+                '@pnut/htmlEditContainer'
                 ,'@pkg/mailboxes/MailboxListObservable.js'
             ], () => {
-                me.initEditor('#messagehtml');
-                // me.initEditor('#edit-messagetext');
+                me.htmlEditor = new Peanut.htmlEditContainer();
+                me.htmlEditor.includeDesignTools();
                 me.mailboxes = new Mailboxes.MailboxListObservable(me);
                 me.application.registerComponents([
                     '@pnut/modal-confirm',
@@ -178,32 +180,16 @@ namespace PeanutMailings {
                                     me.showLists();
                                     break;
                             }
-
-                            successFunction();
+                            me.htmlEditor.initEditor('messagehtml',() => {
+                                me.htmlEditor.confirmEditorInit();
+                                successFunction();
+                            })
 
                         });
 
                     });
             });
         }
-
-        initEditor = (selector: string) => {
-            let me = this;
-            let host = Peanut.Helper.getHostUrl() + '/';
-            tinymce.init({
-                selector: selector,
-                toolbar: "undo redo | styleselect | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link | image | forecolor backcolor | code",
-                plugins: "image imagetools link lists code paste textcolor",
-                // default_link_target: "_blank",
-                relative_urls : false,
-                convert_urls: false,
-                remove_script_host : false,
-                document_base_url : host,
-                branding: false,
-                paste_word_valid_elements: "b,strong,i,em,h1,h2,h3,p,a,ul,li"
-            });
-
-        };
 
         showConfirmation = (modalId) => {
             let me = this;
@@ -291,44 +277,9 @@ namespace PeanutMailings {
             me.editorView(format);
         };
 
-        cleanHtml = () => {
-            let me = this;
-            let request = {
-                blanks: true,
-                headings: 'h2'
-            };
-            let editor = tinymce.get('messagehtml');
-            let content = editor.getContent();
-            if (content) {
-                let lines = content.split("\n");
-                if (request.blanks) {
-                    lines = lines.filter((item: string) => {
-                        if (item == '<p>&nbsp;</p>' || item == '<p><strong>&nbsp;</strong></p>') {
-                            return false;
-                        }
-                        return true;
-                    });
-                }
-                if (request.headings) {
-                    let hStart = '<'+request.headings+'>';
-                    let hEnd = '</'+request.headings+'>';
-                    let pStart = '<p><strong>';
-                    let pEnd = '</strong></p>';
-                    let count = lines.length;
-                    for (let i = 0;i<count;i++) {
-                        let item = lines[i];
-                        if (item.substr(0,11) == pStart && item.substr(-13) == pEnd) {
-                            lines[i] = item.replace(pStart,hStart).replace(pEnd,hEnd);
-                        }
-                    }
-                }
-
-                editor.setContent(lines.join("\n"));
-            }
-        };
-
         updateMessageBody = () => {
-            tinymce.triggerSave();
+            this.htmlEditor.save();
+            // tinymce.triggerSave();
             let messageHtml: any = document.getElementById('messagehtml');
             let value = messageHtml.value;
             this.messageBody(value);

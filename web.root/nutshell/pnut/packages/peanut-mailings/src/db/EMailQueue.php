@@ -359,7 +359,15 @@ class EMailQueue
                 $this->messages = $repository->getQueuedMessages();
             }
             $recipients = $repository->getMessageRecipients($sendLimit, $messageId);
-
+            if (empty($recipients)) {
+                if ($messageId > 0) {
+                    $this->log("No recipients were found for message #$messageId");
+                }
+                else {
+                    $this->log("No messages waiting.");
+                }
+                return 0;
+            }
             foreach ($recipients as $recipient) {
                 if ($this->process->isPaused()) {
                     break;
@@ -384,7 +392,9 @@ class EMailQueue
                         break;
                 }
             }
-            $this->log("Sent $sendCount messages for message #$messageId");
+            if ($sendCount > 0) {
+                $this->log("Sent $sendCount messages.");
+            }
         }
         catch (\Exception $ex) {
             $this->process->handleException($ex,'Email processing failure',false);

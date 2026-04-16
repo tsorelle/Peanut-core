@@ -27,6 +27,7 @@ namespace Mailboxes {
         owner : () => ViewModelBase;
         bootstrapVersion : KnockoutObservable<number>;
 
+        testList = ko.observableArray();
         // include constructor if any params used
         constructor(params: any) {
             let me = this;
@@ -66,6 +67,7 @@ namespace Mailboxes {
         mailboxDescription = ko.observable('');
         mailboxEmail = ko.observable('');
         mailboxPublic = ko.observable(true);
+        mailboxPublished = ko.observable(true);
 
         formHeading = ko.observable('');
         editMode  = ko.observable('');
@@ -84,6 +86,7 @@ namespace Mailboxes {
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         me.mailboxes.setMailboxes(<IMailBox[]>serviceResponse.Value);
+                        // me.testList(serviceResponse.Value)
                     }
                 }
             ).fail(function () {
@@ -139,6 +142,7 @@ namespace Mailboxes {
             me.mailboxName(box.displaytext);
             me.mailboxEmail(box.address);
             me.mailboxPublic(box.public == '1');
+            me.mailboxPublished(box.published == '1');
             me.mailboxDescription(box.description);
             me.formHeading("Edit mailbox: " + box.mailboxcode);
             me.showForm();
@@ -154,6 +158,7 @@ namespace Mailboxes {
             me.mailboxEmail('');
             me.mailboxDescription('');
             me.mailboxPublic(true);
+            me.mailboxPublished(false);
             me.formHeading('New mailbox');
             me.showForm();
         };
@@ -171,12 +176,14 @@ namespace Mailboxes {
             let me = this;
             let valid = true;
             let box = <IMailBox>{
-                'id' : me.mailboxId(),
-                'mailboxcode' : me.mailboxCode(),
-                'displaytext' : me.mailboxName(),
-                'address' : me.mailboxEmail(),
-                'description' : me.mailboxDescription(),
-                'public' : me.mailboxPublic()
+                id : me.mailboxId(),
+                mailboxcode : me.mailboxCode(),
+                displaytext : me.mailboxName(),
+                address : me.mailboxEmail(),
+                description : me.mailboxDescription(),
+                public : me.mailboxPublic() ? 1: 0,
+                published: me.mailboxPublished() ? 1 : 0,
+                active: 1
             };
 
             if (box.mailboxcode == '') {

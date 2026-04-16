@@ -13,6 +13,8 @@ use Peanut\sys\TVmContext;
 use Tops\mail\TPostOffice;
 use Tops\services\TServiceCommand;
 use Tops\sys\TLanguage;
+use Tops\sys\TRecaptcha;
+use Tops\sys\TUser;
 
 /**
  * Class GetMailboxCommand
@@ -55,29 +57,44 @@ class GetContactFormCommand extends TServiceCommand
     protected function run()
     {
         $response = new \stdClass();
+        $user = $this->getUser();
         $mailboxCode =  $this->getMailbox();
         if (empty($mailboxCode)) {
             $this->addErrorMessage('No mailbox code received.');
             return;
         }
-        // $this->addInfoMessage("Mailbox code: $mailboxCode");
+        if ($mailboxCode == 'inqueries') {
+            // oops correct spelline
+            $mailboxCode = 'inquiries';
+        }
+        $response->grsitekey ='none';
+        if (!TUser::getCurrent()->isAuthenticated()) {
+            $response->grsitekey = TRecaptcha::GetSiteKey();
+        }
+
         $manager = TPostOffice::GetMailboxManager();
-        // $mailboxes = $manager->getMailboxes();
-        if ($mailboxCode == 'all') {
-            $response->mailboxName = '';
-            // $response->mailboxList = $mailboxes;
-            $response->mailboxList = $manager->getMailboxes();
+
+        $mailboxes = [];
+        $allMailboxes =  $manager->getMailboxes();
+        if ($user->isAuthenticated()) {
+            $mailboxes = $allMailboxes;
         }
         else {
-            // $response->mailboxList = $this->filterMailboxList($mailboxes,$mailboxCode);
-            $response->mailboxList = $manager->getMailboxes($mailboxCode);
+            $mailboxes = $manager->getMailboxes('published');
+        }
+
+        if ($mailboxCode == 'all') {
+            $response->mailboxName = '';
+            $response->mailboxList = $mailboxes;
+        }
+        else {
+            $response->mailboxList = $this->filterMailboxList($allMailboxes,$mailboxCode);
             if ($response->mailboxList === false) {
                 $this->addErrorMessage("Mailbox code '$mailboxCode' not found.");
                 return;
             }
         }
 
-        $user = $this->getUser();
         if ($user->isAuthenticated()) {
             $response->fromName = $user->getDisplayName();
             $response->fromAddress = $user->getEmail();

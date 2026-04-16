@@ -12,14 +12,17 @@
             <th><translate params="code:'label-address',translator:owner"></translate></th>
             <th><translate params="code:'label-description',translator:owner"></translate></th>
             <th><translate params="code:'label-public',translator:owner"></translate></th>
+            <th>Published</th>
             <th>&nbsp;</th>
             </thead>
+            <!-- tbody  data-bind="foreach: mailboxes.list" -->
             <tbody  data-bind="foreach: mailboxes.list">
             <td nowrap data-bind="text: mailboxcode"></td>
             <td data-bind="text: displaytext"></td>
             <td data-bind="text: address"></td>
             <td data-bind="text: description"></td>
-            <td><span data-bind="visible:public !== '0'"><translate params="code:'label-yes',translator:$parent.owner"></translate></span> &nbsp;</td>
+            <td><span data-bind="visible:public === 1"><translate params="code:'label-yes',translator:$parent.owner"></translate></span> &nbsp;</td>
+            <td><span data-bind="visible:published === 1"><translate params="code:'label-yes',translator:$parent.owner"></translate></span> &nbsp;</td>
             <td><a href="#"  data-bind="click: $parent.editMailbox" >
                 <translate params="code:'label-edit',translator:$parent.owner"></translate></a>
                 <a href="#" data-bind="click: $parent.confirmRemoveMailbox" >
@@ -33,10 +36,15 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title" data-bind="text: formHeading"></h4>
+                    <button type="button" class="close btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                        <span data-bind="visible:bootstrapVersion() < 5" aria-hidden="true">&times;</span>
+                    </button>
                 </div>
                 <div class="modal-body">
                     <form>
-                        <div class="form-group" data-bind="visible: editMode() == 'add', css: {'has-error': mailboxCodeHasError}">
+                        <div class="form-group mb-3" data-bind="visible: editMode() == 'add', css: {'has-error': mailboxCodeHasError}">
                             <label class="control-label" for="boxCode">
                                 <translate params="code:'label-code',translator:owner"></translate></label>
                             <span class="error" data-bind="visible: mailboxCodeHasError">
@@ -44,7 +52,7 @@
                             <input type="text" class="form-control" id="boxCode" data-bind="textInput: mailboxCode" />
                         </div>
 
-                        <div class="form-group" data-bind="css: {'has-error': mailboxNameHasError}">
+                        <div class="form-group mb-3" data-bind="css: {'has-error': mailboxNameHasError}">
                             <label class="control-label" for="boxName">
                                 <translate params="code:'label-name',translator:owner"></translate></label>
                             <span class="error" data-bind="visible: mailboxNameHasError">
@@ -52,19 +60,25 @@
                             <input type="text" class="form-control" id="boxName" data-bind="textInput: mailboxName" />
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <input id="public-check" type="checkbox" data-bind="checked:mailboxPublic"/>
                             <label for="public-check"  class="control-label" style="font-weight: normal">
                                 <translate params="code:'mailbox-label-public',translator:owner"></translate> </label>
                         </div>
 
-                        <div class="form-group"  data-bind=" css: {'has-error': mailboxEmailHasError}">
+                        <div class="form-group mb-3">
+                            <input id="published-check" type="checkbox" data-bind="checked:mailboxPublished"/>
+                            <label for="published-check"  class="control-label" style="font-weight: normal">
+                                Show for anonymous users </label>
+                        </div>
+
+                        <div class="form-group mb-3"  data-bind=" css: {'has-error': mailboxEmailHasError}">
                             <label class="control-label" for="boxEmail"><translate params="code:'label-email',translator:owner"></translate></label>
                             <span class="error" data-bind="visible: mailboxEmailHasError">
                                     :  <translate params="code:'form-error-email-invalid',translator:owner"></translate></span>
                             <input type="email" class="form-control" id="boxEmail" data-bind="textInput: mailboxEmail" />
                         </div>
-                        <div class="form-group" data-bind=" css: {'has-error': mailboxDescriptionHasError}">
+                        <div class="form-group mb-3" data-bind=" css: {'has-error': mailboxDescriptionHasError}">
                             <label class="control-label" for="boxDescription">
                                 <translate params="code:'label-description',translator:owner"></translate></label>
                             <span class="error" data-bind="visible: mailboxDescriptionHasError">
@@ -78,7 +92,7 @@
                     <button type="button" class="btn btn-primary" data-bind="click: updateMailbox">
                         <translate params="code:'label-save-changes',translator:owner"></translate>
                     </button>
-                    <button type="button" class="btn btn-default btn-secondary"  data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-default btn-secondary" data-bs-dismiss="modal"   data-dismiss="modal">
                         <translate params="code:'label-cancel',translator:owner"></translate>
                     </button>
                 </div>
@@ -92,10 +106,7 @@
                 <div class="modal-header">
                     <h4 class="modal-title">
                         <translate params="code:'mailbox-label-delete',translator:owner"></translate></h4>
-                    <button type="button" class="close btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-
+                    <button  type="button" class="close btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <h3><translate params="code:'mailbox-label-delete',translator:owner"></translate>

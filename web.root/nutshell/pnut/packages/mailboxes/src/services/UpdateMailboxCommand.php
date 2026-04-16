@@ -20,12 +20,14 @@ use Tops\sys\TPermissionsManager;
  *
  * Request:
  * export interface IMailBox {
- *    id:string;
- *    displaytext:string;
- *    description:string;
- *    mailboxcode:string ;
- *    address:string;
- *    state:number;
+     * id:string;
+     * mailboxcode:string ;
+     * address:string;
+     * displaytext:string;
+     * description:string;
+     * public: any;
+     * published: any
+     * active: any;
  * }
  */
 class UpdateMailboxCommand extends TServiceCommand
@@ -62,6 +64,7 @@ class UpdateMailboxCommand extends TServiceCommand
             $current->setEmail($mailBox->address);
             $current->setPublic($public);
             $current->setUpdateTime($this->getUser()->getUserName());
+            $current->setPublished($mailBox->published);
 
             $manager->updateMailbox($current);
         }

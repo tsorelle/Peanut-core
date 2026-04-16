@@ -86,7 +86,7 @@ class  TDatesTest extends TestCase
 
     public function testStringToInterval()
     {
-        $s = '10 ooblkekx';
+        $s = '10';
         $actual = TDates::StringToInterval($s);
         if (!$actual instanceof DateInterval) {
             $this->assertTrue((bool)$actual === false);

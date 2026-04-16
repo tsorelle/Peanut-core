@@ -3,10 +3,10 @@
     <div class="row">
         <div class="col-md-12">
             <ul class="nav nav-tabs">
-                  <li class="nav-item"  data-bind="css: { active: tab()=='message'}"><a class="nav-link" href="#" data-bind="css: {active: tab()=='message'},click:showMessageTab"><translate params="code:'label-message',translator:self"></translate></a></li>
-                  <li class="nav-item"  data-bind="css: { active: tab()=='queue'}"><a class="nav-link" href="#" data-bind="css: { active: tab()=='queue'},click:refreshQueue"><translate params="code:'dir-label-email-queue',translator:self"></translate></a></li>
-                  <li class="nav-item"  data-bind="css: { active: tab()=='lists'}"><a class="nav-link" href="#" data-bind="css: { active: tab()=='lists'},click:showLists"><translate params="code:'mailing-heading-lists',translator:self"></translate></a></li>
-                  <li class="nav-item"  data-bind="css: { active: tab()=='mailboxes'}"><a class="nav-link" href="#" data-bind="css: { active: tab()=='mailboxes'},click:showMailboxes"><translate params="code:'mailbox-entity-plural',case:'ucfirst',translator:self"></translate></a></li>
+                <li class="nav-item"><a class="nav-link" href="#" data-bind="css:{active: tab()=='message'},click:showMessageTab"><translate params="code:'label-message',translator:self"></translate></a></li>
+                <li class="nav-item"><a class="nav-link" href="#" data-bind="css:{active: tab()=='queue'},click:refreshQueue"><translate params="code:'dir-label-email-queue',translator:self"></translate></a></li>
+                <li class="nav-item"><a class="nav-link" href="#" data-bind="css:{active: tab()=='lists'},click:showLists"><translate params="code:'mailing-heading-lists',translator:self"></translate></a></li>
+                <li class="nav-item"><a class="nav-link" href="#" data-bind="css:{active: tab()=='mailboxes'},click:showMailboxes"><translate params="code:'mailbox-entity-plural',case:'ucfirst',translator:self"></translate></a></li>
             </ul>
         </div>
     </div>
@@ -82,7 +82,7 @@
                 </div>
                 <div class="col-sm-7">
                     <div style="float: right">
-                        <button class="btn btn-default btn-secondary" style="margin-right: 10px" data-bind="click:refreshQueue"><span class="fa fa-refresh" aria-hidden="true"></span> <translate params="code:'label-refresh',translator:self"></translate></button>
+                        <button class="btn btn-default btn-secondary" style="margin-right: 10px" data-bind="click:refreshQueue"><span class="fas fa-sync" aria-hidden="true"></span> <translate params="code:'label-refresh',translator:self"></translate></button>
                         <button class="btn btn-default btn-secondary" data-bind="visible:queueStatus()==='active',click:pauseQueue"><translate params="code:'process-command-pause',translator:self"></translate> <translate params="code:'dir-label-queue-processing',translator:self"></translate></button>
                         <button class="btn btn-default btn-secondary" data-bind="visible:queueStatus()==='paused',click:restartQueue"><translate params="code:'process-command-continue',translator:self"></translate> <translate params="code:'dir-label-queue-processing',translator:self"></translate></button>
                     </div>

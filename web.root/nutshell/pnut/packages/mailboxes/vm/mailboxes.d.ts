@@ -3,11 +3,12 @@ declare namespace Mailboxes {
 
     export interface IMailBox {
         id:string;
-        displaytext:string;
-        description:string;
         mailboxcode:string ;
         address:string;
-        'public': any;
+        displaytext:string;
+        description:string;
+        public: any;
+        published: any
         active: any;
     }
 
@@ -22,6 +23,7 @@ declare namespace Mailboxes {
         fromAddress : string;
         subject : string;
         body : string;
+        token? : string;
     }
 
     export interface IGetContactFormResponse {
@@ -31,6 +33,7 @@ declare namespace Mailboxes {
         fromName: string;
         fromAddress: string;
         translations: string[];
+        grsitekey: string;
     }
 
     export interface IGetMailboxesResponse {
