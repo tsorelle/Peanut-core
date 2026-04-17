@@ -3,7 +3,7 @@
 /// <reference path='../../../../pnut/core/Peanut.d.ts' />
 /// <reference path='../../../../pnut/js/ViewModelHelpers.ts' />
 /// <reference path='mailboxes.d.ts' />
-/// <reference path='../../../../pnut/js/Recaptcha.ts' />
+// <reference path='../../../../pnut/js/Recaptcha.ts' />
 
 
 namespace Mailboxes {
