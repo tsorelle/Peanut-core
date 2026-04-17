@@ -140,9 +140,24 @@ namespace Peanut {
         public start = (application : IPeanutClient, successFunction?: (viewModel: IViewModel) => void)  => {
             let me = this;
 
-            me.language = me.getUserLanguage();
             me.deviceSize(Environment.getDeviceSize());
+            me.language = me.getUserLanguage();
+            if (me.language === 'en-us') {
+                let englishTranslations = {
+                    'wait-loading': 'Loading',
+                    'wait-please': 'please wait',
+                    'wait-action-loading': 'Loading',
+                    'wait-action-update': 'Updating',
+                    'wait-action-add': 'Adding',
+                    'wait-action-delete': 'Deleting'
+                };
+                me.addTranslations(
+                    englishTranslations
+                );
+            }
+            else {
             me.addTranslations(Cookies.GetKvArray('peanutTranslations'));
+           }
             me.application = application;
             me.services = ServiceBroker.getInstance(application);
             PeanutLoader.loadUiHelper(() => {
@@ -366,7 +381,7 @@ namespace Peanut {
             let me = this;
             me.translations[code] = text;
         };
-        public addTranslations = (translations : string[]) => {
+        public addTranslations = (translations : any) => {
             let me = this;
             if (translations) {
                 for (let code in translations) {

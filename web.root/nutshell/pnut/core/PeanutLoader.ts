@@ -64,7 +64,7 @@ namespace Peanut {
                     // head.load(config.dependencies,() => {
                     PeanutLoader.load(config.preload, () => {
                         PeanutLoader.load(config.dependencies, () => {
-                        if (PeanutLoader.application == null) {
+                        if (!PeanutLoader.application) {
                             PeanutLoader.application = new window['Peanut']['Application'];
                             PeanutLoader.application.initialize(() => {
                                 PeanutLoader.application.startVM(name, final);
