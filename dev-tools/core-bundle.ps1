@@ -1,8 +1,9 @@
 # Requires: npm install -g uglify-js
 # Exec from project root: .\dev-tools\core-bundle.ps1
 # Set project root path here:
-$rootpath = "D:\dev\twoquakers\peanut2\peanut2.core"
-Set-Location -Path "$rootpath\web.root\nutshell\pnut\core"
+$rootpath = "D:\dev\twoquakers\peanut2\peanut-core"
+$corePath = "$rootpath\web.root\nutshell"
+Set-Location -Path "$corePath\pnut\core"
 uglifyjs PeanutLoader.js `
 -o peanut-loader.min.js  -c -m
 
