@@ -18,7 +18,7 @@ namespace Peanut {
 
 
         init(successFunction?: () => void) {
-            console.log('Init ModalTest');
+            console.log('Init ServiceTest');
             this.contextValue(this.getVmContext());
             let me = this;
             me.addTranslation('test', 'Un prueba de traducadora');

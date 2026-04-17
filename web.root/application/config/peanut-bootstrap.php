@@ -13,8 +13,6 @@ use Tops\sys\TPath;
 use Tops\sys\TStrings;
 use Peanut\sys\ViewModelManager;
 
-
-
 class Bootstrap
 {
     /**
@@ -42,29 +40,23 @@ class Bootstrap
         }
         return $ns;
     }
+
     public static function initialize($fileRoot=null) {
-        if ($fileRoot == null) {
-            $fileRoot = __DIR__;
-            for ($i = 0; $i < self::scriptDirectoryLevel; $i++) {
-                $fileRoot .= '/..';
-            }
-            $fileRoot = realpath($fileRoot);
-            if ($fileRoot === false) {
-                throw new \Exception('Cannot determine file root location.');
-            }
+        $fileRoot = self::getDocumentRoot();
+        if (!str_ends_with($fileRoot,'/')) {
             $fileRoot .= '/';
         }
-        else if (substr($fileRoot,-1) != '/') {
-            $fileRoot .= '/';
-        }
+        $configPath = self::getRelativePath(__DIR__);
+        $applicationRoot = self::getRelativePath($configPath . '..');
+
         $settings = self::getSettings();
 
         $autoloadFile = $fileRoot.$settings->composerPath.'/autoload.php';
+
         if (!file_exists($autoloadFile)) {
             exit ("No autoload file: $autoloadFile");
         }
-        @include_once $fileRoot.$settings->composerPath.'/autoload.php';
-        $applicationRoot = realpath(dirname(__FILE__).'/..');
+        include_once $autoloadFile;
 
         $topsRoot = $settings->topsLocation;
         $appSrcRoot = $settings->mvvmPath.'src';
@@ -135,7 +127,7 @@ class Bootstrap
             setcookie('peanutTranslations', '', time() - 3600, '/peanut/service');
             setcookie('peanutTranslations', '', time() - 3600, '/peanut');
             unset($_COOKIE['peanutTranslations']);
-       }
+        }
 
         return $settings;
     }
@@ -156,13 +148,62 @@ class Bootstrap
         return $result;
     }
 
+    private static $rootOffset;
+    private static $documentRoot;
+
+    private static function getRootOffset() {
+        self::getDocumentRoot();
+        return self::$rootOffset;
+    }
+
+    private static function  getDocumentRoot()
+    {
+        if (!isset(self::$documentRoot)) {
+            $root = $_SERVER['DOCUMENT_ROOT'] ?? null;
+            if (!empty($root)) {
+                self::$documentRoot = $root;
+            }
+            else {
+                $parts = explode(DIRECTORY_SEPARATOR, __DIR__);
+                while (!empty($parts)) {
+                    $currentDir = implode(DIRECTORY_SEPARATOR, $parts);
+                    if (file_exists($currentDir . '/index.php')) {
+                        self::$documentRoot = $currentDir;
+                        self::$rootOffset = strlen($currentDir);
+                        return self::$documentRoot;
+                    }
+                    array_pop($parts);
+                }
+            }
+        }
+        self::$rootOffset = strlen(self::$documentRoot);
+        return self::$documentRoot;
+    }
+
+    private static function getRelativePath($path) {
+        $path = self::normalizePath($path);
+        if ($path === false) {
+            return false;
+        }
+        return substr($path,self::getRootOffset());
+    }
+
+    private static function normalizePath($path,$stripRoot=true) {
+        $path = realpath($path);
+        if ($path === false) {
+            return false;
+        }
+        $path = str_replace('\\','/',$path).'/';
+        return $path;
+    }
+
     public static function getSettings()
     {
-        $parts = explode('/', $_SERVER['PHP_SELF']);
-        for ($i = 0; $i <= self::scriptDirectoryLevel; $i++) {
-            array_pop($parts);
-        }
-        $root = join('/', $parts) . '/';
+
+        $root = '/';
+        $configPath = self::getRelativePath(__DIR__);
+
+        $applicationPath = self::getRelativePath(__DIR__ . '/..');
 
         $ini = parse_ini_file(__DIR__ . '/settings.ini', true);
 
@@ -185,7 +226,7 @@ class Bootstrap
         $modulePath = (empty($settings['modulePath']) ? 'modules' : $settings['modulePath']);
         $peanutRoot = (empty($settings['peanutRootPath']) ? "$modulePath/pnut" : $settings['peanutRootPath']);
         $peanutPath = $root . $peanutRoot;
-        $mvvmPath = $root . (empty($settings['mvvmPath']) ? 'application/peanut' : $settings['mvvmPath']);
+        $mvvmPath = (empty($settings['mvvmPath']) ?  $applicationPath.'peanut' : $root.$settings['mvvmPath']);
         $corePath = $root . (empty($settings['corePath']) ? $peanutRoot . '/core' : $settings['corePath']);
         $packagePath = $root . (empty($settings['packagePath']) ? $peanutRoot . "/packages" : $settings['packagePath']);
         $srcLocation = empty($ini['locations']['src']) ? "$modulePath/src" : $ini['locations']['src'];
@@ -231,7 +272,7 @@ class Bootstrap
         }
         $result->applicationVersionNumber = empty($settings['applicationVersionNumber']) ? '0.0' : $settings['applicationVersionNumber'];
         $result->commonRootPath = $root;
-        $result->applicationPath = $root . 'application/';
+        $result->applicationPath = $applicationPath;
         $result->libraryPath = empty($settings['libraryPath']) ? $result->applicationPath . "assets/js/libraries/" : $settings['libraryPath'] . '/';
         $result->stylesPath = empty($settings['stylesPath']) ? $result->applicationPath . "assets/styles/" : $settings['stylesPath'] . '/';
         $result->peanutRootPath = $peanutPath . '/';
