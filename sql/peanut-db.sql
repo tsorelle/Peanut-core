@@ -392,7 +392,8 @@ insert  into `qnut_listingtypes`(`id`,`code`,`name`,`description`,`createdby`,`c
 insert  into `tops_mailboxes`(`id`,`mailboxcode`,`address`,`displaytext`,`description`,`createdby`,`createdon`,`changedby`,`changedon`,`active`,`public`,`published`) values 
 (1,'admin','terry.sorelle@outlook.com','Site Administrator','Web site administrator','Terry','2024-12-29 14:42:35','Terry','2024-12-29 14:42:35',1,1,0),
 (2,'dev','twoquakedev@outlook.com','Development','Feature requests, questions and bug reports','Terry','2024-12-29 14:43:39','Terry','2025-01-01 13:35:35',1,0,0),
-(3,'contact-form','twoquakedev@outlook.com','Peanut Website','For contact form return address','Terry','2024-12-29 15:13:54','Terry','2024-12-29 15:13:54',1,0,0);
+(3,'contact-form','twoquakedev@outlook.com','Peanut Website','For contact form return address','Terry','2024-12-29 15:13:54','Terry','2024-12-29 15:13:54',1,0,0),
+(4,'support','twoquakedev@outlook.com','Website Support','Support address','Terry','2026-04-16 07:16:10','Terry', '2024-12-29 15:13:54',1,0,0);
 
 /*Data for the table `tops_processes` */
 

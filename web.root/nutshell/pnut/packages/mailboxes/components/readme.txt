@@ -1,1 +1,0 @@
-This directory reserved for knockoutjs components
