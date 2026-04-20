@@ -1,6 +1,6 @@
 /// <reference path="../../../../pnut/core/ViewModelBase.ts" />
 /// <reference path='../../../../typings/knockout/knockout.d.ts' />
-/// <reference path='../../../../pnut/core/peanut.d.ts' />
+/// <reference path='../../../../pnut/core/Peanut.d.ts' />
 /// <reference path='./DocumentSearchViewModel.ts' />
 
 namespace QnutDocuments {

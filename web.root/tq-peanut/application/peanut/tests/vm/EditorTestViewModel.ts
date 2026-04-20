@@ -1,7 +1,7 @@
 // required for all view models:
-/// <reference path='../../../../nutshell/pnut/core/ViewModelBase.ts' />
-/// <reference path='../../../../nutshell/typings/knockout/index.d.ts' />
-/// <reference path='../../../../nutshell/pnut/js/htmlEditContainer.ts' />
+/// <reference path='../../../../pnut/core/ViewModelBase.ts' />
+/// <reference path='../../../../typings/knockout/index.d.ts' />
+/// <reference path='../../../../pnut/js/htmlEditContainer.ts' />
 
 namespace Peanut {
 
