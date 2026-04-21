@@ -17,7 +17,7 @@ if (!empty($_SERVER['REQUEST_URI'])) {
     $reqExtension = strtolower( pathinfo($_SERVER['REQUEST_URI'], PATHINFO_EXTENSION));
     if (!(empty($reqExtension) || $reqExtension == 'js' || $reqExtension == 'php')) {
         // skip peant initializations for images etc.
-         // return;
+         return;
     }
 }
 
