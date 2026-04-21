@@ -1,10 +1,6 @@
 <?php
 
-namespace Nutshell\cms;
-
-use Peanut\users\AccountManager;
-use Tops\sys\TConfiguration;
-use Tops\sys\TUser;
+namespace Nutshell\cms\routing;
 
 class RouteFinder
 {

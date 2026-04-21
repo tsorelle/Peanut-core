@@ -61,20 +61,20 @@ class Bootstrap
         return $ns;
     }
 
-    public static function testAutoload(): void
+    public static function testAutoload($testPaths = []): void
     {
         // Check one class in each mapped path
-        $testPaths = [
+        $testPaths = array_merge($testPaths,  [
             'Tops\sys\TUser',
             'Peanut\sys\TVmContext',
-            // 'Application\fma\services\ChangePasswordCommand',
-            // 'Application\mailgun\WebhookHandler',
-            // 'Application\providers\TopsMailServiceProvider',
             'Peanut\PeanutPermissions\services\GetPermissionsCommand'
-            // 'Smalot\PdfParser\Parser'
-        ];
+        ]);
+        $testPaths = array_merge($testPaths,
+           include 'required-classes.php'
+        );
+
         $failed = [];
-        if (class_exists('Tops\TWebSite')) {
+        if (class_exists('Tops\sys\TWebSite')) {
             switch (TWebSite::GetCmsType()) {
                 case 'ConcreteCMS':
                     $testPaths[] = 'Tops\concrete5\Concrete5AccountManager';
@@ -88,7 +88,7 @@ class Bootstrap
             }
         }
         else {
-            $failed[] = 'Tops\TWebSite';
+            $failed[] = 'Tops\sys\TWebSite';
         }
         foreach ($testPaths as $path) {
             if (!class_exists($path)) {
@@ -102,18 +102,29 @@ class Bootstrap
     }
     public static function initialize($fileRoot=null) {
         if ($fileRoot === null) {
-        $fileRoot = self::getDocumentRoot();
+            $fileRoot = self::getDocumentRoot();
+        }
+        $configDir = self::normalizePath(__DIR__);
+        $applicationDir = self::normalizePath(__DIR__ . '/..');
+        // Define constants matching those in ConcreteCMS
+        if (!defined('DIR_BASE')) {
+            define('DIR_BASE', $fileRoot);
         }
         if (!str_ends_with($fileRoot,'/')) {
             $fileRoot .= '/';
         }
-        $configPath = self::getRelativePath(__DIR__);
-        $applicationRoot = self::getRelativePath($configPath . '..');
+        if (!defined('DIR_CONFIG_SITE')) {
+            define('DIR_CONFIG_SITE', $configDir);
+        }
+        if (!defined('DIR_CONFIG')) {
+            define('DIR_CONFIG', $configDir);
+        }
+        if (!defined('DIR_APPLICATION')) {
+            define('DIR_APPLICATION', $applicationDir);
+        }
 
-        $settings = self::getSettings();
-
+        $settings = self::getBootSettings();
         $autoloadFile = $fileRoot.$settings->composerPath.'/autoload.php';
-
         if (!file_exists($autoloadFile)) {
             exit ("No autoload file: $autoloadFile");
         }
@@ -122,11 +133,13 @@ class Bootstrap
         $topsRoot = $settings->topsLocation;
         $appSrcRoot = $settings->mvvmPath.'src';
         $loader = Autoloader::getInstance();
-        $test = $fileRoot.$appSrcRoot;
+        // $applicationRoot = realpath(__DIR__.'/..');
+        // $test = $fileRoot. $settings->applicationPath;
+
         $loader->addPsr4('Peanut\Application',$fileRoot.$appSrcRoot);
         $loader->addPsr4('Tops',$fileRoot.$topsRoot);
         $loader->addPsr4('Peanut',$fileRoot.$settings->peanutSrcLocation);
-        $loader->addPsr4('Application', $applicationRoot.'/src');
+        $loader->addPsr4('Application', $fileRoot. $settings->applicationPath.'/src');
 
         $packages = ViewModelManager::getPackageList();
         if (!empty($packages)) {
@@ -191,7 +204,10 @@ class Bootstrap
             unset($_COOKIE['peanutTranslations']);
         }
 
-        return $settings;
+        $response = new \stdClass();
+        $response->loader = $loader;
+        $response->settings = $settings;
+        return $response;
     }
 
     private static function getCssOverrides() {
@@ -267,7 +283,6 @@ class Bootstrap
         $root = str_replace('\\','/', $root);
         $applicationPath = self::getRelativePath(__DIR__ . '/..');
 
-
         $result = new \stdClass();
 
         $libDefaults = [];
@@ -288,7 +303,7 @@ class Bootstrap
         $mvvmPath = (empty($settings['mvvmPath']) ?  $applicationPath.'peanut' : $root.$settings['mvvmPath']);
         $corePath = $root . (empty($settings['corePath']) ? $peanutRoot . '/core' : $settings['corePath']);
         $packagePath = $root . (empty($settings['packagePath']) ? $peanutRoot . "/packages" : $settings['packagePath']);
-        $srcLocation = empty($ini['locations']['src']) ? "$modulePath/src" : $ini['locations']['src'];
+        // $srcLocation = empty($ini['locations']['src']) ? "$modulePath/src" : $ini['locations']['src'];
 
         if (isset($settings['optimize'])) {
             $optimize = $settings['optimize'] == 0 ? false : true;
@@ -342,12 +357,14 @@ class Bootstrap
         $result->serviceUrl = empty($settings['serviceUrl']) ? '/peanut/service/execute' : $settings['serviceUrl'];
         $result->vmNamespace = empty($settings['vmNamespace']) ? 'Peanut' : $settings['vmNamespace'];
         $result->uiExtension = empty($settings['uiExtension']) ? 'BootstrapFA' : $settings['uiExtension'];
-        $result->srcLocation = $srcLocation;
+
+/*        $result->srcLocation = $srcLocation;
         $result->topsLocation = empty($ini['locations']['tops']) ? "$srcLocation/tops" : $ini['locations']['tops'];
         $result->peanutSrcLocation = "$srcLocation/peanut";
         $result->autoloadItems = empty($ini['autoload']) ? array() : $ini['autoload'];
+*/
         $result->peanutUrl = empty($ini['pages']['peanutUrl']) ? 'peanut' : $ini['pages']['peanutUrl'];
-        $result->composerPath = empty($ini['locations']['composer']) ? '../vendor' : $ini['locations']['composer'];
+//        $result->composerPath = empty($ini['locations']['composer']) ? '../vendor' : $ini['locations']['composer'];
         $result->language = empty($settings['language']) ? 'en-us' : $settings['language '];
         if (empty($settings['loggingMode'])) {
             $result->loggingMode = $optimize ?
@@ -364,11 +381,14 @@ class Bootstrap
     {
         // assumes cwd in config
         // $configPath = self::getRelativePath(__DIR__);
-        $applicationPath = self::normalizePath(__DIR__ . '/..');
+        $documentRoot = self::getDocumentRoot();
+        $applicationDir = self::normalizePath(__DIR__ . '/..');
+        $applicationPath = substr($applicationDir,strlen($documentRoot));
         list($ini, $settings) = self::readPeanutSettings();
         $root = empty($settings['commonRootPath']) ? '/' : $settings['commonRootPath'];
         $root = str_replace('\\','/', $root);
         $result = new \stdClass();
+        $result->optimize = ($settings['optimize'] ?? 0) == 1 ? true : false;
         $modulePath = (empty($settings['modulePath']) ? 'tq-peanut' : $settings['modulePath']);
         $peanutRoot = (empty($settings['peanutRootPath']) ? "$modulePath/pnut" : $settings['peanutRootPath']);
         $peanutPath = $root . $peanutRoot;
@@ -376,17 +396,15 @@ class Bootstrap
         $corePath = $root . (empty($settings['corePath']) ? $peanutRoot . '/core' : $settings['corePath']);
         $packagePath = $root . (empty($settings['packagePath']) ? $peanutRoot . "/packages" : $settings['packagePath']);
         $srcLocation = empty($ini['locations']['src']) ? "$modulePath/src" : $ini['locations']['src'];
-        if (isset($settings['optimize'])) {
-            $optimize = $settings['optimize'] == 0 ? false : true;
-        } else {
-            $optimize = true;
-        }
-        $result->optimize = $optimize;
         $result->composerPath = empty($ini['locations']['composer']) ? '../vendor' : $ini['locations']['composer'];
         $result->applicationPath = $applicationPath;
         $result->topsLocation = empty($ini['locations']['tops']) ? "$srcLocation/tops" : $ini['locations']['tops'];
         $result->mvvmPath = $mvvmPath . '/';
         $result->peanutSrcLocation = "$srcLocation/peanut";
+        $result->autoloadItems = empty($ini['autoload']) ? array() : $ini['autoload'];
+        $result->srcLocation = $srcLocation;
+        $result->language = empty($settings['language']) ? 'en-us' : $settings['language '];
+
 
         return $result;
     }

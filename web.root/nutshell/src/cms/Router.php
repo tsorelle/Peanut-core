@@ -1,5 +1,6 @@
 <?php
 namespace Nutshell\cms;
+use Nutshell\cms\routing\RouteFinder;
 use Peanut\sys\ViewModelManager;
 use Peanut\users\AccountManager;
 use Tops\services\ServiceRequestHandler;
@@ -76,12 +77,13 @@ class Router
         $user = TUser::getCurrent();
         $theme = $routeData['theme'] ?? 'default';
         $routeData['theme'] = $theme;
-        $routeData['themePath'] = '/application/themes/' . $theme;
-        $extra = TPath::fromFileRoot('/application/themes/' . $theme.'/extra.css');
+        $routeData['themePath'] = APPLICATION_URL.'/themes/' . $theme;
+        $extra = TPath::fromFileRoot(APPLICATION_URL.'/themes/' . $theme.'/extra.css');
         if (file_exists($extra)) {
             $routeData['extraStyles'] = true;
         }
-        $routeData['themeIncludePath'] = DIR_BASE."/application/themes/$theme/inc";
+        // $routeData['themeIncludePath'] = DIR_BASE."/application/themes/$theme/inc";
+        $routeData['themeIncludePath'] = DIR_APPLICATION."/themes/$theme/inc";
         $user = TUser::getCurrent();
         $routeData['editorsignedin'] = $user->isAuthorized('editsongs');
         $routeData['signin'] = $user->isAuthenticated() ?

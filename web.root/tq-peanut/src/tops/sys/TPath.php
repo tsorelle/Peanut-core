@@ -30,7 +30,7 @@ class TPath
         return self::combine($root,$filename,$mode);
     }
 
-    public static function Initialize($projectRoot,$configLocation = 'application/config') {
+    public static function Initialize($projectRoot,$configLocation = 'tq-peanut/application/config') {
         self::$fileRoot = self::normalize($projectRoot).'/';
         self::$configPath = self::$fileRoot.self::fixSlashes($configLocation).'/';
     }
@@ -52,6 +52,10 @@ class TPath
         $fileRoot = self::getFileRoot();
         return realpath("$fileRoot..");
     }
+
+    /**
+     * @throws Exception
+     */
     private static function getPaths($offset = false)
     {
         if (empty(self::$fileRoot)) {
@@ -68,10 +72,23 @@ class TPath
             self::$fileRoot = self::normalize($path).'/';
         }
         if (empty(self::$configPath)) {
-            $configLocation = 'application/config';
-            self::$configPath = self::$fileRoot.self::fixSlashes($configLocation).'/';
+            if (defined('DIR_CONFIG_SITE')) {
+                $configDir = DIR_CONFIG_SITE;
+            }
+            else {
+                $configLocation = 'application/config';
+                $configDir = self::$fileRoot.self::fixSlashes($configLocation);
+            }
+            if (!is_dir($configDir)) {
+                throw new Exception("Config path not found: ".self::$configPath);
+            }
+            if (str_ends_with($configDir,'/')) {
+                self::$configPath = $configDir;
+            }
+            else {
+                self::$configPath = $configDir . '/';
+            }
         }
-
     }
 
     public static function clearCache() {
@@ -244,5 +261,19 @@ class TPath
             }
         }
         return self::normalize($path);
+    }
+
+    public static function fromDocumentRoot($path) {
+        $root = self::getDocumentRoot();
+        $path = self::normalize($path);
+        if (str_starts_with($path,$root.'/')) {
+            return $path;
+        }
+        return self::combine($root,$path,self::dont_normalize);
+    }
+
+    public static function filePathExists($path) {
+        $dir = self::fromDocumentRoot(dirname($path));
+        return is_dir(self::fromDocumentRoot($dir));
     }
 }

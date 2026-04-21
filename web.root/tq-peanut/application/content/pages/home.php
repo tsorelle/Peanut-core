@@ -2,7 +2,10 @@
 <div class="mb-5">
     <div class="row">
         <div class="col-md-3">
-            <img src="/application/assets/img/qnut.png" alt="logo" class="img-fluid">
+
+        <?php
+         printf('<img src="%s/assets/img/qnut.png" alt="logo" class="img-fluid">',APPLICATION_URL);
+        ?>
         </div>
         <div class="col-md-8">
             <h2>Welcome</h2>
@@ -19,8 +22,6 @@
                 <li>Committee pages</li>
                 <li>And many others...</li>
             </ul>
-
-
         </div>
     </div>
 </div>

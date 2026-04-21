@@ -15,6 +15,7 @@ use Tops\sys\TLanguage;
 use Tops\sys\TPath;
 use Tops\sys\TStrings;
 use Tops\sys\TUser;
+use Tops\sys\TWebSite;
 
 class ViewModelManager
 {
@@ -45,13 +46,18 @@ class ViewModelManager
 
     public static function getPackagePath() {
         if (!isset(self::$packagePath)) {
-            self::$packagePath = TConfiguration::getValue('packagePath','peanut');
+            $packagePath = TConfiguration::getValue('packagePath','peanut');
             if (empty(self::$packagePath)) {
-                $modulePath = TConfiguration::getValue('modulePath','peanut','modules');
+                $modulePath = TConfiguration::getValue('modulePath','peanut','tq-peanut');
                 $peanutRootPath = TConfiguration::getValue('peanutRootPath','peanut',
                     "$modulePath/pnut");
-                self::$packagePath = "$peanutRootPath/packages";
+                $packagePath = "$peanutRootPath/packages";
+
+                if (!TPath::filePathExists($packagePath)) {
+                    throw new \Exception("Package path '$packagePath' not found.");
+                }
             }
+            self::$packagePath = $packagePath;
         }
         return self::$packagePath;
     }

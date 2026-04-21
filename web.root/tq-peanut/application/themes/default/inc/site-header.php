@@ -3,7 +3,11 @@
          aria-label="Top navigation">
         <div class="container-fluid">
             <a class="navbar-brand" href="/">
-                <img style="height:3rem" class="img img-fluid" src="/application/assets/img/peanut-logo-6.jpg">
+                <?php
+                    printf('<img style="height:3rem" class="img img-fluid" src="%s/assets/img/peanut-logo-6.jpg">',
+                    APPLICATION_URL)
+                ?>
+
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#nutshell-top-navigation-menu"
