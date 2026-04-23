@@ -5,9 +5,9 @@
  * Date: 5/14/2017'
  * Time: 6:01 AM
  */
-$projectFileRoot =   str_replace('\\','/', realpath(__DIR__.'/../../web.root')).'/';
-$location = $projectFileRoot.'nutshell\src\tops\sys\TPath.php';
-include_once $location;
-\Tops\sys\TPath::Initialize($projectFileRoot,'application/config');
-include_once $projectFileRoot.'application/config/peanut-bootstrap.php';
-\Peanut\Bootstrap::initialize($projectFileRoot);
+
+define('BASE_DIR',str_replace('\\','/', realpath(__DIR__.'/../../web.root')));
+$definitionsFile = BASE_DIR.'/tq-peanut/bootstrap/definitions.php';
+include_once $definitionsFile;
+include_once DIR_CONFIG_SITE.'/peanut-bootstrap.php';
+\Peanut\Bootstrap::initialize();

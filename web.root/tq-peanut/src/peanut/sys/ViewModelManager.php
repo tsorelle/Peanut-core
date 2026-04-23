@@ -46,18 +46,14 @@ class ViewModelManager
 
     public static function getPackagePath() {
         if (!isset(self::$packagePath)) {
-            $packagePath = TConfiguration::getValue('packagePath','peanut');
-            if (empty(self::$packagePath)) {
-                $modulePath = TConfiguration::getValue('modulePath','peanut','tq-peanut');
-                $peanutRootPath = TConfiguration::getValue('peanutRootPath','peanut',
-                    "$modulePath/pnut");
-                $packagePath = "$peanutRootPath/packages";
-
-                if (!TPath::filePathExists($packagePath)) {
-                    throw new \Exception("Package path '$packagePath' not found.");
-                }
+            if (!defined('DIR_PEANUT_ROOT'))  {
+                throw new \Exception("DIR_PEANUT_ROOT is definition is required in this version of Peanut.");
             }
-            self::$packagePath = $packagePath;
+
+            self::$packagePath = DIR_PEANUT_ROOT.'/packages';
+            if (!TPath::filePathExists(self::$packagePath)) {
+                throw new \Exception('Package path not found: '.self::$packagePath);
+            }
         }
         return self::$packagePath;
     }
@@ -65,11 +61,13 @@ class ViewModelManager
     public static function getVmUrl($vmName,$package='') {
 
         if (empty($package)) {
-            $iniPath = TPath::getConfigPath().'viewmodels.ini';
+            // $iniPath = TPath::getConfigPath().'viewmodels.ini';
+            $iniPath = DIR_CONFIG_SITE.'/viewmodels.ini';
         }
         else {
-            $iniPath = TPath::getFileRoot();
-            $iniPath .= self::getPackagePath()."/$package/config/viewmodels.ini";
+/*            $iniPath = TPath::getFileRoot();
+            $iniPath .= self::getPackagePath()."/$package/config/viewmodels.ini";*/
+            $iniPath = DIR_PEANUT_ROOT.'/pnut/packages/'.$package.'/config/viewmodels.ini';
         }
         $settings = @parse_ini_file($iniPath, true);
         if (!empty($settings)) {

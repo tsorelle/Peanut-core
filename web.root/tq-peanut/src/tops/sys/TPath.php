@@ -30,9 +30,9 @@ class TPath
         return self::combine($root,$filename,$mode);
     }
 
-    public static function Initialize($projectRoot,$configLocation = 'tq-peanut/application/config') {
-        self::$fileRoot = self::normalize($projectRoot).'/';
-        self::$configPath = self::$fileRoot.self::fixSlashes($configLocation).'/';
+    public static function Initialize($projectRoot=null,$configLocation = null) {
+        self::$fileRoot = ($projectRoot ? self::normalize($projectRoot) : DIR_BASE).'/';
+        self::$configPath = ($configLocation ? self::$fileRoot.self::fixSlashes($configLocation) : DIR_CONFIG_SITE).'/';
     }
 
     /**

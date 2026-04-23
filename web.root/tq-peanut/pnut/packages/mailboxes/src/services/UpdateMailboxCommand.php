@@ -8,7 +8,6 @@
 
 namespace Peanut\Mailboxes\services;
 
-
 use Tops\mail\TMailbox;
 use Tops\mail\TPostOffice;
 use Tops\services\TServiceCommand;

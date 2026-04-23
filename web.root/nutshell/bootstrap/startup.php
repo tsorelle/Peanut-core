@@ -25,9 +25,9 @@ if (!empty($_SERVER['REQUEST_URI'])) {
 // If peanut istallation is elsewhere, change this require_once statement.
 require_once  __DIR__ . '/../../tq-peanut/bootstrap/definitions.php';
 require_once DIR_APPLICATION . '/config/peanut-bootstrap.php';
-$response  = \Peanut\Bootstrap::initialize();
+$bootResponse  = \Peanut\Bootstrap::initialize();
 // map Nutshell php soruces
-$response->loader->addPsr4('Nutshell\\', __DIR__.'/../src');
+$bootResponse->loader->addPsr4('Nutshell\\', __DIR__.'/../src');
 if ($response->settings->optimize ?? false) {
     \Peanut\Bootstrap::testAutoload([
         'Nutshell\cms\Router',

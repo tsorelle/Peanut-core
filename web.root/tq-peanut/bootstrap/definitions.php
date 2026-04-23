@@ -1,24 +1,55 @@
 <?php
-
+/**
+ * These definations are calculated from directory structure and conventions.
+ * They replace previous configuration settings.
+ * See: application/config/peanut-bootstrap.php
+ *
+ * Conventions:
+ *  DIR_ prefix indicates an absolute directiry path
+ *  URL_ prefix indicates an absolute URL path, beginning with a slash
+ */
 use Peanut\bootstrap\PathFinder;
 
+/**
+ * PHP version check
+ */
 defined('PEANUT_PHP_VERSION') or define('PEANUT_PHP_VERSION', 80200);
-if (PEANUT_PHP_VERSION < 80200) {
+
+if (PHP_VERSION_ID < PEANUT_PHP_VERSION) {
     exit('PHP version 8.2 or higher is required.');
 }
-
+/*
+ * Lightweight version of Tops/sys/TPath
+ */
 include_once 'PathFinder.php';
 
+/**
+ * Document root can be pre-defined for testing purposes.
+ */
 if (!defined('DIR_BASE')) {
     $path = PathFinder::getDocumentRoot();
     define('DIR_BASE', $path);
 }
 
-if (!defined('PEANUT_ROOT')) {
+/**
+ * Absolute path to peanut installation
+ */
+if (!defined('DIR_PEANUT_ROOT')) {
     $path = PathFinder::normalize(__DIR__ . '/..');
-    define('PEANUT_ROOT', $path);
+    define('DIR_PEANUT_ROOT', $path);
 }
 
+/**
+ * Root URL to peanut installation
+ */
+if (!defined('URL_PEANUT_ROOT')) {
+    $path = substr(DIR_PEANUT_ROOT, strlen(DIR_BASE));
+    define('URL_PEANUT_ROOT', $path);
+}
+
+/**
+ * Absolute path to application
+ */
 if (!defined('DIR_APPLICATION')) {
     $path = realpath(__DIR__."/../application");
     if ($path) {
@@ -33,15 +64,18 @@ if (!defined('DIR_APPLICATION')) {
 if (!defined('DIR_APPLICATION')) {
     exit('Application directory not found.');
 }
+
+if (!defined('URL_APPLICATION')) {
+    $path = substr(DIR_APPLICATION, strlen(DIR_BASE));
+    define('URL_APPLICATION', $path);
+}
+
 if (!defined('DIR_CONFIG_SITE')) {
     define('DIR_CONFIG_SITE', DIR_APPLICATION . '/config');
 }
 
-defined('PEANUT_SRC') or define('PEANUT_SRC', PEANUT_ROOT . '/src');
-
-if (!defined('APPLICATION_URL')) {
-    $path = PathFinder::ToUrl(DIR_APPLICATION);
-    define('APPLICATION_URL', $path);
+if (!defined('DIR_CONFIG')) {
+    define('DIR_CONFIG', DIR_CONFIG_SITE);
 }
 
-return true;
+unset($path);
