@@ -62,7 +62,9 @@ class BootstrapTest extends TestCase
             // Peanut testing
             'PeanutTest\services\helloWorldCommand',
             // test scripts
-            'PeanutTest\scripts\AddaccountTest'
+            'PeanutTest\scripts\AddaccountTest',
+            // custom autoloads from settings.ini
+            'TwoQuakers\Songs\SongBook'
         ];
         $failed = [];
         foreach ($testClasses as $className) {
