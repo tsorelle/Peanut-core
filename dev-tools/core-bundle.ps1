@@ -2,7 +2,7 @@
 # Exec from project root: .\dev-tools\core-bundle.ps1
 # Set project root path here:
 $rootpath = "D:\dev\twoquakers\peanut2\peanut-core"
-$corePath = "$rootpath\web.root\nutshell"
+$corePath = "$rootpath\web.root\tq-peanut"
 Set-Location -Path "$corePath\pnut\core"
 uglifyjs PeanutLoader.js `
 -o peanut-loader.min.js  -c -m

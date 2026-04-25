@@ -77,12 +77,12 @@ class Router
         $user = TUser::getCurrent();
         $theme = $routeData['theme'] ?? 'default';
         $routeData['theme'] = $theme;
-        $routeData['themePath'] = APPLICATION_URL.'/themes/' . $theme;
-        $extra = TPath::fromFileRoot(APPLICATION_URL.'/themes/' . $theme.'/extra.css');
+        $routeData['themePath'] = URL_APPLICATION.'/themes/' . $theme;
+        $extra = TPath::fromFileRoot(URL_APPLICATION.'/themes/' . $theme.'/extra.css');
         if (file_exists($extra)) {
             $routeData['extraStyles'] = true;
         }
-        // $routeData['themeIncludePath'] = DIR_BASE."/application/themes/$theme/inc";
+        // $routeData['themeIncludePath'] = DIR_ROOT."/application/themes/$theme/inc";
         $routeData['themeIncludePath'] = DIR_APPLICATION."/themes/$theme/inc";
         $user = TUser::getCurrent();
         $routeData['editorsignedin'] = $user->isAuthorized('editsongs');
@@ -130,6 +130,12 @@ class Router
             $view = DIR_APPLICATION . '/content/pages/' . $routeData['view'] . '.php';
         } else if (isset($routeData['mvvm'])) {
             $viewModelKey = $routeData['mvvm'];
+            if (TConfiguration::getBoolean('optimize','peanut',false)) {
+                $routeData['loaderScript'] = 'peanut-loader.min.js';
+            }
+            else {
+                $routeData['loaderScript'] = 'PeanutLoader.js';
+            }
             $vmInfo = ViewModelManager::getViewModelSettings($viewModelKey);
 
             if (empty($vmInfo)) {
@@ -139,7 +145,7 @@ class Router
                 if ($viewResult == 'content') {
                     $errorMessage = 'Embedded views not supported in Nutshell';
                 } else {
-                    $view = DIR_BASE . '/' . $viewResult;
+                    $view = DIR_ROOT . '/' . $viewResult;
                     if (!file_exists($view)) {
                         $errorMessage = "View file not found: $viewResult";
                     }

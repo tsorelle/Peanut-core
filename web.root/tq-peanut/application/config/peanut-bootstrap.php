@@ -145,8 +145,8 @@ class Bootstrap
             $fileRoot .= '/';
         }
 
-        $composerPath =  TConfiguration::getValue('composerPath','peanut','../vendor');
-        $vendorAutoloadFile = DIR_BASE.'/'.$composerPath.'/autoload.php';
+        $composerPath =  TConfiguration::getValue('composer','locations','../vendor');
+        $vendorAutoloadFile = DIR_ROOT.'/'.$composerPath.'/autoload.php';
         if (!file_exists($vendorAutoloadFile)) {
             exit ("No autoload file: $vendorAutoloadFile");
         }
@@ -197,7 +197,7 @@ class Bootstrap
         $response = new \stdClass();
         $response->optimize = (
             TConfiguration::getValue('optimize','peanut',0)) == 1;
-        $response->loaders = $loader;
+        $response->loader = $loader;
         return $response;
     }
 
@@ -295,11 +295,6 @@ class Bootstrap
             $optimize = true;
         }
 
-        /* not supported in this version
-            if ($optimize) {
-                    $result->dependencies = $peanutPath . '/dist/peanut.min.js';
-        }*/
-
         //  knockout always first
         // $result->dependencies = ["$corePath/lib/knockout/knockout-3.5.1.js"];
         $result->dependencies = ["https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.1/knockout-latest.min.js"];
@@ -333,8 +328,8 @@ class Bootstrap
         $result->commonRootPath = '/';
         $result->peanutRootPath = $peanutRoot . '/';
         $result->applicationPath = URL_APPLICATION.'/';
-        $result->libraryPath = empty($settings['libraryPath']) ? $result->applicationPath . "assets/js/libraries/" : $settings['libraryPath'] . '/';
-        $result->stylesPath = empty($settings['stylesPath']) ? $result->applicationPath . "assets/styles/" : $settings['stylesPath'] . '/';
+        $result->libraryPath = $result->applicationPath . "assets/js/libraries/";
+        $result->stylesPath = $result->applicationPath . "assets/styles/";
         $result->corePath = $corePath . '/';
         $result->packagePath = $packagePath . '/';
         $result->mvvmPath = $mvvmPath . '/';
@@ -342,9 +337,6 @@ class Bootstrap
         $result->serviceUrl = empty($settings['serviceUrl']) ? '/peanut/service/execute' : $settings['serviceUrl'];
         $result->vmNamespace = empty($settings['vmNamespace']) ? 'Peanut' : $settings['vmNamespace'];
         $result->uiExtension = empty($settings['uiExtension']) ? 'BootstrapFA' : $settings['uiExtension'];
-
-        // not used?
-        // $result->peanutUrl = empty($ini['pages']['peanutUrl']) ? 'peanut' : $ini['pages']['peanutUrl'];
 
         $result->language = empty($settings['language']) ? 'en-us' : $settings['language '];
         if (empty($settings['loggingMode'])) {
@@ -356,7 +348,6 @@ class Bootstrap
         }
         $result->optimize = $optimize;
         $result->cssOverrides = self::getCssOverrides();
-        $result->preLoad = []; // feature is not implemented yet, may remove later.
         return $result;
     }
 }

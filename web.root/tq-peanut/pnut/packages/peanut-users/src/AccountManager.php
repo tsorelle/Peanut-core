@@ -15,6 +15,7 @@ use Tops\sys\IUserAccountManager;
 use Tops\sys\TAddUserAccountResponse;
 use Tops\sys\TConfiguration;
 use Tops\sys\TObjectContainer;
+use Tops\sys\TSession;
 
 //todo: test profile and contact related functions
 
@@ -363,6 +364,11 @@ class AccountManager implements IUserAccountManager
     }
 
     private function getCurrentSessionId() {
+        $id = session_id();
+        $status = session_status();
+        if ($status == PHP_SESSION_NONE) {
+            session_start();
+        }
         return (session_status() == PHP_SESSION_ACTIVE) ? session_id() : 0;
     }
 

@@ -31,8 +31,8 @@ class TPath
     }
 
     public static function Initialize($projectRoot=null,$configLocation = null) {
-        self::$fileRoot = ($projectRoot ? self::normalize($projectRoot) : DIR_BASE).'/';
-        self::$configPath = ($configLocation ? self::$fileRoot.self::fixSlashes($configLocation) : DIR_CONFIG_SITE).'/';
+        self::$fileRoot = ($projectRoot ? self::normalize($projectRoot) : DIR_ROOT).'/';
+        self::$configPath = ($configLocation ? self::$fileRoot.self::fixSlashes($configLocation) : DIR_CONFIGURATION).'/';
     }
 
     /**
@@ -40,7 +40,6 @@ class TPath
      */
     public static function getFileRoot($offset = false)
     {
-
         if (self::$fileRoot === null) {
             self::getPaths($offset);
         }
@@ -53,27 +52,43 @@ class TPath
         return realpath("$fileRoot..");
     }
 
+    public static function stripBaseDir($path,$offset= 0,$baseDir = DIR_ROOT) {
+        $path = self::stripDriveLetter($path);
+        $baseDir = strtolower(self::stripDriveLetter($baseDir));
+        $baseLen = strlen($baseDir);
+        $target = strtolower($path);
+        if (substr($target,0,$baseLen) === $baseDir) {
+            return substr($path,$baseLen+$offset);
+        }
+        return $path;
+    }
+
     /**
      * @throws Exception
      */
     private static function getPaths($offset = false)
     {
         if (empty(self::$fileRoot)) {
-            if ($offset === false) {
-                $path = self::getDocumentRoot();
-                    // $_SERVER['DOCUMENT_ROOT'];
+            if (defined('DIR_ROOT')) {
+                self::$fileRoot = DIR_ROOT.'/';
             }
             else {
-                $path = __DIR__;
-                for($i = 0; $i < $offset; $i++) {
-                    $path .= '\..';
+                if ($offset === false) {
+                    $path = self::getDocumentRoot();
+                    // $_SERVER['DOCUMENT_ROOT'];
                 }
+                else {
+                    $path = __DIR__;
+                    for($i = 0; $i < $offset; $i++) {
+                        $path .= '\..';
+                    }
+                }
+                self::$fileRoot = self::normalize($path).'/';
             }
-            self::$fileRoot = self::normalize($path).'/';
         }
         if (empty(self::$configPath)) {
-            if (defined('DIR_CONFIG_SITE')) {
-                $configDir = DIR_CONFIG_SITE;
+            if (defined('DIR_CONFIGURATION')) {
+                $configDir = DIR_CONFIGURATION;
             }
             else {
                 $configLocation = 'application/config';
@@ -104,7 +119,6 @@ class TPath
             return  strlen($path) < 3 ? '' : substr($path,2);
         }
         return $path;
-
     }
     public static function fixSlashes($path) {
         $path = str_replace('\\','/',$path);
@@ -211,6 +225,15 @@ class TPath
      */
     public static function normalizeFileName($fileName)
     {
+        $fileName =  strtolower(trim($fileName));
+        $fileName = str_replace([' ', '_'], '-', $fileName);
+
+        return preg_replace('/-+/', '-', $fileName);
+        // return $fileName;
+    }
+
+    public static function oldNormalizeFileName($fileName)
+    {
         $fileName = str_replace([' ', '_'], '-', strtolower(trim($fileName)));
         while (true) {
             $result = str_replace('--', '-', strtolower($fileName));
@@ -250,12 +273,15 @@ class TPath
      */
     public static function getDocumentRoot() : string
     {
+        if (defined('DIR_ROOT')) {
+            return DIR_ROOT;
+        }
         $path = $_SERVER['DOCUMENT_ROOT'] ?? null;
         if (empty($path)) {
             $path = __DIR__;
             while($path !== false) {
                 if (file_exists("$path/index.php")) {
-                    return $path;
+                    break;
                 }
                 $path = realpath($path.'/..');
             }

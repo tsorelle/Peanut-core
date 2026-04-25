@@ -19,7 +19,7 @@ class SiteMap
     {
         $this->currentUri = $currentUri;
         if (!$xmlFilePath) {
-            $xmlFilePath = DIR_CONFIG_SITE.'/sitemap.xml';
+            $xmlFilePath = DIR_CONFIGURATION.'/sitemap.xml';
         }
         $this->xmldata = simplexml_load_file($xmlFilePath);
         if ($this->xmldata === false) {

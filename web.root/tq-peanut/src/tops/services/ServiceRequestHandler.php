@@ -51,7 +51,7 @@ class ServiceRequestHandler
     }
 
     public function getSettings() : void{
-        include(DIR_CONFIG_SITE.'/settings.php');
+        include(DIR_CONFIGURATION.'/settings.php');
     }
 
     public function buildPage(IHttpRequest $request = null) : void  {

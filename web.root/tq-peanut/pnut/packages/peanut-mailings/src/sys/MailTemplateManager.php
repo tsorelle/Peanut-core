@@ -9,8 +9,6 @@
 namespace Peanut\PeanutMailings\sys;
 
 
-use Peanut\sys\PeanutSettings;
-use Tops\sys\TL;
 use Tops\sys\TLanguage;
 use Tops\sys\TPath;
 use Tops\sys\TWebSite;
@@ -82,7 +80,8 @@ class MailTemplateManager
     public function getTemplateFileList()
     {
         if (!isset($this->templateList)) {
-            $global = PeanutSettings::FromPeanutRoot(self::pnutTemplateLocation, TPath::normalize_no_exception);
+            // $global = PeanutSettings::FromPeanutRoot(self::pnutTemplateLocation, TPath::normalize_no_exception);
+            $global = DIR_PEANUT_ROOT.'/'.self::pnutTemplateLocation;
             $local = TPath::fromFileRoot(self::appTemplateLocation);
             $templates = $this->scanTemplateDirectory($local);
             $templates =  $this->scanTemplateDirectory($global, $templates);
@@ -97,7 +96,8 @@ class MailTemplateManager
         $root = TPath::fromFileRoot(self::appTemplateLocation, TPath::normalize_no_exception);
         $templatePath = TLanguage::FindLangugeFile($root,$templateFileName,TLanguage::useSiteLanguage);
         if (empty($templatePath)) {
-            $root = PeanutSettings::FromPeanutRoot(self::pnutTemplateLocation, TPath::normalize_no_exception);
+            // $root = PeanutSettings::FromPeanutRoot(self::pnutTemplateLocation, TPath::normalize_no_exception);
+            $root = DIR_PEANUT_ROOT.'/'.self::pnutTemplateLocation;
             $templatePath = TLanguage::FindLangugeFile($root,$templateFileName,TLanguage::useSiteLanguage);
             if (empty($templatePath)) {
                 return false;

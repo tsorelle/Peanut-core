@@ -20,6 +20,7 @@
     /** @var string $version */
     /** @var string $menutype */
     /** @var string $themeIncludePath */
+    /** @var string $loaderScript */
     /** @var int $siteheader */
     /** @var int $sitefooter */
     /** @var int $pageheader */
@@ -38,6 +39,9 @@ if ($embed===1) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?php
+        printf('<link rel="icon" type="image/x-icon" href="%s/assets/img/favicon.ico">',URL_APPLICATION)
+    ?>
     <link rel="icon" type="image/x-icon" href="/application/assets/img/favicon.ico">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <?php
@@ -152,11 +156,12 @@ if ($embed===1) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 
     <!-- for Peanut support -->
-    <?php if (isset($mvvm)) { ?>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/headjs/1.0.3/head.load.js" integrity="sha512-XDpsu7o5F1+SqCmdXgSfbx7yPA99X0IQs8RsbiQSrJ4kxOZSlbJtgCJjmVbLiAPKOhnffctq61O/VMlD88GcxA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script src="/nutshell/pnut/core/peanut-loader.min.js"></script >
-    <?php }
+    <?php if (isset($mvvm)) {
+        print('<script src="https://cdnjs.cloudflare.com/ajax/libs/headjs/1.0.3/head.load.js" integrity="sha512-XDpsu7o5F1+SqCmdXgSfbx7yPA99X0IQs8RsbiQSrJ4kxOZSlbJtgCJjmVbLiAPKOhnffctq61O/VMlD88GcxA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>'."\n");
+        $test = sprintf('<script src="%s/pnut/core/%s"></script>', URL_PEANUT_ROOT, $loaderScript);
+        printf('<script src="%s/pnut/core/%s"></script>'."\n", URL_PEANUT_ROOT, $loaderScript);
         \Peanut\sys\ViewModelManager::RenderStartScript();
+    }
     ?>
 
 </body>

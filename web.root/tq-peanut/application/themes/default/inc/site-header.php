@@ -5,7 +5,7 @@
             <a class="navbar-brand" href="/">
                 <?php
                     printf('<img style="height:3rem" class="img img-fluid" src="%s/assets/img/peanut-logo-6.jpg">',
-                    APPLICATION_URL)
+                            URL_APPLICATION)
                 ?>
 
             </a>

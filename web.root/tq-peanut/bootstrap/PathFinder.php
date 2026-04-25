@@ -45,10 +45,10 @@ class PathFinder
      * @throws \Exception
      */
     public static function ToUrl($path) {
-        if (!defined('DIR_BASE')) {
-            throw new \Exception('DIR_BASE not defined');
+        if (!defined('DIR_ROOT')) {
+            throw new \Exception('DIR_ROOT not defined');
         }
-        $root = DIR_BASE;
+        $root = DIR_ROOT;
         if (str_starts_with($path,$root.'/')) {
             $path = substr($path,strlen($root));
         }
@@ -70,15 +70,15 @@ class PathFinder
      */
     public static function getDocumentRoot(): string
     {
-        if (defined('DIR_BASE')) {
-            $baseDir = self::normalize(DIR_BASE);
+        if (defined('DIR_ROOT')) {
+            $baseDir = self::normalize(DIR_ROOT);
         } else {
             $path = $_SERVER['DOCUMENT_ROOT'] ?? null;
             if (empty($path)) {
                 $path = __DIR__;
                 while ($path !== false) {
                     if (file_exists("$path/index.php")) {
-                        return $path;
+                        break; // return $path;
                     }
                     $path = realpath($path . '/..');
                 }

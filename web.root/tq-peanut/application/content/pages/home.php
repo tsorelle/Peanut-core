@@ -4,7 +4,7 @@
         <div class="col-md-3">
 
         <?php
-         printf('<img src="%s/assets/img/qnut.png" alt="logo" class="img-fluid">',APPLICATION_URL);
+         printf('<img src="%s/assets/img/qnut.png" alt="logo" class="img-fluid">',URL_APPLICATION);
         ?>
         </div>
         <div class="col-md-8">

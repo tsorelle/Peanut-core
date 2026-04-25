@@ -9,7 +9,6 @@
 namespace Peanut\QnutDocuments;
 
 
-use Peanut\sys\PeanutSettings;
 use Smalot\PdfParser\Document;
 use Smalot\PdfParser\Parser;
 use Tops\sys\TStringTokenizer;

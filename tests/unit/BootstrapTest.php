@@ -6,7 +6,7 @@ use Peanut\Bootstrap;
 use PHPUnit\Framework\TestCase;
 
 
-include_once( DIR_CONFIG_SITE.'/peanut-bootstrap.php');
+include_once( DIR_CONFIGURATION.'/peanut-bootstrap.php');
 class BootstrapTest extends TestCase
 {
     // note: remove \Peanut\Bootstrap::initialize(); from inittesting.php
@@ -59,10 +59,11 @@ class BootstrapTest extends TestCase
             'Peanut\Application\bookstore\BookstoreManager',
             // Vendor
             'Mailgun\Mailgun',
-            // Peanut testing
+            // Peanut testing, as mapped in settings.ini [autoload]
             'PeanutTest\services\helloWorldCommand',
             // test scripts
             'PeanutTest\scripts\AddaccountTest',
+            'PeanutTest\scripts\UserTest',
             // custom autoloads from settings.ini
             'TwoQuakers\Songs\SongBook'
         ];

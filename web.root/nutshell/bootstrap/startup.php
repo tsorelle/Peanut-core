@@ -39,7 +39,7 @@ if ($response->settings->optimize ?? false) {
 // execute request
 if (isset($_SERVER['REQUEST_URI']) && !empty($_SERVER['REQUEST_URI'])) {
     $uri = preg_replace("/(^\/)|(\/$)/","",$_SERVER['REQUEST_URI']);
-   //  require DIR_BASE.'/nutshell/src/cms/routing/RouteFinder.php';
+   //  require DIR_ROOT.'/nutshell/src/cms/routing/RouteFinder.php';
     $matched = RouteFinder::matchWithRedirect($uri);
     if ($matched) { // \Nutshell\cms\RouteFinder::match($uri)) {
         unset($uri);
@@ -51,7 +51,7 @@ if (isset($_SERVER['REQUEST_URI']) && !empty($_SERVER['REQUEST_URI'])) {
             exit;
         }
     }
-    if (!file_exists(DIR_BASE.'/'.$uri)) {
+    if (!file_exists(DIR_ROOT.'/'.$uri)) {
         $redirect = false;
         $configFile = __DIR__ . '/../application/config/settings.ini';
         if (file_exists($configFile)) {

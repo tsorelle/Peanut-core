@@ -26,9 +26,9 @@ include_once 'PathFinder.php';
 /**
  * Document root can be pre-defined for testing purposes.
  */
-if (!defined('DIR_BASE')) {
+if (!defined('DIR_ROOT')) {
     $path = PathFinder::getDocumentRoot();
-    define('DIR_BASE', $path);
+    define('DIR_ROOT', $path);
 }
 
 /**
@@ -43,7 +43,7 @@ if (!defined('DIR_PEANUT_ROOT')) {
  * Root URL to peanut installation
  */
 if (!defined('URL_PEANUT_ROOT')) {
-    $path = substr(DIR_PEANUT_ROOT, strlen(DIR_BASE));
+    $path = substr(DIR_PEANUT_ROOT, strlen(DIR_ROOT));
     define('URL_PEANUT_ROOT', $path);
 }
 
@@ -56,8 +56,8 @@ if (!defined('DIR_APPLICATION')) {
         $path = PathFinder::normalize($path);
         define('DIR_APPLICATION', $path);
     }
-    else if  (is_dir(DIR_BASE . '/application')){
-        $path = PathFinder::normalize(DIR_BASE . '/application');
+    else if  (is_dir(DIR_ROOT . '/application')){
+        $path = PathFinder::normalize(DIR_ROOT . '/application');
         define('DIR_APPLICATION', $path);
     }
 }
@@ -66,16 +66,12 @@ if (!defined('DIR_APPLICATION')) {
 }
 
 if (!defined('URL_APPLICATION')) {
-    $path = substr(DIR_APPLICATION, strlen(DIR_BASE));
+    $path = substr(DIR_APPLICATION, strlen(DIR_ROOT));
     define('URL_APPLICATION', $path);
 }
 
-if (!defined('DIR_CONFIG_SITE')) {
-    define('DIR_CONFIG_SITE', DIR_APPLICATION . '/config');
-}
-
-if (!defined('DIR_CONFIG')) {
-    define('DIR_CONFIG', DIR_CONFIG_SITE);
+if (!defined('DIR_CONFIGURATION')) {
+    define('DIR_CONFIGURATION', DIR_APPLICATION . '/config');
 }
 
 unset($path);

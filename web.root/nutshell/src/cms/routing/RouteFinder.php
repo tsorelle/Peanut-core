@@ -24,7 +24,7 @@ class RouteFinder
             if ($ext) {
                 return false;
             }
-            $settings = parse_ini_file(DIR_CONFIG_SITE . '/settings.ini', true);
+            $settings = parse_ini_file(DIR_CONFIGURATION . '/settings.ini', true);
             if (isset($settings['locations']['defaultredirect']) ) {
                 $sub = $settings['locations']['defaultredirect'];
                 if ($sub) {
@@ -42,7 +42,7 @@ class RouteFinder
     public static function match($uri)
     {
         $uri = self::normalizeUri($uri);
-        self::$routes = parse_ini_file(DIR_CONFIG_SITE . '/routing.ini', true);
+        self::$routes = parse_ini_file(DIR_CONFIGURATION . '/routing.ini', true);
         foreach (self::$routes as $matchPath => $values) {
             if (strpos($uri, $matchPath) === 0) {
                 if ($uri != $matchPath && (!array_key_exists('args',$values))) {

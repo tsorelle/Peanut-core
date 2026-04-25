@@ -16,8 +16,8 @@ class PeanutConstTest extends TestCase
         $docRoot = str_replace("\\","/",$docRoot);
 
 
-        $this->assertTrue(defined('DIR_BASE'));
-        $this->assertEquals($docRoot,DIR_BASE);
+        $this->assertTrue(defined('DIR_ROOT'));
+        $this->assertEquals($docRoot,DIR_ROOT);
 
         $this->assertTrue(defined('DIR_PEANUT_ROOT'));
         $expected = "$docRoot/$expectedPeanutRoot";
@@ -34,12 +34,12 @@ class PeanutConstTest extends TestCase
         $this->assertTrue(defined('URL_APPLICATION'));
         $expected = "/$expectedAppRoot";
         $this->assertEquals($expected,URL_APPLICATION);
-        $this->assertTrue(defined('DIR_CONFIG_SITE'));
+        $this->assertTrue(defined('DIR_CONFIGURATION'));
         $expected = "$docRoot/$expectedAppRoot/config";
-        $this->assertEquals($expected,DIR_CONFIG_SITE);
-        $this->assertTrue(defined('DIR_CONFIG'));
+        $this->assertEquals($expected,DIR_CONFIGURATION);
+        $this->assertTrue(defined('DIR_CONFIGURATION'));
         $expected = "$docRoot/$expectedAppRoot/config";
-        $this->assertEquals($expected,DIR_CONFIG);
+        $this->assertEquals($expected,DIR_CONFIGURATION);
     }
 
 

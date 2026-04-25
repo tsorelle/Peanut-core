@@ -170,7 +170,7 @@ namespace Peanut {
                         Peanut.Config.values.corePath = data.corePath;
                         Peanut.Config.values.serviceUrl = data.serviceUrl;
                         Peanut.Config.values.dependencies = data.dependencies;
-                        Peanut.Config.values.preload = data.preload;
+                        // Peanut.Config.values.preload = data.preload;
                         Peanut.Config.values.vmNamespace = data.vmNamespace;
                         Peanut.Config.values.uiExtension = data.uiExtension;
                         Peanut.Config.values.libraries = data.libraries;
