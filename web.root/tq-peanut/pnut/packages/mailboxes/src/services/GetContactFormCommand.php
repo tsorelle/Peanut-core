@@ -13,7 +13,7 @@ use Peanut\sys\TVmContext;
 use Tops\mail\TPostOffice;
 use Tops\services\TServiceCommand;
 use Tops\sys\TLanguage;
-use Tops\sys\TRecaptcha;
+// use Tops\sys\TRecaptcha;
 use Tops\sys\TUser;
 
 /**
@@ -64,13 +64,14 @@ class GetContactFormCommand extends TServiceCommand
             return;
         }
         if ($mailboxCode == 'inqueries') {
-            // oops correct spelline
+            // oops! correct spelline
             $mailboxCode = 'inquiries';
         }
         $response->grsitekey ='none';
-        if (!TUser::getCurrent()->isAuthenticated()) {
+        /*if (!TUser::getCurrent()->isAuthenticated()) {
+
             $response->grsitekey = TRecaptcha::GetSiteKey();
-        }
+        }*/
 
         $manager = TPostOffice::GetMailboxManager();
 
@@ -81,6 +82,11 @@ class GetContactFormCommand extends TServiceCommand
         }
         else {
             $mailboxes = $manager->getMailboxes('published');
+        }
+
+        if (empty($mailboxes)) {
+            $this->addErrorMessage('No mailboxes found.');
+            return;
         }
 
         if ($mailboxCode == 'all') {

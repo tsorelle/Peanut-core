@@ -9,6 +9,7 @@ namespace Peanut {
         private readonly reloadThresholdMs: number;
         private startTime: number | null = null;
         private readonly honeypotId: string;
+        private enabled = true;
 
         constructor(
             thresholdSeconds: number = 2,
@@ -18,6 +19,9 @@ namespace Peanut {
             this.honeypotId = honeypotId;
         }
 
+        public setEnabled(enabled: boolean) {
+            this.enabled = enabled;
+        }
         /**
          * Detects rapid reloads using localStorage.
          * Returns true if the previous load occurred too recently.
@@ -38,7 +42,8 @@ namespace Peanut {
         /**
          * Marks the beginning of user interaction time.
          */
-        public start(): void {
+        public start(enabled = true): void {
+            this.enabled = enabled;
             this.startTime = Date.now();
         }
 
@@ -62,7 +67,7 @@ namespace Peanut {
         /**
          * Returns true if the honeypot field is empty.
          */
-        private honeypotClear(): boolean {
+        private isHoneypotClear(): boolean {
             const el = document.getElementById(this.honeypotId) as HTMLInputElement | null;
             if (!el) {
                 return true; // If the field is missing, fail open rather than break the form.
@@ -75,7 +80,10 @@ namespace Peanut {
          * - If the user is too fast → suspicious
          * - If honeypot is filled → suspicious
          */
-        public likelyHuman(minHumanMs: number = 2000): boolean {
+        public likelyHuman(minHumanMs: number = 7000): boolean {
+            if (!this.enabled) {
+                return true;
+            }
             const duration = this.getDuration();
 
             // Too fast → likely bot
@@ -84,11 +92,9 @@ namespace Peanut {
             }
 
             // Honeypot filled → definitely bot
-            if (!this.honeypotClear()) {
-                return false;
-            }
+            return this.isHoneypotClear();
 
-            return true;
+
         }
     }
 
@@ -120,6 +126,7 @@ namespace Peanut {
             if (!email || email.trim() == '') {
                 return false;
             }
+            /** @noinspection RegExpRedundantEscape */
             return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
         }
 
@@ -238,10 +245,8 @@ namespace Peanut {
             }
 
             let result = Number(parts[0] + '.' + parts[1].substring(0, 2));
-            if (isNaN(result)) {
-                return false;
-            }
-            return true;
+            return !isNaN(result);
+
         };
 
         public static getSelectedFiles(elementId: string) {
@@ -255,6 +260,7 @@ namespace Peanut {
         public static getHostUrl() {
             let protocol = location.protocol;
             let slashes = protocol.concat("//");
+            /** @noinspection PhpRedundantLocalVariableInspection */
             let host = slashes.concat(window.location.hostname);
             return host;
         }

@@ -22,7 +22,7 @@ class PeanutTranslator extends TIniTranslator
      * @throws \Exception
      */
     public static function GetPeanutTranslations(&$ini = false) {
-        $peanutIniPath = DIR_PEANUT_ROOT.'/translations.ini';
+        $peanutIniPath = DIR_PEANUT_ROOT.'/pnut/translations.ini';
 
         if ($ini === false) {
             $ini = TIniSettings::Open($peanutIniPath);

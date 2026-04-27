@@ -9,11 +9,13 @@ use \PDO;
 use PDOStatement;
 use Peanut\contacts\db\model\entity\Contact;
 use Peanut\PeanutMailings\sys\ISubscriptionManager;
+use Tops\db\IBasicContact;
+use Tops\db\IContactsRepository;
 use Tops\db\IProfilesRepository;
 use Tops\db\TDatabase;
 use \Tops\db\TEntityRepository;
 
-class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfilesRepository, ISubscriptionManager
+class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfilesRepository, ISubscriptionManager, IContactsRepository
 {
     protected function getTableName() {
         return 'pnut_contacts';
@@ -324,5 +326,15 @@ class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfile
 
         $this->executeStatement($deleteQuery,[$uid,$listId]);
         return $result;
+    }
+
+    public function getAllByEmail($email): array
+    {
+        return $this->getEntityCollection('email = ?',[$email]);
+    }
+
+    public function getByUid($uid): IBasicContact
+    {
+        return $this->getSingleEntity('uid = ?',[$uid]);
     }
 }

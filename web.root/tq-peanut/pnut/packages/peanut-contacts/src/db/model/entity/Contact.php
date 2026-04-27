@@ -6,7 +6,9 @@
 
 namespace Peanut\contacts\db\model\entity;
 
-class Contact  extends \Tops\db\TimeStampedEntity 
+use Tops\db\IBasicContact;
+
+class Contact  extends \Tops\db\TimeStampedEntity implements IBasicContact
 { 
     public $id;
     public $fullname;
@@ -19,4 +21,28 @@ class Contact  extends \Tops\db\TimeStampedEntity
     public $accountId;
     public $active;
 
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function getFullName(): string
+    {
+        return $this->fullname;
+    }
+
+    public function getAccountId(): string
+    {
+        return $this->accountId;
+    }
+
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    public function getUid(): string
+    {
+        return $this->uid;
+    }
 }

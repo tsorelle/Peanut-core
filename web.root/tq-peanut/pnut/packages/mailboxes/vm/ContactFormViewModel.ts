@@ -74,6 +74,7 @@ namespace Mailboxes {
                         successFunction();
                     }
                     else {
+                        me.protector.setEnabled(false);
                         me.messageForm.editor = new Peanut.htmlEditContainer(me);
                         me.messageForm.editor.initialize('messagehtml', () => {
                             me.bindDefaultSection();
@@ -135,7 +136,6 @@ namespace Mailboxes {
                                 let mailbox = response.mailboxList.pop();
                                 me.mailboxCode = mailbox.mailboxcode;
                                 me.selectedMailbox(mailbox);
-                                let test = me.selectedMailbox();
                                 me.headerMessage(response.translations['mail-header-send'] + ': ' + mailbox.displaytext);
                             }
                             me.mailboxList(response.mailboxList);
@@ -145,6 +145,7 @@ namespace Mailboxes {
                         }
                     }
                 }).fail(() => {
+                /** @noinspection PhpUnusedLocalVariableInspection */
                 let trace = me.services.getErrorInformation();
             }).always(() => {
                 if (doneFunction) {
@@ -236,6 +237,7 @@ namespace Mailboxes {
                                 window.scrollTo(0, 0);
                             }
                         ).fail(function () {
+                            /** @noinspection PhpUnusedLocalVariableInspection */
                             let trace = me.services.getErrorInformation();
                         }).always(function () {
                             me.application.hideWaiter();
@@ -243,11 +245,11 @@ namespace Mailboxes {
                         });
                     }
 
+
         }
 
         onMailBoxSelected = (selected: IMailBox) => {
             let me = this;
-            let title = 'Send a Message';
             if (selected) {
                 me.headerMessage(me.translate('mail-header-send') + ':  ' + selected.displaytext); // Send a message to
             }

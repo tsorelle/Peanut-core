@@ -157,6 +157,6 @@ class ViewModelPageBuilder
     {
         $optimize = TConfiguration::getBoolean('optimize','peanut');
         $script = $optimize ? 'dist/loader.min.js' : 'core/PeanutLoader.js';
-        return  DIR_PEANUT_ROOT."/$script";
+        return  DIR_PEANUT_ROOT."/pnut/$script";
     }
 }

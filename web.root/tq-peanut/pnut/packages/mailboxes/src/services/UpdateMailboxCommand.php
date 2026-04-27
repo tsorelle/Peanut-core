@@ -41,6 +41,8 @@ class UpdateMailboxCommand extends TServiceCommand
         $manager = TPostOffice::GetMailboxManager();
         $mailBox = $this->getRequest();
         $public = empty($mailBox->public) ? 0 : 1;
+        $published = empty($mailBox->published) ? 0 : 1;
+
 
         /**
          * @var $current TMailbox
@@ -53,7 +55,8 @@ class UpdateMailboxCommand extends TServiceCommand
                 $mailBox->displaytext,
                 $mailBox->address,
                 $mailBox->description,
-                $public
+                $public,
+                $published,
             );
         }
         else {
@@ -62,9 +65,8 @@ class UpdateMailboxCommand extends TServiceCommand
             $current->setName($mailBox->displaytext);
             $current->setEmail($mailBox->address);
             $current->setPublic($public);
-            $current->setUpdateTime($this->getUser()->getUserName());
             $current->setPublished($mailBox->published);
-
+            $current->setUpdateTime($this->getUser()->getUserName());
             $manager->updateMailbox($current);
         }
 
