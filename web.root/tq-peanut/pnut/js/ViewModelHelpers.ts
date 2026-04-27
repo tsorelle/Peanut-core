@@ -70,7 +70,7 @@ namespace Peanut {
         private isHoneypotClear(): boolean {
             const el = document.getElementById(this.honeypotId) as HTMLInputElement | null;
             if (!el) {
-                return true; // If the field is missing, fail open rather than break the form.
+                return true; // If the field is missing, fail to open rather than break the form.
             }
             return el.value.trim().length === 0;
         }
@@ -277,9 +277,9 @@ namespace Peanut {
 
         /**
          * Validates a time of day string, Expected hour and minutes delimited by colon
-         * optionally appended with case insensitive 'a','am','p' or 'pm'
+         * optionally appended with case-insensitive 'a','am','p' or 'pm'
          *
-         *  When valid returns 24 hour time format: hh:mm
+         *  When valid returns 24-hour time format: hh:mm
          *  If not valid returns FALSE
          *
          * @param ts  time string
@@ -458,7 +458,7 @@ namespace Peanut {
          * format full name from parts
          */
         public static makeFullName(first: string, last:string, middle: string = null) {
-            var result = first? first.trim() : '';
+            let result = first? first.trim() : '';
             if (middle) {
                 result = result + ' ' + middle.trim();
             }
