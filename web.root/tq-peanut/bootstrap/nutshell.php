@@ -10,7 +10,8 @@ namespace Nutshell\bootstrap;
 // @date_default_timezone_set(@date_default_timezone_get() ?: 'UTC');
 // todo: handle timezone settings
 
-use Nutshell\cms\routing\RouteFinder;
+use Tops\cms\TRouteFinder;
+use Tops\cms\TRouter;
 
 const NUTSHELL = true;
 if (!empty($_SERVER['REQUEST_URI'])) {
@@ -23,31 +24,32 @@ if (!empty($_SERVER['REQUEST_URI'])) {
 
 // location of definitions.php determines all file location constants.
 // If peanut istallation is elsewhere, change this require_once statement.
-require_once  __DIR__ . '/../../tq-peanut/bootstrap/definitions.php';
+// require_once  __DIR__ . '/../../tq-peanut/bootstrap/definitions.php';
+require_once  __DIR__ . '\definitions.php';
 require_once DIR_APPLICATION . '/config/peanut-bootstrap.php';
 $bootResponse  = \Peanut\Bootstrap::initialize();
+if (!class_exists('Tops\cms\TRouteFinder')) {
+    throw new \Exception('Initialization failed');
+};
 // map Nutshell php soruces
-$bootResponse->loader->addPsr4('Nutshell\\', __DIR__.'/../src');
-if ($response->settings->optimize ?? false) {
+// $bootResponse->loader->addPsr4('Nutshell\\', __DIR__.'/../src');
+/*if ($response->settings->optimize ?? false) {
     \Peanut\Bootstrap::testAutoload([
         'Nutshell\cms\Router',
         'Nutshell\cms\SiteMap',
         'Nutshell\cms\routing\RouteFinder'
     ]);
-}
+}*/
 
 // execute request
 if (isset($_SERVER['REQUEST_URI']) && !empty($_SERVER['REQUEST_URI'])) {
     $uri = preg_replace("/(^\/)|(\/$)/","",$_SERVER['REQUEST_URI']);
    //  require DIR_ROOT.'/nutshell/src/cms/routing/RouteFinder.php';
-    $matched = RouteFinder::matchWithRedirect($uri);
+    $matched = TRouteFinder::matchWithRedirect($uri);
     if ($matched) { // \Nutshell\cms\RouteFinder::match($uri)) {
         unset($uri);
-        if (!class_exists('\Nutshell\cms\Router')) {
-            throw new \Exception('Initialization failed');
-        };
 
-        if (\Nutshell\cms\Router::Execute()) {
+        if (TRouter::Execute()) {
             exit;
         }
     }

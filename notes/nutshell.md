@@ -1,8 +1,39 @@
-# Start Up
+# Nutshell
+
+Nutshell is a lightweight framework for running Peanut without the requirement of a CMS.  It can also be used as an
+add-on to a CMS, such as Wordpress, to render peanut pages and services.
+
+## Reqirements for a stand-alone application:
+
+- Start up file nutshell.php (stand-alone only)
+- Peanut packages (modules located tq-peanut/pnut/packages). These packages we created for Nutshell stand-alone applications,
+but could be used elsewhere.
+  - peanut-contacts
+  - peanut-users
+- Class implementations registered in apppliication/config/classes.ini
+  - profiles.repository
+  - peanut.subscription_manager 
+  - contacts.repository
+  - peanut.router
+
+For a plain nutshell application, include this line in the index.php script:
+`
+require 'tq-peanut/bootstrap/nutshell.php';
+`
+
+## Reqirements for a CMS application:
+
+To use Nutshell in a CMS, such as Wordpress the startup code in the peanut module or pluging must be adapted based on
+the nutshell.php.  We the peanut-gutenberg project as an example of Wordpress integration. 
+
+The class implementation listed above should be replaced with CMS specific implementations were required.
 
 # Routing
 
-Router matches url with section in /application/config/routing.ini
+The Nutshell routing system is used in stand-alone nutshell applications in some CMS applications, such as Wordpress.
+ConcreteCMS has its own configurable routing system that is used instead.
+
+Router matches the url with section in application/config/routing.ini
 
 See comments in routing.ini for details.
 
@@ -90,7 +121,6 @@ External assets:
 Future modifications:
 - Override.php in custom themes
 - Load non-default bootstrap CDN
-- Configure FontAwesome kit URL
 - Store head.load.js locally
 
 Questions:

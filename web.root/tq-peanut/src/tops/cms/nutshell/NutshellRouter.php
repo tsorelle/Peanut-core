@@ -1,69 +1,31 @@
 <?php
-namespace Nutshell\cms;
-use Nutshell\cms\routing\RouteFinder;
+
+namespace Tops\cms\nutshell;
 use Peanut\sys\ViewModelManager;
 use Peanut\users\AccountManager;
-use Tops\services\ServiceRequestHandler;
+use Tops\cms\TRouteFinder;
+use Tops\cms\TRouter;
 use Tops\sys\TConfiguration;
 use Tops\sys\TPath;
 use Tops\sys\TSession;
 use Tops\sys\TUser;
-use Tops\sys\TWebSite;
 
-class Router
+class NutshellRouter extends TRouter
 {
-    public static function Execute() {
-        self::checkAuthorization();
-        switch (RouteFinder::$matched['handler'] ?? null) {
-            case 'page' :
-                self::routePage();
-                break;
-            case 'service' :
-                self::routeService();
-                break;
-            case 'cms' :
-                self::routeCms();
-                break;
-            default:
-                throw new \Exception('Invalid configuation, must include "handler"');
-        }
-        return true;
-    }
-
-    public static function redirectToSignin() {
-
-    }
-
-    public static function routeService()
-    {
-        include __DIR__.'/routing/ServiceRequestHandler.php';
-/*        if (!class_exists('Nutshell\cms\ServiceRequestHandler')) {
-            throw new \Exception('ServiceRequestHandler not loaded');
-        }*/
-        $routeData = RouteFinder::$matched;
-        $method = $routeData['method'] ?? null;
-        if (empty($method)) {
-            throw new \Exception('Value "method" is required in service routing configuration.');
-        }
-        $handler = new ServiceRequestHandler();
-        $argValues = $routeData['argValues'] ?? [];
-        if (!empty($argValues)) {
-            $handler->$method(...$argValues);
-        }
-        else {
-            $handler->$method();
-        }
-        exit;
-    }
-
-    private static function setSwitchValue(&$routeData,$name,$default=1) {
+    private function setSwitchValue(&$routeData,$name,$default=1) {
         $value = $routeData[$name] ?? $default;
         $routeData[$name] =  empty($value) ? 0 : 1;
         $routeData['test'] = $name;
     }
-    private static function routePage()
-    {
 
+
+    function routeCms()
+    {
+        // TODO: Implement routeCms() method.
+    }
+
+    function routePage()
+    {
         /*
           Additional configuration values
                 openpanel
@@ -72,7 +34,7 @@ class Router
                 inputvalue
         */
 
-        $routeData = RouteFinder::$matched;
+        $routeData = TRouteFinder::$matched;
         $uri = $routeData['uri'];
         $user = TUser::getCurrent();
         $theme = $routeData['theme'] ?? 'default';
@@ -93,24 +55,24 @@ class Router
         if ($theme === 'plain') {
             $routeData['bscdn'] = 1;
             $routeData['maincolsize'] = 12;
-            self::setSwitchValue($routeData,'siteheader',0);
-            self::setSwitchValue($routeData,'sitefooter',0);
-            self::setSwitchValue($routeData,'breadcrumbs',0);
-            self::setSwitchValue($routeData,'pageheader',0);
+            $this->setSwitchValue($routeData,'siteheader',0);
+            $this->setSwitchValue($routeData,'sitefooter',0);
+            $this->setSwitchValue($routeData,'breadcrumbs',0);
+            $this->setSwitchValue($routeData,'pageheader',0);
         }
         else {
             $routeData['bscdn'] = 0;
             $routeData['fasrc'] = TConfiguration::getValue('fontawesome','header');
-            self::setSwitchValue($routeData,'siteheader',1);
-            self::setSwitchValue($routeData,'sitefooter',1);
-            self::setSwitchValue($routeData,'pageheader',1);
-            self::setSwitchValue($routeData,'frontpage',0);
-            self::setSwitchValue($routeData,'embed',0);
+            $this->setSwitchValue($routeData,'siteheader',1);
+            $this->setSwitchValue($routeData,'sitefooter',1);
+            $this->setSwitchValue($routeData,'pageheader',1);
+            $this->setSwitchValue($routeData,'frontpage',0);
+            $this->setSwitchValue($routeData,'embed',0);
             if ($uri === 'home') {
-                self::setSwitchValue($routeData, 'breadcrumbs', 0);
+                $this->setSwitchValue($routeData, 'breadcrumbs', 0);
             }
             else {
-                self::setSwitchValue($routeData,'breadcrumbs',1);
+                $this->setSwitchValue($routeData,'breadcrumbs',1);
             }
             $maincolsize = 12;
             if (isset($routeData['menu'])) {
@@ -152,7 +114,7 @@ class Router
                 }
 
                 if (!isset($errorMessage)) {
-                     if (array_key_exists('return',$routeData)) {
+                    if (array_key_exists('return',$routeData)) {
                         $return = $routeData['return'];
 
                         if ($return == 'referrer') {
@@ -216,37 +178,11 @@ class Router
         $routeData['sitemap'] = new SiteMap($uri);
         extract($routeData);
         include DIR_APPLICATION . '/content/page.php';
+
     }
 
-    private static function checkAuthorization()
+    function redirectToSignIn()
     {
-        $user = TUser::getCurrent();
-        $rolelist = RouteFinder::$matched['roles'] ?? '';
-        $rolelist = trim($rolelist);
-        if (!empty($rolelist)) {
-            $roles = explode(',',$rolelist);
-            $ok = false;
-            foreach ($roles as $role) {
-                if ($user->isMemberOf($role)) {
-                    $ok = true;
-                    break;
-                }
-            }
-            if (!$ok) {
-                // redirect to signin page
-                $signinConfig = RouteFinder::$routes['signin'];
-                $signinConfig['uri'] = 'signin';
-                $uri = RouteFinder::$matched['uri'] ?? '/';
-                $redirect = TWebSite::ExpandUrl($uri);
-                // $_SESSION[AccountManager::returnKey] = $redirect;
-                $signinConfig['return'] = $redirect;
-                RouteFinder::$matched = $signinConfig;
-            }
-        }
-    }
-
-    private static function routeCms()
-    {
-        // todo:: implement routeCms()
+        // TODO: Implement redirectToSignIn() method.
     }
 }

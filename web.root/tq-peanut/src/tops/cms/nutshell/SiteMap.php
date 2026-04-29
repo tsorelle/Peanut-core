@@ -1,6 +1,6 @@
 <?php
 
-namespace Nutshell\cms;
+namespace Tops\cms\nutshell;
 
 use Tops\sys\IUser;
 use Tops\sys\TUser;

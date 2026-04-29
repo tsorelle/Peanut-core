@@ -1,13 +1,14 @@
 <?php
 
-namespace Nutshell\cms\routing;
+namespace Tops\cms;
 
-class RouteFinder
+class TRouteFinder
 {
-    public static $matched = null;
-    public static $routes = null;
+    public static ?array $matched = null;
+    public static ?array $routes = null;
 
-    private static function normalizeUri($uri)  {
+    private static function normalizeUri($uri) : string
+    {
         $parts = explode('?',$uri);
         $uri = $parts[0];
         if ($uri === '' || $uri === '/') {
@@ -16,10 +17,11 @@ class RouteFinder
         return $uri;
     }
 
-    public static function matchWithRedirect($uri) {
+    public static function matchWithRedirect($uri) : bool
+    {
         $matched = self::match($uri);
         if (!$matched) {
-          $path = parse_url($uri, PHP_URL_PATH);
+            $path = parse_url($uri, PHP_URL_PATH);
             $ext = pathinfo($path, PATHINFO_EXTENSION);
             if ($ext) {
                 return false;
@@ -30,7 +32,7 @@ class RouteFinder
                 if ($sub) {
                     $parts = explode('/', $uri);
                     if ($parts) {
-                        $uri = "$sub/" . array_pop($parts);;
+                        $uri = "$sub/" . array_pop($parts);
                         return self::match($uri);
                     }
                 }
@@ -39,12 +41,12 @@ class RouteFinder
         return $matched;
     }
 
-    public static function match($uri)
+    public static function match($uri) : bool
     {
         $uri = self::normalizeUri($uri);
         self::$routes = parse_ini_file(DIR_CONFIGURATION . '/routing.ini', true);
         foreach (self::$routes as $matchPath => $values) {
-            if (strpos($uri, $matchPath) === 0) {
+            if (str_starts_with($uri, $matchPath)) {
                 if ($uri != $matchPath && (!array_key_exists('args',$values))) {
                     continue;
                 }

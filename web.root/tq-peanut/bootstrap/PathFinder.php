@@ -37,34 +37,6 @@ class PathFinder
         return self::stripDriveLetter($path);
     }
 
-
-    /**
-     *  Convert a file system path to a URL (protocol omitted)
-     * @param $path
-     * @return array|false|string|string[]
-     * @throws \Exception
-     */
-    public static function ToUrl($path) {
-        if (!defined('DIR_ROOT')) {
-            throw new \Exception('DIR_ROOT not defined');
-        }
-        $root = DIR_ROOT;
-        if (str_starts_with($path,$root.'/')) {
-            $path = substr($path,strlen($root));
-        }
-        $path = self::normalize($path,false);
-        if (str_ends_with($path,'/')) {
-            $path = substr($path,0,strlen($path)-1);
-        }
-        if (!str_starts_with($path,'/')) {
-            $path = "/$path";
-        }
-        if (is_dir($root.$path)) {
-            return $path;
-        }
-        return false;
-    }
-
     /**
      * @throws \Exception
      */
