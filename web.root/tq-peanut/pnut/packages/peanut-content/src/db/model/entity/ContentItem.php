@@ -6,12 +6,11 @@
 
 namespace Peanut\content\db\model\entity;
 
-class Content  extends \Tops\db\TimeStampedEntity 
+class ContentItem  extends \Tops\db\TimeStampedEntity
 { 
     public $id;
-    public $description;
-    public $format;
-    public $content;
+    public $title;
+    public $authorId;
+    public $context;
     public $active;
-
 }
