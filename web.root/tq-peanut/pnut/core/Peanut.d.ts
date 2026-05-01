@@ -27,6 +27,10 @@ declare namespace Peanut {
         bindNode(containerName: string, context: any);
     }
 
+    export interface IEditorHost {
+        fetchEditorContent(): void;
+        saveEditorContent() : void;
+    }
     export interface errorInformation {
         message: string;
         details : string;

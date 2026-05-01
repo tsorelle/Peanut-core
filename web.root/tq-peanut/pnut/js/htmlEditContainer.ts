@@ -22,6 +22,7 @@ namespace Peanut {
         private showHr = false;
         private additionalOptions : { [key: string]: any } = null;
         private services: ServiceBroker;
+        private editorHost : Peanut.IEditorHost;
 
         constructor(owner?: any)
         {
@@ -29,7 +30,7 @@ namespace Peanut {
 
             if (owner) {
                 me.services = owner.getServiceBroker();
-                // alert(me.services  ? 'Services loaded': 'htmlEditContainer: no services');
+                me.editorHost = owner as Peanut.IEditorHost;
                 me.application = owner.getApplication();
             }
         }
@@ -167,10 +168,10 @@ namespace Peanut {
         }
 
         onSave = (editor: any) => {
-            alert('save');
+            this.editorHost.saveEditorContent();
         }
         onFetchContent = (editor ) => {
-            alert('Fetch content');
+            this.editorHost.fetchEditorContent();
         }
 
         onSetUp = (editor) => {

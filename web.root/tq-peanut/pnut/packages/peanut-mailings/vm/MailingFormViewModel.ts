@@ -10,6 +10,7 @@ namespace PeanutMailings {
     import INameValuePair = Peanut.INameValuePair;
     import IMailboxFormOwner = Mailboxes.IMailboxFormOwner;
     import IMailBox = Mailboxes.IMailBox;
+    import IEditorHost = Peanut.IEditorHost;
 
     interface IGetMailingListsResponse {
         emailLists : IEmailListItem[];
@@ -60,7 +61,8 @@ namespace PeanutMailings {
         adminonly: any;
     }
 
-    export class MailingFormViewModel extends Peanut.ViewModelBase implements IMailboxFormOwner{
+    export class MailingFormViewModel extends Peanut.ViewModelBase
+        implements IMailboxFormOwner, IEditorHost {
         sendRequest : IEMailListSendRequest = null;
 
         // observables
@@ -648,6 +650,14 @@ namespace PeanutMailings {
 
         onTabChange = () => {
             this.application.hideServiceMessages();
+        }
+
+        fetchEditorContent(): void {
+            alert('fetchEditorContent');
+        }
+
+        saveEditorContent(): void {
+            alert('saveEditorContent');
         }
     }
 }
