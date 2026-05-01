@@ -197,6 +197,7 @@ namespace Peanut {
                     editor.on('init', onInitialized);
 
                     if (me.showFileControls) {
+
                     editor.addMenuItem('fileopen', {
                         text: 'Get Content',
                         context: 'file',
@@ -301,7 +302,7 @@ namespace Peanut {
                     {
                         file: {
                             title: 'File',
-                                items: 'fileopen filesave'
+                                items: 'newdocument fileopen filesave'
                         },
                         edit: {
                             title: 'Edit',
