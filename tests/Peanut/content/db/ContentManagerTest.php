@@ -60,6 +60,13 @@ class ContentManagerTest extends TestCase
         $actualVersion = $contentManager->getLatestVersionContent($contentId);
         $this->assertEquals($lastVersion->contentId, $actualVersion->contentId);
         $this->assertEquals($lastVersion->content, $actualVersion->content);
+        $final = true;
+        $contentManager->saveContent($contentId, 'test content 4', $final);
+
+        $lastVersion = $contentManager->getLatestVersionContent($contentId);
+        $this->assertEquals($lastVersion->content, 'test content 4');
+
+
 
     }
 

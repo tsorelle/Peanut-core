@@ -25,12 +25,16 @@ class ContentManager
         return $this->getContentAuthorsRepository()->getAuthorByAccountId($accountId);
     }
 
-    public function saveContent(int $contentId, string $content)
+    public function saveContent(int $contentId, string $content, bool $final = false)
     {
         $version = new ContentVersion();
         $version->contentId = $contentId;
         $version->content = $content;
-        return $this->getContentVersionsRepository()->insert($version);
+        $repository = $this->getContentVersionsRepository();
+        if ($final) {
+            $repository->removeVersions($contentId);
+        }
+        return $repository->insert($version);
     }
 
     private function getContentRepository() : ContentRepository {

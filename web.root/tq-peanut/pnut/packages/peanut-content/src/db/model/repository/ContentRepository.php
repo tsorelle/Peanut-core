@@ -9,6 +9,8 @@ use Tops\db\TQuery;
 
 class ContentRepository extends \Tops\db\TEntityRepository
 {
+
+
     protected function getTableName() {
         return 'pnut_content';
     }
