@@ -17,13 +17,19 @@ namespace Peanut {
         private showColorTools = false;
         private showTableTools = false;
         private showFontSizes  = false;
+        private showFileControls  = false;
+        private contentContext : string = '';
         private showHr = false;
         private additionalOptions : { [key: string]: any } = null;
+        private services: ServiceBroker;
 
         constructor(owner?: any)
         {
             let me = this;
+
             if (owner) {
+                me.services = owner.getServiceBroker();
+                // alert(me.services  ? 'Services loaded': 'htmlEditContainer: no services');
                 me.application = owner.getApplication();
             }
         }
@@ -90,6 +96,11 @@ namespace Peanut {
             this.showHr = true;
         }
 
+        public includeFileControls = (context: string) => {
+            this.showFileControls = true;
+            this.contentContext = context;
+        }
+
         /**
          * Add or overwrite any TinyMce options,  See:
          * https://www.tiny.cloud/docs/tinymce/5/configure/
@@ -150,8 +161,26 @@ namespace Peanut {
          * Called as "editor.on" function after editor initialization.  Test for success.
          */
         confirmEditorInit = () => {
-            let ed = tinymce.get(this.selector)
+            let ed = tinymce.get(this.selector);
+            let me = this;
             this.editorInitialized = (ed !== null);
+        }
+
+        onSave = (editor: any) => {
+            alert('save');
+        }
+        onFetchContent = (editor ) => {
+            alert('Fetch content');
+        }
+
+        onSetUp = (editor) => {
+            // editor.on('init', onInitialized);
+
+            let me = this;
+            editor.ui.registry.addMenuItem('getcontent', {
+                text: 'Load content...',
+                onAction:  me.onFetchContent
+            });
         }
 
         initEditor = (selector: string, onInitialized?: () => void) => {
@@ -164,12 +193,31 @@ namespace Peanut {
             let options = {
                 // required options
                 selector: '#' + selector,
-                setup: function (editor) {
+                setup: function (editor: any) {
                     editor.on('init', onInitialized);
+
+                    if (me.showFileControls) {
+                    editor.addMenuItem('fileopen', {
+                        text: 'Get Content',
+                        context: 'file',
+                        onclick: function () {
+                            me.onFetchContent(editor);
+                        }
+                    });
+
+                    editor.addMenuItem('filesave', {
+                        text: 'Save',
+                        context: 'file',
+                        onclick: function () {
+                            me.onSave(editor);
+                        }
+                    });
+                    }
+
                 },
 
                 // todo: initialization method to alter menubar
-                menubar: 'edit insert format',
+                menubar: 'file edit insert format',
                 // these options can be overridden
                 document_base_url : Peanut.Helper.getHostUrl() + '/',
                 branding: false,
@@ -242,6 +290,36 @@ namespace Peanut {
                     toolbar += ' | code'
                     plugins += ' code'
                 }
+
+                if (me.showFileControls) {
+                    toolbar += ' | save';
+                    plugins += ' save';
+                    options['save_onsavecallback'] = this.onSave;
+
+
+                    options['menu'] =
+                    {
+                        file: {
+                            title: 'File',
+                                items: 'fileopen filesave'
+                        },
+                        edit: {
+                            title: 'Edit',
+                                items: 'undo redo | cut copy paste pastetext | selectall'
+                        },
+                        insert: {
+                            title: 'Insert',
+                                items: 'link'
+                        },
+                        format: {
+                            title: 'Format',
+                                items: 'bold italic underline | formats'
+                        }
+                    }
+
+
+                }
+
                 options['toolbar'] = toolbar;
                 options['plugins'] = plugins;
             }
@@ -289,6 +367,18 @@ namespace Peanut {
             let me = this;
             tinymce.triggerSave();
             return tinymce.get(me.selector);
+        }
+
+        doGetContent = () => {
+            let me = this;
+
+            tinymce.triggerSave();
+            let editor = tinymce.get(me.selector);
+            if (!editor) {
+                console.log('Cannot access editor')
+                return null;
+            }
+            return editor.getContent();
         }
 
     }

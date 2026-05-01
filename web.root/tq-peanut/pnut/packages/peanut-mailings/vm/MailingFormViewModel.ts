@@ -152,8 +152,9 @@ namespace PeanutMailings {
                 '@pnut/htmlEditContainer'
                 ,'@pkg/mailboxes/MailboxListObservable.js'
             ], () => {
-                me.htmlEditor = new Peanut.htmlEditContainer();
+                me.htmlEditor = new Peanut.htmlEditContainer(me);
                 me.htmlEditor.includeDesignTools();
+                me.htmlEditor.includeFileControls('mailings');
                 me.mailboxes = new Mailboxes.MailboxListObservable(me);
                 me.application.registerComponents([
                     '@pnut/modal-confirm',
