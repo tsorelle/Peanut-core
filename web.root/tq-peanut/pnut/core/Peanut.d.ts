@@ -6,6 +6,11 @@ declare namespace Peanut {
         showError(errorMessage?:string): void;
     }
 
+    export interface IContentForm {
+        getContent() : string,
+        setContent(content: string) : void;
+    }
+
     export interface IPeanutClient extends IServiceClient{
         startVM(vmName: string, final?: (viewModel: IViewModel) => void);
         initialize(successFunction?:() => void);

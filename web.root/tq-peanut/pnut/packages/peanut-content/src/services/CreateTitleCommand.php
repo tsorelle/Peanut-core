@@ -11,6 +11,11 @@ class CreateTitleCommand extends TServiceCommand
 {
     protected function run()
     {
+        $user = TUser::GetCurrent();
+        if (!$user->isAuthenticated()) {
+            $this->addErrorMessage('You must be signed in to save content');
+            return;
+        }
         $request = $this->getRequest();
         $title = $request->title ?? null;
         if (!$title) {
@@ -32,11 +37,13 @@ class CreateTitleCommand extends TServiceCommand
 
         $manager = new ContentManager();
         if (empty($authorId)) {
-            $user = TUser::GetCurrent();
             $author = $manager->createAuthor($user->getId(), $user->getFullName());
             $authorId = $author->id;
         }
         $contentItem = $manager->createTitle($authorId, $title, $context, $content);
+        if ($contentItem) {
+            $this->addInfoMessage("New title created: {$contentItem->title}");
+        }
         $this->setReturnValue($contentItem);
     }
 }

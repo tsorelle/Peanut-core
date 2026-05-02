@@ -4,12 +4,18 @@ namespace Peanut\content\services;
 
 use Peanut\content\db\ContentManager;
 use Tops\services\TServiceCommand;
+use Tops\sys\TUser;
 
 class SaveContentCommand extends TServiceCommand
 {
 
     protected function run()
     {
+        $user = TUser::GetCurrent();
+        if (!$user->isAuthenticated()) {
+            $this->addErrorMessage('You must be signed in to save content');
+            return;
+        }
         $request = $this->getRequest();
         if (empty($request)) {
             $this->addErrorMessage('No request received');
@@ -26,6 +32,7 @@ class SaveContentCommand extends TServiceCommand
         }
         $final = !empty($request->final);
         $response = (new ContentManager())->saveContent($contentId,$content,$final);
+
         $this->setReturnValue($response);
     }
 }

@@ -5,7 +5,7 @@
 
 namespace Peanut {
 
-    export class EditorTestViewModel extends Peanut.ViewModelBase implements Peanut.IEditorHost {
+    export class EditorTestViewModel extends Peanut.ViewModelBase implements Peanut.IEditorHost, IContentForm {
         // observables
         private htmlEditor : Peanut.htmlEditContainer;
         private i = 1;
@@ -107,6 +107,16 @@ namespace Peanut {
 
             this.htmlEditor.setContent(content);
         };
+
+        getContent(): string {
+            let me = this;
+            return me.htmlEditor.getContent();
+        }
+
+        setContent(content: string): void {
+            let me = this;
+            me.htmlEditor.setContent(content);
+        }
 
     }
 }

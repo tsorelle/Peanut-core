@@ -21,21 +21,39 @@ namespace PeanutContent {
     import ServiceBroker = Peanut.ServiceBroker;
     import ViewModelBase = Peanut.ViewModelBase;
     import IServiceClient = Peanut.IServiceClient;
+    import IContentForm = Peanut.IContentForm;
+
 
     export class contentControllerComponent implements IServiceClient {
         private application: IPeanutClient;
         private services: ServiceBroker;
         private owner : () => ViewModelBase;
+        private editForm: IContentForm;
         public onFetchSuccess : (content: string)=> void;
         public saveModalId : KnockoutObservable<string>;
         public fetchModalId : KnockoutObservable<string>;
         public saveObserver : KnockoutObservable<string>;
+
+        private contentForm = {
+            contentId : ko.observable(0),
+            title : ko.observable(''),
+            shared : ko.observable(false),
+            context : ko.observable(''),
+            titleError : ko.observable(false),
+        }
 
         constructor(params : any) {
             console.log('contentControllerComponent initializing.');
             let me = this;
             if (!params) {
                 throw('Params not defined in modalConfirmComponent');
+            }
+            if (params.context) {
+                this.contentForm.context(params.context);
+            }
+            else {
+                console.error('contentControllerComponent: context parameter required');
+                return;
             }
             if (!params.owner) {
                 console.error('contentControllerComponent: Owner parameter required');
@@ -68,6 +86,7 @@ namespace PeanutContent {
 
             me.owner = params.owner;
             let ownerVm = params.owner();
+            me.editForm = (<IContentForm>ownerVm);
             me.application = ownerVm.getApplication();
             me.services = ownerVm.getServices();
             me.saveObserver.subscribe(me.onContentChanged);
@@ -85,6 +104,10 @@ namespace PeanutContent {
 
         onContentChanged = () => {
             let me = this;
+
+            // test
+            // me.contentForm.contentId(1);
+
             me.owner().showModal(me.saveModalId())
             // alert('component says that content changed');
 
@@ -92,11 +115,35 @@ namespace PeanutContent {
 
         doSave = () => {
             let me = this;
+            let request = {
+                contentId : me.contentForm.contentId(),
+                title : me.contentForm.title().trim(),
+                shared : me.contentForm.shared(),
+                context : me.contentForm.context(),
+                content : me.editForm.getContent()
+            }
+            if (request.title.length === 0) {
+                me.contentForm.titleError(true);
+                return;
+            }
+            me.contentForm.titleError(false);
             me.owner().hideModal(me.saveModalId());
-            // test
-            alert('component says: content saved');
+            let serviceMethod = request.contentId ? 'SaveContent' : 'CreateTitle';
+            me.services.executeService('peanut.content::'+serviceMethod,request,
+                function(serviceResponse: Peanut.IServiceResponse) {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        let result = serviceResponse.Value;
+                        me.contentForm.contentId(result.contentId);
+                    }
+                    else {
+                        // alert('content not saved');
+                    }
+                }
+            ).fail(function () {
+                let trace = me.services.getErrorInformation();
+            });
 
-            // todo: service calls to save content
+
 
         }
         doFetch = () => {

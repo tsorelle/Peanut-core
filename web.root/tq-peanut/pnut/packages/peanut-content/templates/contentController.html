@@ -9,7 +9,46 @@
                 </button>
             </div>
             <div class="modal-body">
-                <p>body here, test</p>
+                <form>
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <span data-bind="visible: contentForm.titleError" class="text-danger">A title is required</span>
+                        <input
+                                type="text"
+                                class="form-control"
+                                id="title"
+                                name="title"
+                                placeholder="Enter title"
+                                data-bind="value: contentForm.title"
+                        >
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input
+                                type="checkbox"
+                                class="form-check-input"
+                                id="shared"
+                                name="shared"
+                                value="1"
+                        >
+                        <label class="form-check-label" for="shared">
+                            Shared
+                        </label>
+                    </div>
+                    <div class="form-check mb-3" data-bind="visible: contentForm.contentId() !== 0">
+                        <input
+                                type="checkbox"
+                                class="form-check-input"
+                                id="finalVersion"
+                                name="finalVersion"
+                                value="1"
+                        >
+                        <label class="form-check-label" for="finalVersion">
+                            Final version (previous versions will be removed)
+                        </label>
+                    </div>
+
+                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" data-bind="click: doSave">

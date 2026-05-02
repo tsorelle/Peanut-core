@@ -139,7 +139,7 @@ class ContentManager
             $author = new ContentAuthor();
             $author->accountId = $accountId;
             $author->fullName = $fullName;
-            return $this->getContentAuthorsRepository()->insert($author);
+            $author->id  = $this->getContentAuthorsRepository()->insert($author);
         }
         return $author;
     }
