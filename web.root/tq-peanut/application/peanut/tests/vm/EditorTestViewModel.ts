@@ -5,10 +5,13 @@
 
 namespace Peanut {
 
-    export class EditorTestViewModel extends Peanut.ViewModelBase {
+    export class EditorTestViewModel extends Peanut.ViewModelBase implements Peanut.IEditorHost {
         // observables
         private htmlEditor : Peanut.htmlEditContainer;
         private i = 1;
+
+        // for content management
+        saveContent = ko.observable('');
 
         init(successFunction?: () => void) {
             let me = this;
@@ -16,20 +19,25 @@ namespace Peanut {
             me.application.loadResources([
                 '@pnut/htmlEditContainer'
             ], () => {
-                me.htmlEditor =  new Peanut.htmlEditContainer(me);
-                // set configuration
-                //  me.htmlEditor.configureForContentEditing();
-                // me.htmlEditor.configureForEmail() // default
+                me.application.registerComponents(['@pkg/peanut-content/content-controller'], () => {
+                    me.htmlEditor =  new Peanut.htmlEditContainer(me);
 
-                // set uptions
-                me.htmlEditor.addOptions({height: '50ex'})
-                // me.htmlEditor.addOptions({height: 300}) // height in pixels if numeric
-                // me.htmlEditor.includeFontSizing();
-                // me.htmlEditor.includeTableTools();
-                me.htmlEditor.includeDesignTools();
-                me.htmlEditor.initialize('test-editor', () => {
-                    me.bindDefaultSection();
-                    successFunction();
+
+                    // set configuration
+                    //  me.htmlEditor.configureForContentEditing();
+                    // me.htmlEditor.configureForEmail() // default
+
+                    // set uptions
+                    me.htmlEditor.addOptions({height: '50ex'})
+                    // me.htmlEditor.addOptions({height: 300}) // height in pixels if numeric
+                    // me.htmlEditor.includeFontSizing();
+                    // me.htmlEditor.includeTableTools();
+                    me.htmlEditor.includeDesignTools();
+                    me.htmlEditor.includeFileControls('mailings');
+                    me.htmlEditor.initialize('test-editor', () => {
+                        me.bindDefaultSection();
+                        successFunction();
+                    })
                 })
             });
         }
@@ -78,6 +86,27 @@ namespace Peanut {
             this.i++;
         }
 
+        // for content management
+        fetchEditorContent(editor: any): void {
+            let me = this;
+            me.showModal('#fetch-content-modal');
+            // test
+            // me.onNewContent('This is the fetched content');
+        }
+
+        saveEditorContent(editor): void {
+            let me = this;
+            let content = editor.getContent();
+            me.saveContent(content);
+            // test
+            //alert('saving content');
+        }
+
+        onNewContent = (content: string) => {
+            // let me = this;
+
+            this.htmlEditor.setContent(content);
+        };
 
     }
 }

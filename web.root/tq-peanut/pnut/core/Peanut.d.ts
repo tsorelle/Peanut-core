@@ -28,8 +28,8 @@ declare namespace Peanut {
     }
 
     export interface IEditorHost {
-        fetchEditorContent(): void;
-        saveEditorContent() : void;
+        fetchEditorContent(editor: any): void;
+        saveEditorContent(editor) : void;
     }
     export interface errorInformation {
         message: string;

@@ -1,9 +1,11 @@
 <div id="editortest-load-message"><span class="fa fa-spinner fa-pulse fa-2x" style="color:lightgrey"></span></div>
 <div id="editortest-view-container" class="row" style="display: none">
   <div class="col-md-12">
+    <content-controller params="owner:self,saveObserver:saveContent,onFetchSuccess:onNewContent"></content-controller>
     <div class="row">
       <div class="col-md-12">
-        <textarea rows="10"  class="form-control" id="test-editor"></textarea>
+        <label for="test-editor" style="display: none"></label>
+        <textarea  rows="10"  class="form-control" id="test-editor"></textarea>
         <div class="pt-4">
           <button class="btn btn-primary" style="margin-right: 1em" data-bind="click:setHtmlContent" >Set Content</button>
           <button class="btn btn-secondary" data-bind="click:getHtmlContent" >Get Content</button>

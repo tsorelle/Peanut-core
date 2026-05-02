@@ -39,11 +39,9 @@ namespace Peanut {
         /**
          * Set up the editor for use in composing email messages.
          * URLs are expanded to full URL, e.g. https://mydomain.com/path/to/whatever
-         *
-         * @param includeDesignTools
-         *      If true, include image tools, color tools and code button.
          */
-        public configureForEmail = (includeDesignTools = false) => {
+        // public configureForEmail = (includeDesignTools = false) => {
+        public configureForEmail = () => {
             this.configurationType = this.configEmail;
         }
 
@@ -164,14 +162,14 @@ namespace Peanut {
         confirmEditorInit = () => {
             let ed = tinymce.get(this.selector);
             let me = this;
-            this.editorInitialized = (ed !== null);
+            me.editorInitialized = (ed !== null);
         }
 
         onSave = (editor: any) => {
-            this.editorHost.saveEditorContent();
+            this.editorHost.saveEditorContent(editor);
         }
         onFetchContent = (editor ) => {
-            this.editorHost.fetchEditorContent();
+            this.editorHost.fetchEditorContent(editor);
         }
 
         onSetUp = (editor) => {
@@ -358,7 +356,7 @@ namespace Peanut {
         }
 
         save = () => {
-            let me = this;
+            // let me = this;
             tinymce.triggerSave();
         }
 

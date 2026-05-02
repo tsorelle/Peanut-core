@@ -1,0 +1,49 @@
+<div class="modal" data-bind="attr: { id: saveModalId }">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Save Changes</h4>
+                <button type="button" class="close btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>body here, test</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bind="click: doSave">
+                    Save Changes
+                </button>
+                <button type="button" class="btn btn-outline-dark"  data-bs-dismiss="modal" data-dismiss="modal">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" data-bind="attr: { id: fetchModalId }">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" >Get Content</h4>
+                <button type="button" class="close btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>body here, test</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bind="click: doFetch">
+                    Get Content
+                </button>
+                <button type="button" class="btn btn-outline-dark"  data-bs-dismiss="modal" data-dismiss="modal">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
