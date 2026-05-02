@@ -58,6 +58,7 @@ namespace PeanutContent {
                             successFunction()
                         }
                     }
+
                 }
             ).fail(function () {
                 me.services.getErrorInformation();
