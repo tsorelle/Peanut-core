@@ -228,9 +228,9 @@ abstract class TEntityRepository extends TPdoQueryManager implements IEntityRepo
      * @return array|false
      * Return a collection of instances of the associated entity class based on SQL conditionals and parameters
      */
-    protected function getEntityCollection($where, $params, $includeInactive = false)
+    public function getEntityCollection($where, $params, $includeInactive = false, $clauses='')
     {
-        $stmt = $this->executeEntityQuery($where, $params, $includeInactive);
+        $stmt = $this->executeEntityQuery($where, $params, $includeInactive,$clauses);
         $result = $stmt->fetchAll();
         if (empty($result)) {
             return false;

@@ -70,7 +70,9 @@ class ContentManager
         return $this->getContentRepository()->getTitle($title, $authorId, $context);
     }
 
-
+    public function getSharedTitle($title, $context) {
+        return $this->getContentRepository()->getSharedTitle($title, $context);
+    }
 
   /**
      * @param null $authorId
@@ -79,7 +81,7 @@ class ContentManager
      * @param string $content
      * @return mixed|ContentItem
      */
-    public function createTitle(mixed $authorId, string $title, string $context, string $content): ContentItem
+    public function createTitle(mixed $authorId, string $title, string $context, string $content, bool $shared=false): ContentItem
     {
         $contentRepo = new ContentRepository();
         $contentItem = $contentRepo->getTitle($title, $authorId, $context);
@@ -89,6 +91,7 @@ class ContentManager
             $contentItem->authorId = $authorId;
             $contentItem->context = $context;
             $contentItem->active = 1;
+            $contentItem->shared = $shared;
             $contentId = $contentRepo->insert($contentItem);
             $contentItem->id = $contentId;
 
@@ -100,6 +103,11 @@ class ContentManager
         $versionsRepo->insert($version);
 
         return $contentItem;
+    }
+
+    public function updateTitle(ContentItem $contentItem)
+    {
+        $this->getContentRepository()->update($contentItem);
     }
 
     public function getContentByVersionId($versionId)
@@ -134,6 +142,17 @@ class ContentManager
             return $this->getContentAuthorsRepository()->insert($author);
         }
         return $author;
+    }
+
+    public function listTitles($context,$authorId=null) {
+        $repo = $this->getContentRepository();
+        $result = new \stdClass();
+        $result->authorTitles = [];
+        if ($authorId) {
+            $result->authorTitles = $repo->getTitlesList($authorId,$context);
+        }
+        $result->sharedTitles = $repo->getSharedTitlesList($context);
+        return $result;
     }
 
 }
