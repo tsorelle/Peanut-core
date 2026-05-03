@@ -21,18 +21,20 @@ namespace PeanutContent {
     import ServiceBroker = Peanut.ServiceBroker;
     import ViewModelBase = Peanut.ViewModelBase;
     import IServiceClient = Peanut.IServiceClient;
-    import IContentForm = Peanut.IContentForm;
+    import IEditorHost = Peanut.IEditorHost;
+
 
 
     export class contentControllerComponent implements IServiceClient {
         private application: IPeanutClient;
         private services: ServiceBroker;
         private owner : () => ViewModelBase;
-        private editForm: IContentForm;
+        private editForm: IEditorHost;
         public onFetchSuccess : (content: string)=> void;
         public saveModalId : KnockoutObservable<string>;
         public fetchModalId : KnockoutObservable<string>;
         public saveObserver : KnockoutObservable<string>;
+        public saveWatcher : any;
 
         private contentForm = {
             contentId : ko.observable(0),
@@ -40,6 +42,8 @@ namespace PeanutContent {
             shared : ko.observable(false),
             context : ko.observable(''),
             titleError : ko.observable(false),
+            prevId: 0,
+            prevTitle: ''
         }
 
         constructor(params : any) {
@@ -57,14 +61,6 @@ namespace PeanutContent {
             }
             if (!params.owner) {
                 console.error('contentControllerComponent: Owner parameter required');
-                return;
-            }
-            if (params.onFetchSuccess) {
-                // todo: check examples
-                this.onFetchSuccess = params.onFetchSuccess;
-            }
-            else {
-                console.error('contentControllerComponent: onFetchSuccess parameter required');
                 return;
             }
             if (params.saveObserver) {
@@ -86,10 +82,10 @@ namespace PeanutContent {
 
             me.owner = params.owner;
             let ownerVm = params.owner();
-            me.editForm = (<IContentForm>ownerVm);
+            me.editForm = (<IEditorHost>ownerVm);
             me.application = ownerVm.getApplication();
             me.services = ownerVm.getServices();
-            me.saveObserver.subscribe(me.onContentChanged);
+            me.saveWatcher = me.saveObserver.subscribe(me.onContentChanged);
         }
 
         showServiceMessages(messages: Peanut.IServiceMessage[]): void {
@@ -106,11 +102,35 @@ namespace PeanutContent {
             let me = this;
 
             // test
-            // me.contentForm.contentId(1);
-
+             me.contentForm.contentId(1);
+            // let content = me.editForm.getContent().trim();
+            if (me.saveObserver() == 'new document') {
+                me.contentForm.contentId(0);
+                return;
+            }
+            /* not needed?
+            me.saveWatcher.dispose();
+            me.saveObserver('reset')
+            me.saveWatcher = me.saveObserver.subscribe(me.onContentChanged);
+             */
             me.owner().showModal(me.saveModalId())
             // alert('component says that content changed');
 
+        }
+
+        clearDocument = () => {
+            let me = this
+            me.contentForm.prevId = me.contentForm.contentId();
+            me.contentForm.prevTitle = me.contentForm.title();
+            me.contentForm.contentId(0);
+            me.contentForm.title('');
+        }
+
+        cancelSave = () => {
+            let me = this
+            me.contentForm.contentId(me.contentForm.prevId);
+            me.contentForm.title(me.contentForm.prevTitle);
+            me.owner().hideModal(me.saveModalId());
         }
 
         doSave = () => {
@@ -153,7 +173,8 @@ namespace PeanutContent {
             me.owner().hideModal(me.fetchModalId());
 
             // test
-            me.onFetchSuccess('Fetch content from server test.')
+            let content = 'Fetch content from server test.';
+            me.editForm.setContent(content);
         }
     }
 }

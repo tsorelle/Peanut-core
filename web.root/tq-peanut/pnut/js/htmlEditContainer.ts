@@ -182,6 +182,12 @@ namespace Peanut {
             });
         }
 
+        onNewDocument = (editor) => {
+            let me = this;
+            this.editorHost.onNewDocument();
+            // console.log('New document selected');
+        }
+
         initEditor = (selector: string, onInitialized?: () => void) => {
             let me = this;
             me.selector = selector;
@@ -196,24 +202,32 @@ namespace Peanut {
                     editor.on('init', onInitialized);
 
                     if (me.showFileControls) {
+                        editor.on('ExecCommand', function (e) {
+                            if (e.command === 'mceNewDocument') {
+                                // Runs before TinyMCE clears the editor content
+                                me.onNewDocument(editor);
 
-                    editor.addMenuItem('fileopen', {
-                        text: 'Get Content',
-                        context: 'file',
-                        onclick: function () {
-                            me.onFetchContent(editor);
-                        }
-                    });
-
-                    editor.addMenuItem('filesave', {
-                        text: 'Save',
-                        context: 'file',
-                        onclick: function () {
-                            me.onSave(editor);
-                        }
-                    });
+                                // Your custom function here
+                                // myNewDocumentHandler(editor);
+                            }
+                        });
+                        editor.addMenuItem('fileopen', {
+                            text: 'Get Content',
+                            context: 'file',
+                            onclick: function () {
+                                me.onFetchContent(editor);
+                            }
+                        });
+/*
+                        editor.addMenuItem('filesave', {
+                            text: 'Save',
+                            context: 'file',
+                            onclick: function () {
+                                me.onSave(editor);
+                            }
+                        });
+*/
                     }
-
                 },
 
                 // todo: initialization method to alter menubar

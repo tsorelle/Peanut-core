@@ -10,7 +10,7 @@
             </div>
             <div class="modal-body">
                 <form>
-                    <div class="mb-3">
+                    <div class="mb-3" data-bind="visible: contentForm.contentId() === 0">
                         <label for="title" class="form-label">Title</label>
                         <span data-bind="visible: contentForm.titleError" class="text-danger">A title is required</span>
                         <input
@@ -22,8 +22,12 @@
                                 data-bind="value: contentForm.title"
                         >
                     </div>
+                    <div class="mb-3" data-bind="visible: contentForm.contentId() !== 0">
+                        <div><strong>Title</strong></div>
+                        <div data-bind="text: contentForm.title"></div>
+                    </div>
 
-                    <div class="form-check mb-3">
+                    <div class="form-check mb-3" data-bind="visible: contentForm.contentId() === 0">
                         <input
                                 type="checkbox"
                                 class="form-check-input"
@@ -39,12 +43,13 @@
                         <input
                                 type="checkbox"
                                 class="form-check-input"
-                                id="finalVersion"
-                                name="finalVersion"
+                                id="newDocument"
+                                name="newDocument"
                                 value="1"
+                                data-bind="checked: contentForm.contentId() === 0, event: { change: clearDocument }"
                         >
-                        <label class="form-check-label" for="finalVersion">
-                            Final version (previous versions will be removed)
+                        <label class="form-check-label" for="newDocument">
+                            Save as new document
                         </label>
                     </div>
 
@@ -54,7 +59,8 @@
                 <button type="button" class="btn btn-primary" data-bind="click: doSave">
                     Save Changes
                 </button>
-                <button type="button" class="btn btn-outline-dark"  data-bs-dismiss="modal" data-dismiss="modal">
+                <!-- button type="button" class="btn btn-outline-dark"  data-bs-dismiss="modal" data-dismiss="modal" -->
+                <button type="button" class="btn btn-outline-dark"  data-bind="click: cancelSave">
                     Cancel
                 </button>
             </div>
