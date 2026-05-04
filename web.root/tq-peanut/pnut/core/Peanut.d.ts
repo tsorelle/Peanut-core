@@ -27,15 +27,18 @@ declare namespace Peanut {
         bindNode(containerName: string, context: any);
     }
 
-    export interface IEditorHost {
-        fetchEditorContent(editor: any): void;
-        saveEditorContent(editor) : void;
+    export interface IContentEditor {
         getContent() : string,
         setContent(content: string) : void;
-        onNewDocument() : void;
-        contentObserver : KnockoutObservable<string>;
+
+        setEditController(controller: IEditController);
     }
 
+    export interface IEditController {
+        openDocument(): void;
+        saveDocument() : void;
+        newDocument() : void;
+    }
 
 
     export interface errorInformation {

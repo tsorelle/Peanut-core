@@ -3,7 +3,7 @@
 /// <reference path='../../typings/tinymce/tinymce.d.ts' />
 
 namespace Peanut {
-    export class htmlEditContainer
+    export class htmlEditContainer implements Peanut.IContentEditor
     {
         readonly configEmail = 1;
         readonly configContent = 2;
@@ -22,7 +22,7 @@ namespace Peanut {
         private showHr = false;
         private additionalOptions : { [key: string]: any } = null;
         private services: ServiceBroker;
-        private editorHost : Peanut.IEditorHost;
+        private editController : IEditController;
 
         constructor(owner?: any)
         {
@@ -30,9 +30,13 @@ namespace Peanut {
 
             if (owner) {
                 me.services = owner.getServiceBroker();
-                me.editorHost = owner as Peanut.IEditorHost;
                 me.application = owner.getApplication();
             }
+        }
+
+        setEditController(controller: IEditController) {
+            let me = this;
+            me.editController = controller;
         }
 
 
@@ -166,10 +170,14 @@ namespace Peanut {
         }
 
         onSave = (editor: any) => {
-            this.editorHost.saveEditorContent(editor);
+            if (editor) {
+                this.editController.saveDocument();
+            }
         }
         onFetchContent = (editor ) => {
-            this.editorHost.fetchEditorContent(editor);
+            if (editor) {
+                this.editController.openDocument();
+            }
         }
 
         onSetUp = (editor) => {
@@ -184,8 +192,9 @@ namespace Peanut {
 
         onNewDocument = (editor) => {
             let me = this;
-            this.editorHost.onNewDocument();
-            // console.log('New document selected');
+            if (editor) {
+                me.editController.newDocument();
+            }
         }
 
         initEditor = (selector: string, onInitialized?: () => void) => {

@@ -5,13 +5,10 @@
 
 namespace Peanut {
 
-    export class EditorTestViewModel extends Peanut.ViewModelBase implements Peanut.IEditorHost {
+    export class EditorTestViewModel extends Peanut.ViewModelBase {
         // observables
         private htmlEditor : Peanut.htmlEditContainer;
         private i = 1;
-
-        // for content management
-        contentObserver = ko.observable('');
 
         init(successFunction?: () => void) {
             let me = this;
@@ -87,28 +84,6 @@ namespace Peanut {
         }
 
         // for content management
-        fetchEditorContent(editor: any): void {
-            let me = this;
-            me.contentObserver('!!open document')
-
-            // test
-            // me.onNewContent('This is the fetched content');
-        }
-
-        saveEditorContent(editor): void {
-            let me = this;
-            let content = editor.getContent();
-            me.contentObserver(content);
-            // test
-            //alert('saving content');
-        }
-
-        onNewContent = (content: string) => {
-            // let me = this;
-
-            this.htmlEditor.setContent(content);
-        };
-
         getContent(): string {
             let me = this;
             return me.htmlEditor.getContent();
@@ -117,11 +92,6 @@ namespace Peanut {
         setContent(content: string): void {
             let me = this;
             me.htmlEditor.setContent(content);
-        }
-
-        onNewDocument(): void {
-            let me = this;
-            me.contentObserver('!!new document')
         }
 
     }

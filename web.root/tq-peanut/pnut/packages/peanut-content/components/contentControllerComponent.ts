@@ -20,21 +20,17 @@ namespace PeanutContent {
     import IPeanutClient = Peanut.IPeanutClient;
     import ServiceBroker = Peanut.ServiceBroker;
     import ViewModelBase = Peanut.ViewModelBase;
-    import IServiceClient = Peanut.IServiceClient;
-    import IEditorHost = Peanut.IEditorHost;
+    import IContentEditor = Peanut.IContentEditor;
 
 
 
-    export class contentControllerComponent implements IServiceClient {
+    export class contentControllerComponent implements Peanut.IEditController {  // IServiceClient not needed?
         private application: IPeanutClient;
         private services: ServiceBroker;
         private owner : () => ViewModelBase;
-        private editForm: IEditorHost;
-        public onFetchSuccess : (content: string)=> void;
         public saveModalId : KnockoutObservable<string>;
         public fetchModalId : KnockoutObservable<string>;
-        public contentObserver : KnockoutObservable<string>;
-        public saveWatcher : any;
+        private editor : Peanut.IContentEditor;
 
         private contentForm = {
             contentId : ko.observable(0),
@@ -63,16 +59,16 @@ namespace PeanutContent {
                 console.error('contentControllerComponent: Owner parameter required');
                 return;
             }
-/*
-            if (params.contentObserver) {
-                // todo : check examples
-                this.contentObserver = params.contentObserver;
+
+            if (params.editor) {
+                this.editor = <IContentEditor>params.editor;
+                this.editor.setEditController(this);
             }
             else {
-                console.error('contentControllerComponent: contentObserver parameter required');
+                console.error('contentControllerComponent: editor parameter required');
                 return;
             }
-*/
+
             if (params.translator) {
                 console.log('contentControllerComponent: translations not supported yet');
             }
@@ -84,50 +80,11 @@ namespace PeanutContent {
 
             me.owner = params.owner;
             let ownerVm = params.owner();
-            me.editForm = (<IEditorHost>ownerVm);
-            me.contentObserver = me.editForm.contentObserver;
             me.application = ownerVm.getApplication();
             me.services = ownerVm.getServices();
-            me.saveWatcher = me.contentObserver.subscribe(me.onContentChanged);
         }
 
-        showServiceMessages(messages: Peanut.IServiceMessage[]): void {
-            // todo: implement
-        }
-        hideServiceMessages(): void {
-            // todo: implement
-        }
-        showError(errorMessage?: string): void {
-            // todo: implement
-        }
-
-        onContentChanged = () => {
-            let me = this;
-
-            // test
-             me.contentForm.contentId(1);
-            // let content = me.editForm.getContent().trim();
-            if (me.contentObserver() == '!!new document') {
-                me.contentForm.contentId(0);
-                return;
-            }
-            if (me.contentObserver() == '!!open document') {
-                alert('OPEN DOC');
-                me.owner().showModal(me.fetchModalId());
-                return;
-            }
-
-            /* not needed?
-            me.saveWatcher.dispose();
-            me.contentObserver('reset')
-            me.saveWatcher = me.contentObserver.subscribe(me.onContentChanged);
-             */
-            me.owner().showModal(me.saveModalId())
-            // alert('component says that content changed');
-
-        }
-
-        clearDocument = () => {
+         clearDocument = () => {
             let me = this
             me.contentForm.prevId = me.contentForm.contentId();
             me.contentForm.prevTitle = me.contentForm.title();
@@ -149,7 +106,7 @@ namespace PeanutContent {
                 title : me.contentForm.title().trim(),
                 shared : me.contentForm.shared(),
                 context : me.contentForm.context(),
-                content : me.editForm.getContent()
+                content : me.editor.getContent()
             }
             if (request.title.length === 0) {
                 me.contentForm.titleError(true);
@@ -170,6 +127,9 @@ namespace PeanutContent {
                 }
             ).fail(function () {
                 let trace = me.services.getErrorInformation();
+                if (trace) {
+                    console.error("Service call failed. Debug for error details. ");
+                }
             });
 
 
@@ -183,7 +143,23 @@ namespace PeanutContent {
 
             // test
             let content = 'Fetch content from server test.';
-            me.editForm.setContent(content);
+            me.editor.setContent(content);
+        }
+
+        newDocument(): void {
+            let me = this;
+            // todo: clear form fields?
+            me.contentForm.contentId(0);
+        }
+
+        openDocument(): void {
+            let me = this;
+            me.owner().showModal(me.fetchModalId());
+        }
+
+        saveDocument(): void {
+            let me = this;
+            me.owner().showModal(me.saveModalId())
         }
     }
 }
