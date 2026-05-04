@@ -30,7 +30,7 @@ namespace Peanut {
                     // me.htmlEditor.includeFontSizing();
                     // me.htmlEditor.includeTableTools();
                     me.htmlEditor.includeDesignTools();
-                    me.htmlEditor.includeFileControls('mailings');
+                    me.htmlEditor.includeFileControls();
                     me.htmlEditor.initialize('test-editor', () => {
                         me.bindDefaultSection();
                         successFunction();

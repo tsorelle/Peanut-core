@@ -10,7 +10,6 @@ namespace PeanutMailings {
     import INameValuePair = Peanut.INameValuePair;
     import IMailboxFormOwner = Mailboxes.IMailboxFormOwner;
     import IMailBox = Mailboxes.IMailBox;
-    import IEditorHost = Peanut.IEditorHost;
 
     interface IGetMailingListsResponse {
         emailLists : IEmailListItem[];
@@ -62,7 +61,7 @@ namespace PeanutMailings {
     }
 
     export class MailingFormViewModel extends Peanut.ViewModelBase
-        implements IMailboxFormOwner, IEditorHost {
+        implements IMailboxFormOwner {
         sendRequest : IEMailListSendRequest = null;
 
         // observables
@@ -156,7 +155,7 @@ namespace PeanutMailings {
             ], () => {
                 me.htmlEditor = new Peanut.htmlEditContainer(me);
                 me.htmlEditor.includeDesignTools();
-                me.htmlEditor.includeFileControls('mailings');
+                me.htmlEditor.includeFileControls();
                 me.mailboxes = new Mailboxes.MailboxListObservable(me);
                 me.application.registerComponents([
                     '@pnut/modal-confirm',

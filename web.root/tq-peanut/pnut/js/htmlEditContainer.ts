@@ -18,7 +18,6 @@ namespace Peanut {
         private showTableTools = false;
         private showFontSizes  = false;
         private showFileControls  = false;
-        private contentContext : string = '';
         private showHr = false;
         private additionalOptions : { [key: string]: any } = null;
         private services: ServiceBroker;
@@ -99,9 +98,8 @@ namespace Peanut {
             this.showHr = true;
         }
 
-        public includeFileControls = (context: string) => {
+        public includeFileControls = () => {
             this.showFileControls = true;
-            this.contentContext = context;
         }
 
         /**
