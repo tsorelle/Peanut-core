@@ -4,10 +4,10 @@
  * @see documentation
  * Tag examples:
  * With required parameters only:
- *   <content-controller params="owner:self,saveObserver:saveContent,onFetchSuccess: onNewContent"</content-controller>
+ *   <content-controller params="owner:self,contentObserver:saveContent,onFetchSuccess: onNewContent"</content-controller>
  *
  *  With all parameters including overrides:
- *      <content-controller params="owner:self,saveObserver:saveContent,onFetchSuccess: onNewContent,
+ *      <content-controller params="owner:self,contentObserver:saveContent,onFetchSuccess: onNewContent,
  *      fetchId:'fetch-content-modal',saveId:'save-content-modal',translator:self"</content-controller>
  *
  */
@@ -33,7 +33,7 @@ namespace PeanutContent {
         public onFetchSuccess : (content: string)=> void;
         public saveModalId : KnockoutObservable<string>;
         public fetchModalId : KnockoutObservable<string>;
-        public saveObserver : KnockoutObservable<string>;
+        public contentObserver : KnockoutObservable<string>;
         public saveWatcher : any;
 
         private contentForm = {
@@ -63,14 +63,16 @@ namespace PeanutContent {
                 console.error('contentControllerComponent: Owner parameter required');
                 return;
             }
-            if (params.saveObserver) {
+/*
+            if (params.contentObserver) {
                 // todo : check examples
-                this.saveObserver = params.saveObserver;
+                this.contentObserver = params.contentObserver;
             }
             else {
-                console.error('contentControllerComponent: saveObserver parameter required');
+                console.error('contentControllerComponent: contentObserver parameter required');
                 return;
             }
+*/
             if (params.translator) {
                 console.log('contentControllerComponent: translations not supported yet');
             }
@@ -83,9 +85,10 @@ namespace PeanutContent {
             me.owner = params.owner;
             let ownerVm = params.owner();
             me.editForm = (<IEditorHost>ownerVm);
+            me.contentObserver = me.editForm.contentObserver;
             me.application = ownerVm.getApplication();
             me.services = ownerVm.getServices();
-            me.saveWatcher = me.saveObserver.subscribe(me.onContentChanged);
+            me.saveWatcher = me.contentObserver.subscribe(me.onContentChanged);
         }
 
         showServiceMessages(messages: Peanut.IServiceMessage[]): void {
@@ -104,14 +107,20 @@ namespace PeanutContent {
             // test
              me.contentForm.contentId(1);
             // let content = me.editForm.getContent().trim();
-            if (me.saveObserver() == 'new document') {
+            if (me.contentObserver() == '!!new document') {
                 me.contentForm.contentId(0);
                 return;
             }
+            if (me.contentObserver() == '!!open document') {
+                alert('OPEN DOC');
+                me.owner().showModal(me.fetchModalId());
+                return;
+            }
+
             /* not needed?
             me.saveWatcher.dispose();
-            me.saveObserver('reset')
-            me.saveWatcher = me.saveObserver.subscribe(me.onContentChanged);
+            me.contentObserver('reset')
+            me.saveWatcher = me.contentObserver.subscribe(me.onContentChanged);
              */
             me.owner().showModal(me.saveModalId())
             // alert('component says that content changed');

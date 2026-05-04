@@ -33,7 +33,11 @@ declare namespace Peanut {
         getContent() : string,
         setContent(content: string) : void;
         onNewDocument() : void;
+        contentObserver : KnockoutObservable<string>;
     }
+
+
+
     export interface errorInformation {
         message: string;
         details : string;

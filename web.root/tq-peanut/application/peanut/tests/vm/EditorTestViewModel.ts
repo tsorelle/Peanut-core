@@ -11,7 +11,7 @@ namespace Peanut {
         private i = 1;
 
         // for content management
-        saveContent = ko.observable('');
+        contentObserver = ko.observable('');
 
         init(successFunction?: () => void) {
             let me = this;
@@ -89,7 +89,8 @@ namespace Peanut {
         // for content management
         fetchEditorContent(editor: any): void {
             let me = this;
-            me.showModal('#fetch-content-modal');
+            me.contentObserver('!!open document')
+
             // test
             // me.onNewContent('This is the fetched content');
         }
@@ -97,7 +98,7 @@ namespace Peanut {
         saveEditorContent(editor): void {
             let me = this;
             let content = editor.getContent();
-            me.saveContent(content);
+            me.contentObserver(content);
             // test
             //alert('saving content');
         }
@@ -120,7 +121,7 @@ namespace Peanut {
 
         onNewDocument(): void {
             let me = this;
-            me.saveContent('new document')
+            me.contentObserver('!!new document')
         }
 
     }
