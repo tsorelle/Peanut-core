@@ -30,6 +30,7 @@ class ContentRepository extends \Tops\db\TEntityRepository
             'title'=>PDO::PARAM_STR,
             'authorId'=>PDO::PARAM_STR,
             'context'=>PDO::PARAM_STR,
+            'description'=>PDO::PARAM_STR,
             'shared'=>PDO::PARAM_BOOL,
             'createdby'=>PDO::PARAM_STR,
             'createdon'=>PDO::PARAM_STR,
@@ -38,25 +39,34 @@ class ContentRepository extends \Tops\db\TEntityRepository
             'active'=>PDO::PARAM_STR);
     }
 
-    public function getTitlesList($authorId,$context=null) {
-        $sql = 'authorId = ? AND shared = 0';
+    public function getTitlesListByAuthor($authorId,$context=null) {
+        $sql = "SELECT c.`id`,`title`, a.`fullName` AS author, if(shared=0,'No','Yes') as shared, c.`createdon` AS dateCreated ".
+            'FROM `pnut_content` c JOIN `pnut_content_authors` a ON c.`authorId` = a.`id` '.
+            'WHERE (c.`active` = 1 AND c.authorId = ?';
+
         $params = [$authorId];
         if ($context) {
             $params[] = $context;
-            $sql .= ' AND context = ?';
+            $sql .= ' AND c.`context` = ?';
         }
-        $clauses = ' ORDER BY title';
-        return $this->getEntityCollection($sql,$params,false,$clauses);
+        $sql .= ') ORDER BY c.title,c.createdon';
+
+        $stmt =  $this->executeStatement($sql,$params);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
     public function getSharedTitlesList($context=null) {
-        $sql = 'shared = 1';
+        $sql = "SELECT c.`id`,`title`, IF(c.`shared` = 1,'Yes','No') AS shared, a.`fullName` AS author, c.`createdon` AS dateCreated ".
+            'FROM `pnut_content` c JOIN `pnut_content_authors` a ON c.`authorId` = a.`id` '.
+            'WHERE (c.`active` = 1  AND c.`shared` = 1';
+
         $params = [];
         if ($context) {
             $params[] = $context;
-            $sql .= ' AND context = ?';
+            $sql .= ' AND c.`context` = ?';
         }
-        $clauses = ' ORDER BY title';
-        return $this->getEntityCollection($sql,$params,false,$clauses);
+        $sql .= ') ORDER BY c.title,c.createdon';
+        $stmt =  $this->executeStatement($sql,$params);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
     public function getTitle($title,$authorId,$context) {

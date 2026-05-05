@@ -78,16 +78,19 @@ class ContentManager
      * @param null $authorId
      * @param $title
      * @param $context
+     * @param string $description
      * @param string $content
+     * @param bool $shared
      * @return mixed|ContentItem
      */
-    public function createTitle(mixed $authorId, string $title, string $context, string $content, bool $shared=false): ContentItem
+    public function createTitle(mixed $authorId, string $title, string $context, $description, string $content, bool $shared=false): ContentItem
     {
         $contentRepo = new ContentRepository();
         $contentItem = $contentRepo->getTitle($title, $authorId, $context);
         if (!$contentItem) {
             $contentItem = new ContentItem();
             $contentItem->title = $title;
+            $contentItem->description = $description;
             $contentItem->authorId = $authorId;
             $contentItem->context = $context;
             $contentItem->active = 1;
@@ -117,7 +120,11 @@ class ContentManager
 
     public function getLatestVersionContent($contentId)
     {
-        return $this->getContentVersionsRepository()->getLatestVersion($contentId);
+        $version = $this->getContentVersionsRepository()->getLatestVersion($contentId);
+        if ($version) {
+            return $version->content;
+        }
+        return '';
     }
 
     public function removeContent($contentId)
@@ -144,15 +151,21 @@ class ContentManager
         return $author;
     }
 
-    public function listTitles($context,$authorId=null) {
+    public function listTitles(string $context,$authorId=null) : \stdClass {
         $repo = $this->getContentRepository();
         $result = new \stdClass();
         $result->authorTitles = [];
         if ($authorId) {
-            $result->authorTitles = $repo->getTitlesList($authorId,$context);
+            $result->authorTitles = $repo->getTitlesListByAuthor($authorId,$context);
         }
         $result->sharedTitles = $repo->getSharedTitlesList($context);
         return $result;
+    }
+
+    public function getSharedTitlesList(string $context) : array
+    {
+        $repo = $this->getContentRepository();
+        return $repo->getSharedTitlesList($context);
     }
 
 }

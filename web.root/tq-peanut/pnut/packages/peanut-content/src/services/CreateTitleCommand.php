@@ -33,6 +33,7 @@ class CreateTitleCommand extends TServiceCommand
             $this->addErrorMessage('Content is required');
             return;
         }
+        $description = $request->description ?? '';
         $authorId = $request->authorId ?? null;
 
         $manager = new ContentManager();
@@ -40,7 +41,7 @@ class CreateTitleCommand extends TServiceCommand
             $author = $manager->createAuthor($user->getId(), $user->getFullName());
             $authorId = $author->id;
         }
-        $contentItem = $manager->createTitle($authorId, $title, $context, $content);
+        $contentItem = $manager->createTitle($authorId, $title, $context, $content, $description);
         if ($contentItem) {
             $this->addInfoMessage("New title created: {$contentItem->title}");
         }

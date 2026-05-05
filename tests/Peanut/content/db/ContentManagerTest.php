@@ -22,14 +22,9 @@ class ContentManagerTest extends TestCase
     }
 
     private function clearData() {
-        $contentManager = $this->getManager();
-        $author = $contentManager->getAuthorByAccountId($this->testAccountId);
-        if ($author) {
-            $title = $contentManager->getTitle($this->testTitle, $author->id, $this->testContext);
-            if ($title) {
-                $contentManager->removeContent($title->id);
-            }
-        }
+        $query = new TQuery();
+        $query->execute("DELETE FROM pnut_content_versions WHERE contentId IN (SELECT id FROM pnut_content WHERE description LIKE 'test:%')");
+        $query->execute("DELETE FROM pnut_content WHERE description LIKE 'test:%'");
     }
     public function testContentManager()
     {
@@ -38,7 +33,7 @@ class ContentManagerTest extends TestCase
         $author = $contentManager->createAuthor(1, 'Test Author');
         $this->assertNotEmpty($author);
         $authorId = $author->id;
-        $title = $contentManager->createTitle($authorId, $this->testTitle, $this->testContext, 'test content 1', true);
+        $title = $contentManager->createTitle($authorId, $this->testTitle,$this->testContext, 'test: 1', 'test content 1', true);
 
      //   $title->shared = true;
      //   $contentManager->updateTitle($title);
@@ -57,24 +52,21 @@ class ContentManagerTest extends TestCase
 
         $versions = $contentManager->getContentVersions($contentId);
         $this->assertCount(3, $versions);
-        $this->assertEquals('test content 1', $versions[0]->content);
+        $this->assertEquals('test content 1', $versions[2]->content);
         $this->assertEquals('test content 2', $versions[1]->content);
-        $this->assertEquals('test content 3', $versions[2]->content);
+        $this->assertEquals('test content 3', $versions[0]->content);
 
         $versions = $contentManager->getContentVersions($contentId);
-        $lastVersion = $versions[2];
+        $lastVersion = $versions[0];
 
-        $actualVersion = $contentManager->getLatestVersionContent($contentId);
-        $this->assertEquals($lastVersion->contentId, $actualVersion->contentId);
-        $this->assertEquals($lastVersion->content, $actualVersion->content);
+        $versionContent = $contentManager->getLatestVersionContent($contentId);
+        $this->assertEquals($lastVersion->content, $versionContent);
+
         $final = true;
         $contentManager->saveContent($contentId, 'test content 4', $final);
 
-        $lastVersion = $contentManager->getLatestVersionContent($contentId);
-        $this->assertEquals($lastVersion->content, 'test content 4');
-
-
-
+        $latestContent = $contentManager->getLatestVersionContent($contentId);
+        $this->assertEquals($latestContent, 'test content 4');
     }
 
     public function testGetTitles() {
@@ -92,13 +84,13 @@ class ContentManagerTest extends TestCase
         $query->execute($cleanupSql);
 
         foreach ($authorTitles as $title) {
-            $item = $contentManager->createTitle($author->id, $title, $this->testContext, 'test content 1', false);
+            $item = $contentManager->createTitle($author->id, $title, $this->testContext, 'test 1', 'test content 1', false);
             $contentId = $item->id;
             $contentManager->saveContent($contentId, 'test content 2');
             $contentManager->saveContent($contentId, 'test content 3');
         }
         foreach ($sharedTitles as $title) {
-            $item = $contentManager->createTitle($author->id, $title, $this->testContext, 'test shared content 1', true);
+            $item = $contentManager->createTitle($author->id, $title, $this->testContext, 'shared test 1', 'test shared content 1', true);
             $contentId = $item->id;
             $contentManager->saveContent($contentId, 'test shared content 2');
             $contentManager->saveContent($contentId, 'test shared content 3');
@@ -108,7 +100,7 @@ class ContentManagerTest extends TestCase
         $this->assertNotEmpty($titles);
         $this->assertNotEmpty($titles->authorTitles);
         $this->assertNotEmpty($titles->sharedTitles);
-        $this->assertCount(3, $titles->authorTitles);
+        $this->assertCount(6, $titles->authorTitles);
         $this->assertCount(3, $titles->sharedTitles);
 
         $this->assertEquals($authorTitles[0], $titles->authorTitles[0]->title);

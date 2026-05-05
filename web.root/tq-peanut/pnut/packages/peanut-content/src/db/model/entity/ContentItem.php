@@ -12,6 +12,7 @@ class ContentItem  extends \Tops\db\TimeStampedEntity
     public $title;
     public $authorId;
     public $context;
+    public $description;
     public $shared = false;
     public $active;
 
