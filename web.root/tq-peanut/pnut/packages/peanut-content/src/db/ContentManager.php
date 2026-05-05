@@ -140,6 +140,11 @@ class ContentManager
         return $this->getContentVersionsRepository()->getVersionsByContentId($contentId);
     }
 
+    public function getVersionList($contentId)
+    {
+        return $this->getContentVersionsRepository()->getVersionList($contentId);
+    }
+
     public function createAuthor($accountId, $fullName) {
         $author = $this->getAuthorByAccountId($accountId);
         if (!$author) {

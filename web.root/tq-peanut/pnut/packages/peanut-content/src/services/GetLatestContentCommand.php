@@ -3,10 +3,9 @@
 namespace Peanut\content\services;
 
 use Peanut\content\db\ContentManager;
-use Peanut\content\db\model\repository\ContentVersionsRepository;
 use Tops\services\TServiceCommand;
 
-class GetVersionsCommand extends TServiceCommand
+class GetLatestContentCommand extends TServiceCommand
 {
 
     protected function run()
@@ -17,7 +16,7 @@ class GetVersionsCommand extends TServiceCommand
             return;
         }
         $manager = new ContentManager();
-        $result = $manager->getVersionList($contentId);
+        $result = $manager->getLatestVersionContent($contentId);
         $this->setReturnValue($result);
     }
 }

@@ -56,11 +56,23 @@ class ContentManagerTest extends TestCase
         $this->assertEquals('test content 2', $versions[1]->content);
         $this->assertEquals('test content 3', $versions[0]->content);
 
-        $versions = $contentManager->getContentVersions($contentId);
         $lastVersion = $versions[0];
 
         $versionContent = $contentManager->getLatestVersionContent($contentId);
         $this->assertEquals($lastVersion->content, $versionContent);
+
+        $versionList = $contentManager->getVersionList($contentId);
+        $this->assertCount(3, $versions);
+        for ($i = 0; $i < 2; $i++){
+           $expected = $versions[$i]->id;
+            $actual = $versionList[$i]->id;
+            $this->assertEquals($expected, $actual);
+            $v=$versionList[$i];
+            $x=$versions[$i];
+            $expected = $versions[$i]->createdon;
+            $actual = $versionList[$i]->createdon;
+            $this->assertEquals($expected, $actual);
+        }
 
         $final = true;
         $contentManager->saveContent($contentId, 'test content 4', $final);
