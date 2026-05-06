@@ -1,8 +1,7 @@
 <?php
 namespace Peanut\content\services;
-use Peanut\content\db\ContentAuthorsRepository;
+
 use Peanut\content\db\ContentManager;
-use Peanut\content\db\model\repository\ContentRepository;
 use Tops\sys\TUser;
 
 class GetTitlesCommand extends \Tops\services\TServiceCommand
@@ -12,12 +11,13 @@ class GetTitlesCommand extends \Tops\services\TServiceCommand
     {
         $request = $this->getRequest();
         $context = $request->context ?? null;
-        $authorId = $request->authorId ?? null;
-        $sharedOnly = empty($request->sharedOnly) ?? true;
-        $manager = new ContentManager();
-        if ($sharedOnly) {
-            $list = $manager->getSharedTitlesList($context);
+        if (empty($context)) {
+            $this->addErrorMessage('No context received');
+            return;
         }
+        $manager = new ContentManager();
+
+        $authorId = $request->authorId ?? null;
         if (!$authorId) {
             $accountId = TUser::getCurrent()->getId();
             $author = $manager->getAuthorByAccountId($accountId);
@@ -26,15 +26,15 @@ class GetTitlesCommand extends \Tops\services\TServiceCommand
             }
             $authorId = $author->id;
         }
-
-
-        $list = $manager->getTitlesList($authorId,$context);
-        if (empty($authorId)) {
-            $author = $manager->getAuthorByAccountId(TUser::getCurrent()->getId());
+        $response = new \stdClass();
+        $sharedOnly = empty($request->sharedOnly) ? false: true;
+        if ($sharedOnly) {
+            $response->shared = $manager->getSharedTitlesList($context);
         }
-        $repository = new ContentRepository();
-
-        $titles = $r($authorId,$context);
-        $this->setReturnValue($titles);
+        else {
+            $response->titles = $manager->getAuthorTitles($context,$authorId);
+            $response->shared = $manager->getSharedTitlesList($context,$authorId);
+        }
+        $this->setReturnValue($response);
     }
 }

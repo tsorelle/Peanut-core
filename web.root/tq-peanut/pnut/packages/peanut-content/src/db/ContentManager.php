@@ -34,7 +34,11 @@ class ContentManager
         if ($final) {
             $repository->removeVersions($contentId);
         }
-        return $repository->insert($version);
+        $id = $repository->insert($version);
+        $result = new \stdClass();
+        $result->id = $id;
+        $result->dateCreated = (new \DateTime())->format('Y-m-d H:i:s');
+        return $result;
     }
 
     private function getContentRepository() : ContentRepository {
@@ -68,6 +72,9 @@ class ContentManager
 
     public function getTitle($title, $authorId, $context) {
         return $this->getContentRepository()->getTitle($title, $authorId, $context);
+    }
+    public function getTitleByContentId($contentId) {
+        return $this->getContentRepository()->get($contentId);
     }
 
     public function getSharedTitle($title, $context) {
@@ -156,21 +163,16 @@ class ContentManager
         return $author;
     }
 
-    public function listTitles(string $context,$authorId=null) : \stdClass {
+
+    public function getAuthorTitles(string $context,$authorId=null) : array {
         $repo = $this->getContentRepository();
-        $result = new \stdClass();
-        $result->authorTitles = [];
-        if ($authorId) {
-            $result->authorTitles = $repo->getTitlesListByAuthor($authorId,$context);
-        }
-        $result->sharedTitles = $repo->getSharedTitlesList($context);
-        return $result;
+        return $repo->getTitlesListByAuthor($authorId,$context);
     }
 
-    public function getSharedTitlesList(string $context) : array
+    public function getSharedTitlesList(string $context, $excludeAuthor=null) : array
     {
         $repo = $this->getContentRepository();
-        return $repo->getSharedTitlesList($context);
+        return $repo->getSharedTitlesList($context,$excludeAuthor);
     }
 
 }

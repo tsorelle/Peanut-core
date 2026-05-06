@@ -167,9 +167,18 @@ namespace Peanut {
             me.editorInitialized = (ed !== null);
         }
 
+
+
         onSave = (editor: any) => {
             if (editor) {
                 this.editController.saveDocument();
+
+            }
+        }
+        onSaveAs = (editor: any) => {
+            if (editor) {
+                this.editController.saveDocumentAs();
+
             }
         }
         onFetchContent = (editor ) => {
@@ -218,22 +227,23 @@ namespace Peanut {
                                 // myNewDocumentHandler(editor);
                             }
                         });
+
                         editor.addMenuItem('fileopen', {
-                            text: 'Get Content',
+                            text: 'Open...',
                             context: 'file',
                             onclick: function () {
                                 me.onFetchContent(editor);
                             }
                         });
-/*
+
                         editor.addMenuItem('filesave', {
-                            text: 'Save',
+                            text: 'Save as...',
                             context: 'file',
                             onclick: function () {
-                                me.onSave(editor);
+                                me.onSaveAs(editor);
                             }
                         });
-*/
+
                     }
                 },
 

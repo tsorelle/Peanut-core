@@ -8,6 +8,7 @@ use Peanut\content\db\model\repository\ContentVersionsRepository;
 class GetContentCommand extends \Tops\services\TServiceCommand
 {
 
+
     protected function run()
     {
         $request = $this->getRequest();
@@ -24,18 +25,18 @@ class GetContentCommand extends \Tops\services\TServiceCommand
                 $this->addErrorMessage('No content or version id');
                 return;
             }
-            $content = $manager->getLatestVersionContent($contentId);
+            $response = $manager->getLatestVersionContent($contentId);
         }
         else {
-            $content = $manager->getVersionContent($versionId);
+            $response = $manager->getVersionContent($versionId);
         }
 
 
-        if (empty($content)) {
+        if (empty($response) || empty($response->content)) {
             $this->addErrorMessage('No content found');
             return;
         }
-        $response = $content;
-        $this->setReturnValue($response);
+
+        $this->setReturnValue($response->content);
     }
 }

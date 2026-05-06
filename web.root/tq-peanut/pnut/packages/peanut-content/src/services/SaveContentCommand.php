@@ -30,9 +30,10 @@ class SaveContentCommand extends TServiceCommand
         if (empty($content)) {
             $this->addErrorMessage('No content received');
         }
-        $final = !empty($request->final);
-        $response = (new ContentManager())->saveContent($contentId,$content,$final);
 
-        $this->setReturnValue($response);
+        $final = !empty($request->final);
+        $version = (new ContentManager())->saveContent($contentId,$content,$final);
+        $this->addInfoMessage('Content saved');
+        $this->setReturnValue($version);
     }
 }

@@ -1,16 +1,17 @@
 <div class="modal" data-bind="attr: { id: saveModalId }">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title">Save Changes</h4>
                 <button type="button" class="close btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close">
+                        data-bs-dismiss="modal">
+                        <!--  aria-label="Close" -->
                 </button>
             </div>
             <div class="modal-body">
                 <form>
-                    <div class="mb-3" data-bind="visible: contentForm.contentId() === 0">
+                    <div  data-bind="visible: contentForm.contentId() === 0">
+                    <div class="mb-3">
                         <label for="title" class="form-label">Title</label>
                         <span data-bind="visible: contentForm.titleError" class="text-danger">A title is required</span>
                         <input
@@ -21,6 +22,18 @@
                                 placeholder="Enter title"
                                 data-bind="value: contentForm.title"
                         >
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <input
+                                type="text"
+                                class="form-control"
+                                id="description"
+                                name="description"
+                                placeholder="Enter a short description"
+                                data-bind="value: contentForm.description"
+                        >
+                    </div>
                     </div>
                     <div class="mb-3" data-bind="visible: contentForm.contentId() !== 0">
                         <div><strong>Title</strong></div>
@@ -68,22 +81,110 @@
 </div>
 
 <div class="modal" data-bind="attr: { id: fetchModalId }">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" >Get Content</h4>
                 <button type="button" class="close btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close">
+                        data-bs-dismiss="modal">
+                        <!-- aria-label="Close" -->
                 </button>
             </div>
             <div class="modal-body">
-                <p>body here, test</p>
+                <ul class="nav nav-tabs">
+
+                    <li class="nav-item" data-bind="visible: (contentListForm.titles() || []).length > 0">
+                        <a class="nav-link"
+                           href="#"
+                           data-bind="css:{active: contentListForm.tab()=='author'}, click: showAuthorTab">
+                            Your Content
+                        </a>
+                    </li>
+
+                    <li class="nav-item" data-bind="visible: (contentListForm.shared() || []).length > 0">
+                        <a class="nav-link"
+                           href="#"
+                           data-bind="css:{active: contentListForm.tab()=='shared'}, click: showSharedTab">
+                            Shared Content
+                        </a>
+                    </li>
+
+                    <li class="nav-item" data-bind="visible: (contentListForm.versions() || []).length > 0">
+                        <a class="nav-link"
+                           href="#"
+                           data-bind="css:{active: contentListForm.tab()=='versions'}, click: showVersionsTab">
+                            Versions
+                        </a>
+                    </li>
+                </ul>
+                <div data-bind="visible:contentListForm.tab()=='author'">
+                    <table class="table table-responsive" style="width: 100%">
+                        <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Shared</th>
+                            <th>Created</th>
+                        </tr>
+                        </thead>
+                        <tbody data-bind="foreach: contentListForm.titles">
+                        <tr>
+                            <td>
+                                <a href="#" data-bind="text: title, click: $parent.loadContent"></a>
+                            </td>
+                            <td data-bind="text: description"></td>
+                            <td data-bind="text: shared"></td>
+                            <td data-bind="text: dateCreated"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div data-bind="visible:contentListForm.tab()=='shared'">
+                    <table class="table table-responsive" style="width: 100%">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Description</th>
+                                <th>Author</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: contentListForm.shared">
+                            <tr>
+                                <td>
+                                    <a href="#" data-bind="text: title, click: $parent.loadContent"></a>
+                                </td>
+                                <td data-bind="text: description"></td>
+                                <td data-bind="text: author"></td>
+                                <td data-bind="text: dateCreated"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div data-bind="visible:contentListForm.tab()=='versions'">
+                    <div class="mb-3">
+                        <p>Versions for <span data-bind="text: contentForm.title"></span></p>
+                    </div>
+                    <table class="table table-responsive" style="width: 100%">
+                        <thead>
+                            <tr>
+                                <th>Added</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: contentListForm.versions">
+                        <tr>
+                            <td>
+                                <a href="#" data-bind="text: dateCreated, click: $parent.loadVersion"></a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div data-bind="visible:contentListForm.tab()=='none'">
+                    <p>No saved content available</p>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bind="click: doFetch">
-                    Get Content
-                </button>
                 <button type="button" class="btn btn-outline-dark"  data-bs-dismiss="modal" data-dismiss="modal">
                     Cancel
                 </button>

@@ -38,6 +38,7 @@ declare namespace Peanut {
         openDocument(): void;
         saveDocument() : void;
         newDocument() : void;
+        saveDocumentAs() : void;
     }
 
 

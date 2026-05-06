@@ -41,7 +41,7 @@ class CreateTitleCommand extends TServiceCommand
             $author = $manager->createAuthor($user->getId(), $user->getFullName());
             $authorId = $author->id;
         }
-        $contentItem = $manager->createTitle($authorId, $title, $context, $content, $description);
+        $contentItem = $manager->createTitle($authorId, $title, $context, $description, $content);
         if ($contentItem) {
             $this->addInfoMessage("New title created: {$contentItem->title}");
         }
