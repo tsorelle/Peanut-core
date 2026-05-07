@@ -4,6 +4,7 @@ namespace Peanut\content\services;
 
 use Peanut\content\db\ContentManager;
 use Peanut\content\db\model\repository\ContentVersionsRepository;
+use Tops\sys\TUser;
 
 class GetContentCommand extends \Tops\services\TServiceCommand
 {

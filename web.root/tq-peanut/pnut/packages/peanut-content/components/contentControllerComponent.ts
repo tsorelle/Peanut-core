@@ -1,4 +1,4 @@
-;/**
+/**
  * Created by Terry on 2026-05-01.
  *
  * @see documentation
@@ -64,6 +64,10 @@ namespace PeanutContent {
         public saveModalId : KnockoutObservable<string>;
         public fetchModalId : KnockoutObservable<string>;
         private editor : Peanut.IContentEditor;
+        public confirmAction : string = '';
+        public restoreModlalId : string = '';
+        // public confirmClickHandler = ko.observable(function() {});
+        public confirmMessage = ko.observable('Are you sure?');
 
         private contentForm = {
             contentId : ko.observable(0),
@@ -73,7 +77,6 @@ namespace PeanutContent {
             context : ko.observable(''),
             titleError : ko.observable(false),
         }
-
 
 
         private contentListForm = {
@@ -175,6 +178,7 @@ namespace PeanutContent {
             }
             me.contentForm.titleError(false);
             me.owner().hideModal(me.saveModalId());
+            me.application.showWaiter('Saving content.');
             me.services.executeService('peanut.content::CreateTitle',request,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -192,6 +196,8 @@ namespace PeanutContent {
                 if (trace) {
                     console.error("Service call failed. Debug for error details. ");
                 }
+            }).always(() => {
+                me.application.hideWaiter();
             });
         }
 
@@ -199,8 +205,9 @@ namespace PeanutContent {
             let me = this;
             let request = {
                 contentId : me.contentForm.contentId(),
-                content : me.editor.getContent()
+                content : me.editor.getContent(),
             }
+            me.application.showWaiter('Saving content.');
             me.services.executeService('peanut.content::SaveContent',request,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -216,10 +223,40 @@ namespace PeanutContent {
                 if (trace) {
                     console.error("Service call failed. Debug for error details. ");
                 }
+            }).always(() => {
+                me.application.hideWaiter();
+            });
+        }
+        finalVersion = () => {
+            let me = this;
+            let request = {
+                contentId : me.contentForm.contentId(),
+                content : me.editor.getContent(),
+                final: true
+            }
+            me.application.showWaiter('Saving final version.');
+            me.services.executeService('peanut.content::SaveContent',request,
+                function(serviceResponse: Peanut.IServiceResponse) {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        let result = <IVersionsListItem>serviceResponse.Value;
+                        me.contentListForm.versions.unshift(result);
+                    }
+                    else {
+                        // alert('content not saved');
+                    }
+                }
+            ).fail(function () {
+                let trace = me.services.getErrorInformation();
+                if (trace) {
+                    console.error("Service call failed. Debug for error details. ");
+                }
+            }).always(() => {
+                me.application.hideWaiter();
             });
         }
 
 
+/*
         doFetch = () => {
             let me = this;
             // todo: service calls to fetch content
@@ -230,6 +267,7 @@ namespace PeanutContent {
             let content = 'Fetch content from server test.';
             me.editor.setContent(content);
         }
+*/
 
         onTitleSelected = (title   :any) => {
             let me = this;
@@ -244,6 +282,7 @@ namespace PeanutContent {
         openDocument(): void {
             let me = this;
             let request = {context: me.contentForm.context()};
+            me.application.showWaiter('Loading content.');
             me.services.executeService('peanut.content::GetTitles',request,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -253,7 +292,7 @@ namespace PeanutContent {
                         me.contentListForm.shared(result.shared || []);
 
                         if (result.titles.length > 0) {
-                            me.contentListForm.tab('author');
+                            me.contentListForm.tab('authors');
                         }
                         else if (result.shared.length > 0) {
                             me.contentListForm.tab('shared');
@@ -273,6 +312,8 @@ namespace PeanutContent {
                 if (trace) {
                     console.error("Service call failed. Debug for error details. ");
                 }
+            }).always(() => {
+                me.application.hideWaiter();
             });
 
         }
@@ -294,23 +335,9 @@ namespace PeanutContent {
             }
         }
 
-        showAuthorTab = () => {
-            this.contentListForm.tab('author');
-        }
-        showSharedTab = () => {
-            this.contentListForm.tab('shared');
-        }
-        showVersionsTab = () => {
-            this.contentListForm.tab('versions');
-        }
-        showTitlesTab = () => {
-            this.contentListForm.tab('titles');
-        }
-        hideContentTab = () => {
-            this.contentListForm.tab('none');
-        }
         loadContent = (item: ITitlesListItem) => {
             let me = this;
+            me.application.showWaiter('Loading content.');
             me.services.executeService('peanut.content::GetContentItem',item.id,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -320,6 +347,14 @@ namespace PeanutContent {
                         me.contentForm.title(result.title);
                         me.contentForm.description(result.description);
                         me.contentForm.shared(result.shared);
+
+                        // test routine for paging
+/*
+                        for (let i = 0; i < 50; i++) {
+                            result.versions.push({id: i, dateCreated: new Date().toISOString()});
+                        }
+*/
+
                         me.contentListForm.versions(result.versions || []);
                         me.editor.setContent(result.content);
                         me.owner().hideModal(me.fetchModalId());
@@ -333,10 +368,13 @@ namespace PeanutContent {
                 if (trace) {
                     console.error("Service call failed. Debug for error details. ");
                 }
+            }).always(() => {
+                me.application.hideWaiter();
             });
         }
         loadVersion = (item: IVersionsListItem) => {
             let me = this;
+            me.application.showWaiter('Loading version.');
             me.services.executeService('peanut.content::GetContent',{versionId: item.id},
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -353,7 +391,89 @@ namespace PeanutContent {
                 if (trace) {
                     console.error("Service call failed. Debug for error details. ");
                 }
+            }).always(() => {
+                me.application.hideWaiter();
             });
         }
+
+        showAuthorTab = () => {
+            this.contentListForm.tab('authors');
+        }
+        showSharedTab = () => {
+            this.contentListForm.tab('shared');
+        }
+        showVersionsTab = () => {
+            this.contentListForm.tab('versions');
+        }
+        showAuthorsTab = () => {
+            this.contentListForm.tab('authors');
+        }
+        hideContentTab = () => {
+            this.contentListForm.tab('none');
+        }
+
+        handleConfirmAction() {
+            let me = this;
+            me.owner().hideModal('confirm-modal');
+            let action = me.confirmAction
+            switch (action) {
+                case 'clear-versions':
+                    me.clearVersions();
+                    break;
+                default:
+                    console.error('contentControllerComponent: Unknown confirm action: ' + action);
+            }
+        }
+
+        showConfirmModal = (action: string, message: string, currentModal: string = null) => {
+            let me = this;
+            me.confirmAction = action;
+            me.restoreModlalId = currentModal;
+            me.confirmMessage(message);
+            if (currentModal) {
+                me.owner().hideModal(currentModal);
+            }
+            me.owner().showModal('confirm-modal');
+        }
+
+        cancelConfirmModal = () => {
+            let me = this;
+            me.owner().hideModal('confirm-modal');
+            if (me.restoreModlalId) {
+                me.owner().showModal(me.restoreModlalId);
+            }
+            me.restoreModlalId = null;
+        }
+
+        confirmClearVersions = () => {
+            let me = this;
+            me.showConfirmModal('clear-versions','Are you sure you want to clear all previous versions?',me.fetchModalId());
+        }
+
+        clearVersions = () => {
+            let me = this;
+            me.owner().hideModal('confirm-modal');
+            me.owner().showWaiter('Clering past versions.')
+            me.services.executeService('peanut.content::ClearVersions',{contentId: me.contentForm.contentId()},
+                function(serviceResponse: Peanut.IServiceResponse) {
+                if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                    let versions = <IVersionsListItem[]>serviceResponse.Value;
+                    me.contentListForm.versions(versions);
+                    me.owner().showModal(me.fetchModalId());
+                }
+                else {
+                    alert('Failed to clear versions.');
+                }
+            }).fail(function () {
+                let trace = me.services.getErrorInformation();
+                if (trace) {
+                    console.error("Service call failed. Debug for error details. ");
+                }
+            }).always(() => {
+                me.application.hideWaiter();
+            });
+        }
+
+
     }
 }

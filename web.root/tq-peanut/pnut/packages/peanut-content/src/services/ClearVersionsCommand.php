@@ -6,14 +6,15 @@ use Peanut\content\db\ContentManager;
 use Tops\services\TServiceCommand;
 use Tops\sys\TUser;
 
-class SaveContentCommand extends TServiceCommand
+// delete all versions except the most recent
+class ClearVersionsCommand extends TServiceCommand
 {
 
     protected function run()
     {
         $user = TUser::GetCurrent();
         if (!$user->isAuthenticated()) {
-            $this->addErrorMessage('You must be signed in to do this');
+            $this->addErrorMessage('You must be signed in to save content');
             return;
         }
         $request = $this->getRequest();
@@ -26,14 +27,11 @@ class SaveContentCommand extends TServiceCommand
             $this->addErrorMessage('No content id received');
             return;
         }
-        $content = $request->content ?? null;
-        if (empty($content)) {
-            $this->addErrorMessage('No content received');
-        }
-
-        $final = !empty($request->final);
-        $version = (new ContentManager())->saveContent($contentId,$content,$final);
-        $this->addInfoMessage('Content saved');
-        $this->setReturnValue($version);
+        $contentManager = new ContentManager();
+        $versions = $contentManager->getContentVersions($contentId);
+        $content = $versions[0]->content;
+        $contentManager->saveContent($contentId,$content,true);
+        $versions = $contentManager->getVersionList($contentId);
+        $this->setReturnValue($versions);
     }
 }
