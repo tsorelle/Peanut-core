@@ -67,10 +67,10 @@ class ContentVersionsRepository extends \Tops\db\TEntityRepository
         return $this->getSingleInstance($where,[$contentId],$clauses);
     }
 
-    public function removeVersions(int $contentId) : void
+    public function removeVersions(int $contentId,$permanet=false) : void
     {
-        $sql = 'DELETE FROM '.$this->getTableName().' WHERE contentId = ?';
+        $sql = $permanet ? 'DELETE FROM '.$this->getTableName().' WHERE contentId = ?' :
+            'UPDATE '.$this->getTableName().' SET active = 0 WHERE contentId = ?';
         $this->executeStatement($sql,[$contentId]);
     }
-
 }

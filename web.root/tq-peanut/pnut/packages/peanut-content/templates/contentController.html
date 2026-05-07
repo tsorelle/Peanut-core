@@ -130,6 +130,7 @@
                             <th>Description</th>
                             <th>Shared</th>
                             <th>Created</th>
+                            <th>&nbsp;</th>
                         </tr>
                         </thead>
                         <tbody data-bind="foreach: contentListForm.titles">
@@ -140,6 +141,12 @@
                             <td data-bind="text: description"></td>
                             <td data-bind="text: shared"></td>
                             <td data-bind="text: dateCreated"></td>
+                            <td>
+                                <a href="#" data-bind="click: $parent.deleteContent" title="Delete">
+                                    <i class="fa-light fa-trash-can"></i>
+                                    <!-- i class="fa-light fa-trash"></i -->
+                                </a>
+                            </td>
                         </tr>
                         </tbody>
                     </table>

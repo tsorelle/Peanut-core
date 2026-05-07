@@ -134,12 +134,25 @@ class ContentManager
         return '';
     }
 
-    public function removeContent($contentId)
+    public function removeContent($contentId, $permanent=false) : ?ContentItem
     {
         $query = new TQuery();
-        $query->execute("DELETE FROM pnut_content_versions WHERE contentId = ?",[ $contentId]);
-        $query->execute("DELETE FROM pnut_content WHERE id = ?", [$contentId]);
-        $this->getContentRepository()->delete($contentId);
+        $contentRepo = $this->getContentRepository();
+        $versionsRepo = $this->getContentVersionsRepository();
+        /** @var ContentItem $item */
+        $item = $contentRepo->get($contentId);
+        if (!$item) {
+            return null;
+        }
+
+        $versionsRepo->removeVersions($contentId, $permanent);
+        if ($permanent) {
+            $contentRepo->delete($contentId);
+        }
+        else {
+            $contentRepo->remove($contentId);
+        }
+        return $item;
     }
 
     public function getContentVersions($contentId)
@@ -173,6 +186,34 @@ class ContentManager
     {
         $repo = $this->getContentRepository();
         return $repo->getSharedTitlesList($context,$excludeAuthor);
+    }
+
+    public function getLists($context, $authorId, $sharedOnly = false) : \stdClass
+    {
+        $response = new \stdClass();
+        if ($sharedOnly) {
+            $response->shared = $this->getSharedTitlesList($context);
+        }
+        else {
+            $response->titles = $this->getAuthorTitles($context,$authorId);
+            $response->shared = $this->getSharedTitlesList($context,$authorId);
+        }
+        return $response;
+    }
+
+    public function getAuthorId($request
+    )
+    {
+        $authorId = $request->authorId ?? null;
+        if (!$authorId) {
+            $accountId = TUser::getCurrent()->getId();
+            $author = $this->getAuthorByAccountId($accountId);
+            if (!$author) {
+                return false;
+            }
+            return $author->id;
+        }
+        return $authorId;
     }
 
 }

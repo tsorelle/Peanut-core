@@ -9,32 +9,25 @@ class GetTitlesCommand extends \Tops\services\TServiceCommand
 
     protected function run()
     {
+        $user = TUser::GetCurrent();
+        if (!$user->isAuthenticated()) {
+            $this->addErrorMessage('You must be signed in to do this');
+            return;
+        }
         $request = $this->getRequest();
         $context = $request->context ?? null;
         if (empty($context)) {
             $this->addErrorMessage('No context received');
             return;
         }
+        $sharedOnly = !empty($request->sharedOnly);
         $manager = new ContentManager();
-
-        $authorId = $request->authorId ?? null;
+        $authorId = $manager->getAuthorId($request);
         if (!$authorId) {
-            $accountId = TUser::getCurrent()->getId();
-            $author = $manager->getAuthorByAccountId($accountId);
-            if (!$author) {
-                $this->addErrorMessage('No author found');
-            }
-            $authorId = $author->id;
+            $this->addErrorMessage('No author found');
+            return;
         }
-        $response = new \stdClass();
-        $sharedOnly = empty($request->sharedOnly) ? false: true;
-        if ($sharedOnly) {
-            $response->shared = $manager->getSharedTitlesList($context);
-        }
-        else {
-            $response->titles = $manager->getAuthorTitles($context,$authorId);
-            $response->shared = $manager->getSharedTitlesList($context,$authorId);
-        }
+        $response = $manager->getLists($context,$authorId,$sharedOnly);
         $this->setReturnValue($response);
     }
 }

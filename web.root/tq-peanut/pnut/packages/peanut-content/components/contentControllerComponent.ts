@@ -282,7 +282,7 @@ namespace PeanutContent {
         openDocument(): void {
             let me = this;
             let request = {context: me.contentForm.context()};
-            me.application.showWaiter('Loading content.');
+           me.application.showWaiter('Loading content.');
             me.services.executeService('peanut.content::GetTitles',request,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
@@ -415,10 +415,21 @@ namespace PeanutContent {
         handleConfirmAction() {
             let me = this;
             me.owner().hideModal('confirm-modal');
-            let action = me.confirmAction
+            const parts = me.confirmAction.split(":");
+            let action = parts.shift();
+            let args = parts.shift();
             switch (action) {
                 case 'clear-versions':
                     me.clearVersions();
+                    break;
+                case 'delete-title':
+                    if (args) {
+                        let id = parseInt(args);
+                        me.doDeleteContent(id);
+                    }
+                    else {
+                        console.error('contentControllerComponent: delete-title action requires an id');
+                    }
                     break;
                 default:
                     console.error('contentControllerComponent: Unknown confirm action: ' + action);
@@ -472,6 +483,43 @@ namespace PeanutContent {
             }).always(() => {
                 me.application.hideWaiter();
             });
+        }
+
+        doDeleteContent = (id) => {
+            let me = this;
+            me.owner().showWaiter('Deleting content...')
+            me.services.executeService('peanut.content::RemoveContent',{
+                        contentId: id, context:
+                        me.contentForm.context()},
+                function(serviceResponse: Peanut.IServiceResponse) {
+                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
+                        let response = <IGetTitlesResponse>serviceResponse.Value;
+                        if (id == me.contentForm.contentId()) {
+                            me.clearDocument();
+                            me.editor.setContent('')
+                            me.contentListForm.versions([]);
+                        }
+                        me.contentListForm.titles(response.titles || []);
+                        me.contentListForm.shared(response.shared || []);
+                        me.owner().showModal(me.fetchModalId());
+                    }
+                    else {
+                        alert('Failed to remove content.');
+                    }
+                }).fail(function () {
+                    let trace = me.services.getErrorInformation();
+                    if (trace) {
+                        console.error("Service call failed. Debug for error details. ");
+                    }
+                }).always(() => {
+                    me.application.hideWaiter();
+                });
+        }
+        deleteContent = (item: ITitlesListItem) => {
+            let me = this;
+            me.showConfirmModal('delete-title:'+item.id,
+                'Are you sure you want to delete content for '+item.title+ '?',
+                me.fetchModalId());
         }
 
 
