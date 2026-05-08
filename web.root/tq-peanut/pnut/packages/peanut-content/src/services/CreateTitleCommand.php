@@ -28,6 +28,7 @@ class CreateTitleCommand extends TServiceCommand
             return;
         }
         $content = $request->content ?? '';
+        $shared = !empty($request->shared);
         $content = trim($content);
         if (empty($content)) {
             $this->addErrorMessage('Content is required');
@@ -41,11 +42,18 @@ class CreateTitleCommand extends TServiceCommand
             $author = $manager->createAuthor($user->getId(), $user->getFullName());
             $authorId = $author->id;
         }
-        $contentItem = $manager->createTitle($authorId, $title, $context, $description, $content);
-        if ($contentItem) {
-            $this->addInfoMessage("New title created: {$contentItem->title}");
+        $item = $manager->createTitle($authorId, $title, $context, $description, $content, $shared);
+        if (!$item) {
+            $this->addInfoMessage("New title created: {$item->title}");
         }
-        $this->setReturnValue($contentItem);
+        $response = new \stdClass();
+        $response->id = $item->id;
+        $response->title = $item->title;
+        $response->description = $item->description;
+        $response->shared = $item->shared;
+        $response->versions = $manager->getVersionList($item->id);
+
+        $this->setReturnValue($response);
     }
 }
 

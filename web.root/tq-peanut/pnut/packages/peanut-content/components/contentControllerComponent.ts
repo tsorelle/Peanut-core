@@ -43,13 +43,15 @@ namespace PeanutContent {
         dateCreated: string;
     }
 
-    interface IGetContentItemResponse  {
+    interface IContentItemResponse {
         id : any;
         title: string;
         description: string;
         shared: boolean;
-        content: string;
         versions: IVersionsListItem[];
+    }
+    interface IGetContentResponse  extends IContentItemResponse {
+        content: string;
     }
 
     interface IGetTitlesResponse {
@@ -139,12 +141,12 @@ namespace PeanutContent {
 
          clearDocument = () => {
             let me = this;
-            me.savedContentForm.contentId = me.contentForm.contentId();
-            me.savedContentForm.title = me.contentForm.title();
-            me.savedContentForm.description = me.contentForm.description();
-            me.savedContentForm.shared = me.contentForm.shared();
-            me.savedContentForm.versions = me.contentListForm.versions();
-            me.contentForm.contentId(0);
+             me.contentForm.contentId(0);
+             me.savedContentForm.contentId = me.contentForm.contentId();
+             me.savedContentForm.title = me.contentForm.title();
+             me.savedContentForm.description = me.contentForm.description();
+             me.savedContentForm.shared = me.contentForm.shared();
+             me.savedContentForm.versions = me.contentListForm.versions();
             me.contentForm.title('');
             me.contentForm.description('');
             me.contentForm.shared(false);
@@ -182,10 +184,8 @@ namespace PeanutContent {
             me.services.executeService('peanut.content::CreateTitle',request,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                        let result = serviceResponse.Value;
-                        me.contentForm.contentId(result.id);
-                        let test = me.contentForm.contentId();
-                        alert('content saved: ' + test);
+                        let response = <IContentItemResponse>serviceResponse.Value;
+                        me.handleContentItemResponse(response);
                     }
                     else {
                         // alert('content not saved');
@@ -320,7 +320,8 @@ namespace PeanutContent {
 
         saveDocumentAs(): void {
             let me = this;
-            me.contentForm.contentId(0);
+            me.clearDocument()
+            // me.contentForm.contentId(0);
             me.owner().showModal(me.saveModalId())
         }
 
@@ -335,27 +336,24 @@ namespace PeanutContent {
             }
         }
 
+        handleContentItemResponse (response : IContentItemResponse) {
+            let me = this;
+
+            me.clearDocument()
+            me.contentForm.contentId(response.id);
+            me.contentForm.title(response.title);
+            me.contentForm.description(response.description);
+            me.contentForm.shared(response.shared);
+            me.contentListForm.versions(response.versions || []);
+        }
         loadContent = (item: ITitlesListItem) => {
             let me = this;
             me.application.showWaiter('Loading content.');
             me.services.executeService('peanut.content::GetContentItem',item.id,
                 function(serviceResponse: Peanut.IServiceResponse) {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                        let result = <IGetContentItemResponse>serviceResponse.Value;
-                        me.clearDocument()
-                        me.contentForm.contentId(result.id);
-                        me.contentForm.title(result.title);
-                        me.contentForm.description(result.description);
-                        me.contentForm.shared(result.shared);
-
-                        // test routine for paging
-/*
-                        for (let i = 0; i < 50; i++) {
-                            result.versions.push({id: i, dateCreated: new Date().toISOString()});
-                        }
-*/
-
-                        me.contentListForm.versions(result.versions || []);
+                        let result = <IGetContentResponse>serviceResponse.Value;
+                        me.handleContentItemResponse(result);
                         me.editor.setContent(result.content);
                         me.owner().hideModal(me.fetchModalId());
                     }

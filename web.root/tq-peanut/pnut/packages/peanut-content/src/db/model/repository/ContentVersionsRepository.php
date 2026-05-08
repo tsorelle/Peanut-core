@@ -40,7 +40,7 @@ class ContentVersionsRepository extends \Tops\db\TEntityRepository
     }
 
     public function getVersionList($contentId) {
-        $sql = 'SELECT id, createdon as `dateCreated` FROM '.$this->getTableName().' WHERE contentId = ? ORDER BY posted DESC';
+        $sql = 'SELECT id, createdon as `dateCreated` FROM '.$this->getTableName().' WHERE active=1 AND contentId = ? ORDER BY posted DESC';
         $stmt = $this->executeStatement($sql,[$contentId]);
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }

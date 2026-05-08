@@ -41,6 +41,11 @@ class ContentManager
         return $result;
     }
 
+    public function removeVersions($contentId)
+    {
+        $this->getContentVersionsRepository()->removeVersions($contentId);
+    }
+
     private function getContentRepository() : ContentRepository {
         if (!isset($this->contentRepository)) {
             $this->contentRepository = new ContentRepository();

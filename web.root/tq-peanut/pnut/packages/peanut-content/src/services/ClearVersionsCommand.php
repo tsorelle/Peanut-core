@@ -30,6 +30,7 @@ class ClearVersionsCommand extends TServiceCommand
         $contentManager = new ContentManager();
         $versions = $contentManager->getContentVersions($contentId);
         $content = $versions[0]->content;
+        $contentManager->removeVersions($contentId);
         $contentManager->saveContent($contentId,$content,true);
         $versions = $contentManager->getVersionList($contentId);
         $this->setReturnValue($versions);
