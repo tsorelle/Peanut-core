@@ -25,6 +25,7 @@ namespace Peanut {
                     // me.htmlEditor.configureForEmail() // default
 
                     // set uptions
+                    me.htmlEditor.enableUnsavedWarning();
                     me.htmlEditor.addOptions({height: '50ex'})
                     // me.htmlEditor.addOptions({height: 300}) // height in pixels if numeric
                     // me.htmlEditor.includeFontSizing();
@@ -92,6 +93,19 @@ namespace Peanut {
         setContent(content: string): void {
             let me = this;
             me.htmlEditor.setContent(content);
+        }
+
+        checkDirty = () => {
+            let me = this;
+            let dirty = me.htmlEditor.hasUnsavedChanges();
+            alert(dirty? 'Dirty' : 'Clean')
+        }
+
+        toggleDirty = () => {
+            let me = this;
+            let dirty = me.htmlEditor.hasUnsavedChanges();
+            me.htmlEditor.setDirty(!dirty);
+            // me.checkDirty();
         }
 
     }

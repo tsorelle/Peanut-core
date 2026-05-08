@@ -30,8 +30,9 @@ declare namespace Peanut {
     export interface IContentEditor {
         getContent() : string,
         setContent(content: string) : void;
-
-        setEditController(controller: IEditController);
+        setDirty(enabled: boolean) : void;
+        setEditController(controller: IEditController) : void;
+        isEmpty() : boolean;
     }
 
     export interface IEditController {
@@ -39,6 +40,7 @@ declare namespace Peanut {
         saveDocument() : void;
         newDocument() : void;
         saveDocumentAs() : void;
+
     }
 
 

@@ -33,7 +33,7 @@ namespace Peanut {
             }
         }
 
-        setEditController(controller: IEditController) {
+        setEditController(controller: IEditController) : void {
             let me = this;
             me.editController = controller;
         }
@@ -44,7 +44,7 @@ namespace Peanut {
          * URLs are expanded to full URL, e.g. https://mydomain.com/path/to/whatever
          */
         // public configureForEmail = (includeDesignTools = false) => {
-        public configureForEmail = () => {
+        public configureForEmail = () : void => {
             this.configurationType = this.configEmail;
         }
 
@@ -167,6 +167,48 @@ namespace Peanut {
             me.editorInitialized = (ed !== null);
         }
 
+        isEmpty() : boolean {
+            let me = this;
+            let content = me.getContent();
+            content = content
+                .replace(/<[^>]*>/g, "")
+                .replace(/\s/g, "").
+                replace(/&nbsp;/g , "");
+            return content == '';
+        }
+        hasUnsavedChanges = () => {
+            let me = this;
+            let dirty = tinymce.get(me.selector).isDirty() ;
+            if (dirty) {
+                dirty = !me.isEmpty();
+            }
+            return dirty;
+        }
+
+        setDirty(enabled: boolean) : void {
+            let me = this;
+            tinymce.get(me.selector).setDirty(enabled);
+        }
+
+        enableUnsavedWarning = () => {
+            let me = this;
+            window.addEventListener('beforeunload', function (event) {
+                if (me.hasUnsavedChanges()) {
+                    event.preventDefault();
+                    /* event.returnValue = '';  for older browsers not suppoert on modern browsers*/
+                    // noinspection JSDeprecatedSymbols
+                    event.returnValue = 'WARNING: You have unsaved changes.';
+                }
+            });
+/*
+            window.onbeforeunload = function () {
+                if (me.hasUnsavedChanges()) {
+                    // most modern browsers insert their own message instead.
+                    return "**** WARNING: You have unsaved changes. If you reload or leave this page your changes will be lost. ****";
+                }
+            };
+*/
+        }
 
 
         onSave = (editor: any) => {
@@ -363,7 +405,7 @@ namespace Peanut {
          * @param content
          *      html markup
          */
-        setContent = (content: string) => {
+        setContent = (content: string): void => {
             let editor = tinymce.get(this.selector);
             if (!editor) {
                 console.log('Cannot access editor')

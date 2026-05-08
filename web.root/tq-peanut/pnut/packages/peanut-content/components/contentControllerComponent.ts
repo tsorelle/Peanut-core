@@ -213,6 +213,7 @@ namespace PeanutContent {
                     if (serviceResponse.Result == Peanut.serviceResultSuccess) {
                         let result = <IVersionsListItem>serviceResponse.Value;
                         me.contentListForm.versions.unshift(result);
+                        me.editor.setDirty(false);
                     }
                     else {
                         // alert('content not saved');
@@ -277,6 +278,7 @@ namespace PeanutContent {
         newDocument(): void {
             let me = this;
             me.clearDocument();
+            me.editor.setDirty(false)
         }
 
         openDocument(): void {
@@ -327,6 +329,10 @@ namespace PeanutContent {
 
         saveDocument(): void {
             let me =  this;
+            if (me.editor.isEmpty()) {
+                me.editor.setDirty(false);
+                return;
+            }
             let contentId = me.contentForm.contentId();
             if (contentId == 0) {
                 me.owner().showModal(me.saveModalId())
