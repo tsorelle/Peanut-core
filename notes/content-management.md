@@ -52,4 +52,14 @@ in the viewmodel init() method.
 <textarea id="test-editor"></textarea>
 ````
 
+# Installation
+If the package is not yet installed, deploy the following files to the pnut folder:
+- packages\peanut-content\*
+- pnut\js\htmlEditContainer.* (compare with existing file for differences)
+- pnut\core\Peanut.d.ts
+
+On the target view model *.ts file, modify the init() method to register the content-controller component,
+per the example above.
+
+On the target view file *.html, include the content-controller tag, per the example above.
 
