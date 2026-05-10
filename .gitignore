@@ -13,3 +13,4 @@ web.root/application/config/mailgun.ini
 !/web.root/nutshell/pnut/core/peanut-core.min.js
 !/web.root/nutshell/pnut/core/peanut-loader.min.js
 *.js.map
+/web.root/tq-peanut/application/docs/
