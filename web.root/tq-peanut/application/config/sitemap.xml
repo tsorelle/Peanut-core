@@ -32,5 +32,8 @@
 		</email>
 
 	</tools>
+	<help title="Help" description="Help and documentation">
+		<docs title="Documentation" description="Technical Documentation"/>
+	</help>
 	<!-- page title='' uri='' description='' roles='' / -->
 </site-map>

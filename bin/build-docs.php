@@ -7,7 +7,8 @@ $source = $argv[1] ?? 'all';
 // update this to match your project structure
 $projectFileRoot =   str_replace('\\','/', realpath(__DIR__.'/..'));
 $bootstrapDir = '/web.root/tq-peanut/bootstrap';
-$indexFileUrl = '/peanut/docs';
+// $indexFileUrl = '/peanut/docs';
+$indexFileUrl = '/help/docs';
 // $projectFileRoot =   str_replace('\\','/', realpath(__DIR__.'/..')).'/web.root/';
 print "Project root: $projectFileRoot\n";
 include_once $projectFileRoot.$bootstrapDir.'/definitions.php';
@@ -45,7 +46,10 @@ if($source === 'all') {
         if (count($files) > 0) {
             $sections[] = $section;
         }
+
     }
+
+
 }
 else {
     $files = $argv;
@@ -64,7 +68,7 @@ foreach($files as $filename) {
     $srcFile = "$srcPath/".$filename;
     print  "Processing: $srcFile...";
     // $filename = pathinfo($srcFile, PATHINFO_FILENAME);
-    $outFile = str_ireplace('.md','.html',"$docPath/$filename");
+
     $content = \Tops\sys\TParseDown::ParseMdFile($srcFile);
     $content = str_ireplace('../../index.md', $indexFileUrl, $content);
     $content = str_ireplace('../index.md', $indexFileUrl, $content);
@@ -72,7 +76,12 @@ foreach($files as $filename) {
     print "\n";
     $title = 'Peanut Documentation';
     $content = sprintf($template,$title,$content);
+    $outFile = str_ireplace('.md','.html',"$docPath/$filename");
     print "\nWriting: $outFile...";
+    $outDir = dirname($outFile);
+    if (!is_dir($outDir) && !mkdir($outDir, 0777, true) && !is_dir($outDir)) {
+        throw new RuntimeException("Failed to create directory: $outDir");
+    }
     file_put_contents($outFile,$content);
     print "\n";
 }
@@ -87,9 +96,33 @@ if ($source === 'all') {
         $search = 'href="' . $section . '/';
         $fix = 'href="'. $docUrl . '/' . $section. '/'  ;
         $content = str_ireplace($search, $fix, $content);
+
+        $imageDirSrc = "$srcPath/$section/img";
+        if (!is_dir($imageDirSrc)) {
+            continue;
+        }
+        $imageDirDest = "$docPath/$section/img";
+        if (!is_dir($imageDirDest) && !mkdir($imageDirDest, 0777, true) && !is_dir($imageDirDest)) {
+            throw new RuntimeException("Failed to create directory: $imageDirDest");
+        }
+        $imageFiles = scandir($imageDirSrc);
+        foreach ($imageFiles as $imageFile) {
+            if (str_starts_with($imageFile,'.')) {
+                continue;
+            }
+            $srcFile = "$imageDirSrc/$imageFile";
+            $destFile = "$imageDirDest/$imageFile";
+            print "Copying: $imageFile...\n";
+            copy($srcFile, $destFile);
+        }
     }
-    print "\nWriting: $outFile...\n";
+    print "\nWriting index file: $outFile...\n";
     file_put_contents($outFile,$content);
+    print "\nWriting css file: $outFile...\n";
+    $sourceFile = "$srcPath/markdown.css";
+    $destFile = "$docPath/markdown.css";
+    copy($sourceFile, $destFile);
+
 }
 
 print "Done.\n";

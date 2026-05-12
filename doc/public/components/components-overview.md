@@ -1,5 +1,7 @@
-[Return to docs home page](/peanut/docs)
+[Return to docs home page](../index.md)
 # Components in Peanut
+
+(old core version)
 
 Knockout view models can be reused across pages on a web site.  Knockout 
 components can be reused across view models and embedded in the view as 

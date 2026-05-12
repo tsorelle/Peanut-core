@@ -1,4 +1,4 @@
-[Return to docs home page](/peanut/docs)
+[Return to docs home page](../index.md)
 # modal-confirm component
 ## Example markup:
 ````html
