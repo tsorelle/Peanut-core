@@ -304,7 +304,8 @@ class Bootstrap
         foreach ($dependencies as $dependency) {
             switch ($dependency) {
                 case 'ajax' :
-                    $result->dependencies[] = "$corePath/lib/ajax/jqueryajax-2.1.1-min.js";
+                    // JQuery Ajax no longer needed for service calls
+                    // $result->dependencies[] = "$corePath/lib/ajax/jqueryajax-2.1.1-min.js";
                     break;
                 case 'jquery' :
                     $result->dependencies[] = "https://code.jquery.com/jquery-3.6.0.min.js";
