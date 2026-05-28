@@ -194,7 +194,13 @@ namespace Peanut {
                 if (!response.ok) {
                     throw response;
                 }
-                return response.json();
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw { message: "Invalid JSON response from server", details: text };
+                    }
+                });
             })
             .then(serviceResponse => {
                 if (successFunction) {
@@ -250,7 +256,13 @@ namespace Peanut {
                     }
                     throw errorResult;
                 }
-                return response.json();
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw { message: "Invalid JSON response from server", details: text };
+                    }
+                });
             })
             .then(serviceResponse => {
                 if (serviceResponse.debugInfo !== undefined) {
@@ -322,9 +334,18 @@ namespace Peanut {
                     }
                     throw errorResult;
                 }
-                return response.json();
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw { message: "Invalid JSON response from server", details: text };
+                    }
+                });
             })
             .then(serviceResponse => {
+                if (serviceResponse.debugInfo !== undefined) {
+                    me.handleServiceFailure(serviceResponse.debugInfo);
+                }
                 me.showServiceMessages(serviceResponse);
                 if (successFunction) {
                     successFunction(serviceResponse);
