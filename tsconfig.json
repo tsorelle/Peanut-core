@@ -11,18 +11,5 @@
     "temp",
       "web.root/tq-peanut/application/peanut/**/*",
       "web.root/tq-peanut/pnut/**/*"
-    //    "web.root/tests/js/**/*",
-//    "web.root/modules/pnut/core/**/*",
-//    "web.root/modules/pnut/components/**/*",
-//    "web.root/modules/pnut/js/**/*",
-//    "web.root/modules/pnut/packages/**/*",
-//    "web.root/modules/pnut/admin/**/*",
-//    "web.root/modules/pnut/extensions/**/*",
-//    "web.root/application/peanut/vm/**/*",
-//    "web.root/application/tests/peanut/vm/**/*",
-//    "web.root/application/peanut/components/**/*",
-//    "web.root/application/peanut/tests/components/**/*",
-//    "web.root/application/peanut/tests/vm/**/*"
-
   ]
 }
