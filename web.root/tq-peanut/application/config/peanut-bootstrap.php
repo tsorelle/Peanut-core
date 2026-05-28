@@ -130,8 +130,10 @@ class Bootstrap
         $loader->addPsr4('Tops',DIR_PEANUT_ROOT.'/src/tops');
         $test = class_exists('Tops\sys\TWebSite');
         $loader->addPsr4('Peanut', DIR_PEANUT_ROOT.'/src/peanut');
-        $loader->addPsr4('Peanut\Application',DIR_APPLICATION.'/src');
-        $loader->addPsr4('Application', DIR_APPLICATION.'/peanut/src');
+
+        // todo: this mapping probably obsolete check for classes with namespace Peanut\Application
+        // $loader->addPsr4('Peanut\Application',DIR_APPLICATION.'/src');
+        $loader->addPsr4('Application', DIR_APPLICATION.'/src');
         return $loader;
     }
 
