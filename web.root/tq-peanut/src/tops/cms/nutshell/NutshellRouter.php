@@ -35,10 +35,15 @@ class NutshellRouter extends TRouter
         */
 
         $routeData = TRouteFinder::$matched;
-        $uri = $routeData['uri'];
+        $uri = $routeData['uri'] ?? null;
         $user = TUser::getCurrent();
         $theme = $routeData['theme'] ?? 'default';
         $routeData['theme'] = $theme;
+        if (!empty($routeData['title'])) {
+            $routeData['title'] = str_replace('Nutshell',
+                TConfiguration::getValue('sitetitle','site'),
+                $routeData['title']);
+        }
         $routeData['themePath'] = URL_APPLICATION.'/themes/' . $theme;
         $extra = TPath::fromFileRoot(URL_APPLICATION.'/themes/' . $theme.'/extra.css');
         if (file_exists($extra)) {
@@ -118,7 +123,7 @@ class NutshellRouter extends TRouter
                         $return = $routeData['return'];
 
                         if ($return == 'referrer') {
-                            $return = $_SERVER['HTTP_REFERER'];
+                            $return = $_SERVER['HTTP_REFERER'] ?? null;
                         }
                         $_SESSION[AccountManager::redirectKey] = $return;
                         unset($routeData['return']);
@@ -181,8 +186,21 @@ class NutshellRouter extends TRouter
 
     }
 
-    function redirectToSignIn()
+    function redirectToSignIn($signInPage=null)
     {
-        // TODO: Implement redirectToSignIn() method.
+        if (!$signInPage) {
+            $signInPage = TConfiguration::getValue('signin', 'pages', '/signin');
+        }
+        if (!str_starts_with($signInPage, '/')) {
+            $signInPage = '/' . $signInPage;
+        }
+        $signInPage= '/signin';
+        $return = preg_replace("/(^\/)|(\/$)/", "", $_SERVER['REQUEST_URI']);
+        if (!str_starts_with($return, '/')) {
+            $return = '/' . $return;
+        }
+        $signInPage .= "?return=$return";// . urlencode($return);
+        header('Location: ' . $signInPage);
+        exit;
     }
 }

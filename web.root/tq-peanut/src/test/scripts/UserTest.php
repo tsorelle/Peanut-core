@@ -55,9 +55,8 @@ class UserTest extends TestScript
         }
 
         $user = TUser::getByUserName(self::testUser);
-        if ($this->assert($user,"User '".self::testUser."' not found")) {
-
-
+        $ok = $this->assert($user !== false ,"User '".self::testUser."' not found");
+        if ($ok) {
             $actual = $user->getUserName();
             $this->assertEquals(self::testUser, $actual, 'user name');
             print "Loaded user " . self::testUser . "\n";
@@ -97,6 +96,5 @@ class UserTest extends TestScript
             $this->assert(!$actual, 'Not expected to administer peanut');
             print "Can administer peanut? " . ($actual ? 'Yes' : 'No') . "\n";*/
         }
-
     }
 }

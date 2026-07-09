@@ -38,6 +38,24 @@ abstract class TServiceCommand {
 
     abstract protected function run();
 
+    private function checkBannedIp() {
+        $file = TPath::getConfigPath() . 'banned.txt';
+        if (file_exists($file)) {
+            $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                // valid IPv4 or IPv6
+                $file = TPath::getConfigPath() . 'banned.txt';
+                $banned = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                if (in_array($ip, $banned)) {
+                    exit('BANNED IP');
+                }
+            } else {
+                // invalid or missing
+                return false;
+            }
+        }
+        return true;
+    }
     protected function hasErrors() {
         return ($this->errorCount > 0);
     }
@@ -237,6 +255,8 @@ abstract class TServiceCommand {
      * @return TServiceResponse
      */
     public function execute($request, $securityToken = null) {
+        // todo: complete and implement banned ip check
+        // $this->checkBannedIp();
         $this->context = new TServiceContext();
         if (TSession::AuthenitcateSecurityToken($securityToken)) {
             if ($this->secureContent($request)) {

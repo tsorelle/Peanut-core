@@ -114,6 +114,12 @@ if ($embed===1) {
     <!-- main content -->
     <div  id="nutshell-main-section">
         <div class="container" id="page-content">
+    <?php
+        if (!empty($pagetitle)) {
+            printf("<div class='row'><div class='col-md-12'><h2>%s</h2></div></div>\n",
+                    $pagetitle);
+        }
+    ?>
             <div class="row pagecontent-row">
                 <?php
                 if (isset($menu) && $menu=='left') {

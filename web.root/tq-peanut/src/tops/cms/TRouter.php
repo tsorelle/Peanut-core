@@ -3,6 +3,7 @@
 namespace Tops\cms;
 
 use Tops\services\ServiceRequestHandler;
+use Tops\sys\TConfiguration;
 use Tops\sys\TObjectContainer;
 use Tops\sys\TUser;
 use Tops\sys\TWebSite;
@@ -28,6 +29,10 @@ abstract class TRouter
             case 'notfound' :
                 return false;
                 //  break;
+            case 'redirect' :
+                $redirect = TRouteFinder::$matched['target'] ?? '/';
+                header('Location: ' . $redirect);
+                exit;
             default:
                 throw new \Exception('Invalid configuration. Must include "handler"');
         }
@@ -79,19 +84,18 @@ abstract class TRouter
                 }
             }
             if (!$ok) {
-                $signInConfig = TRouteFinder::$routes['signin'] ?? null;
-                if (empty($signInConfig)) {
-                    self::getInstance()->redirectToSignIn();
+                if (TUser::getCurrent()->isAuthenticated()) {
+                    print('<p>You do not have permission to access this page.</p><p><a href="/">Return to home page.</a></p>');
+                    exit;
                 }
-                else {
-                    $signInConfig['uri'] = 'signin';
-                    $uri = TRouteFinder::$matched['uri'] ?? '/';
-                    $redirect = TWebSite::ExpandUrl($uri);
-                    // $_SESSION[AccountManager::returnKey] = $redirect;
-                    $signInConfig['return'] = $redirect;
-                    TRouteFinder::$matched = $signInConfig;
-                }
+                $signInConfig = TRouteFinder::GetRoutes()['signin'] ?? [];
+                $signInPage = $signInConfig['uri'] ?? null;
+                self::getInstance()->redirectToSignIn($signInPage);
             }
         }
+    }
+    public static function RedirectToLogIn($signInPage = null) : void
+    {
+        self::getInstance()->redirectToSignIn($signInPage);
     }
 }

@@ -98,7 +98,7 @@ class ViewModelManager
         if (!isset(self::$vmSettings)) {
             // $path = TPath::getConfigPath();
             $packageDir = self::getPackageDir();
-            self::$vmSettings = parse_ini_file(DIR_CONFIGURATION . '\viewmodels.ini', true);
+            self::$vmSettings = parse_ini_file(DIR_CONFIGURATION .DIRECTORY_SEPARATOR. 'viewmodels.ini', true);
             $packages = self::getPackageList();
             if (!empty($packages)) {
                 foreach ($packages as $package) {

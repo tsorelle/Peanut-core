@@ -2,7 +2,10 @@
 
 namespace Tops\cms\nutshell;
 
+use Tops\cms\TRouteFinder;
+use Tops\cms\TRouter;
 use Tops\sys\IUser;
+use Tops\sys\TConfiguration;
 use Tops\sys\TUser;
 use Tops\sys\TWebSite;
 
@@ -54,8 +57,23 @@ class SiteMap
     public function getMenu($path='/*') {
         $n = $this->xmldata->xpath($path);
         $menu = [];
+        if (!isset($n[0])) {
+            return $menu;
+        }
         foreach ($n[0] as $key => $node) {
             $item = $this->getItem($key,$node);
+            $uri = $item->uri ?? null;
+            // roles that are preassigned, either manually or by a process such as WordPressSiteMapBuilder
+            // will override roles in routing.ini
+            if (isset($item->roles)) {
+                // roles from xml attribute
+                $roles = $item->roles ?? '';
+            }
+            else {
+                // roles from routing.ini
+                $routes = TRouteFinder::GetRoutes();
+                $roles = $routes[$path]['roles'] ?? '';
+            }
             if ($this->authorized($item->roles ?? [])) {
                 $menu[] = $item;
             }
@@ -175,7 +193,10 @@ class SiteMap
                 foreach ($children as $child) {
                     // $description = empty($child->description) ? $child->name : $child->description;
                     $description = $child->description ?? '';
-                    $href = empty($child->uri) ? '/'.$item->name.'/'.$child->name : $child->uri;
+                    $href = empty($child->uri) ? $item->name.'/'.$child->name : $child->uri;
+                    if ($href !== null && !str_starts_with($href, '/')) {
+                        $href = '/'.$href;
+                    }
                     $lines[] = sprintf('          <li><a class="dropdown-item" href="%s" title="%s">%s</a></li>',
                         $href,$description, $child->title);
                 }

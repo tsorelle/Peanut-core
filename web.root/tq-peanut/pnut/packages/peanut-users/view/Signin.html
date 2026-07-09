@@ -21,10 +21,11 @@
     <div class="col-md-12">
         <div class="row">
             <div class="col-md-12">
-                <div data-bind="visible:status() == 'ok'" style="margin-top: 5rem">
+                <div data-bind="visible:status() == 'ok'" class="">
                     <h3>Welcome <span data-bind="text:userfullname"></span> </h3>
-                    <h5><a data-bind="attr: { href: redirectlink }">Continue to your page</a> <i class="fas fa-arrow-right"></i> </h5>
+                    <h5><a data-bind="attr: { href: redirectlink }">Continue to your page.</a> <i class="fas fa-arrow-right"></i> </h5>
                 </div>
+
                 <div id="message-space">
                     <div data-bind="visible:status() == 'ready'" class="signin-message-panel">
                         <form id="signin-form">
@@ -52,8 +53,10 @@
 
                             <div class="mt-3">
                                 <button type="button" class="me-3  btn btn-primary" data-bind="click:onSigninRequest">Sign in</button>
-                                <a href='/'>Cancel</a>
+                                <span class="me-3"><a style="color: #143d61;" href='/'>Return home</a></span>
+                                <a style="color: #143d61; " href='/recover-password'>Forgot your password?</a>
                             </div>
+
                         </form>
                     </div>
                     <div data-bind="visible:status() == 'signing'" class="signin-message-panel">

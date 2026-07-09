@@ -86,7 +86,7 @@ namespace Peanut {
         protected services: ServiceBroker;
         protected application: IPeanutClient;
         protected translations: string[] = [];
-        public bootstrapVersion = ko.observable(3);
+        public bootstrapVersion = ko.observable(5);
         public fontSet = ko.observable('');
 
         public deviceSize = ko.observable(4);
