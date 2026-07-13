@@ -1,5 +1,8 @@
 <?php
-$source = $argv[1] ?? 'all';
+if (!isset($source)) {
+    $source = $argv[1] ?? 'all';
+}
+// $source = $argv[1] ?? 'all';
 /*if ($argc < 2) {
     print "Usage: php bin/build-docs.php all | [file name]\n";
     exit;
@@ -13,16 +16,32 @@ $indexFileUrl = '/help/docs';
 print "Project root: $projectFileRoot\n";
 include_once $projectFileRoot.$bootstrapDir.'/definitions.php';
 
-$docPath = DIR_APPLICATION."/docs";
-$docUrl = URL_APPLICATION."/docs";
-$srcPath = "$projectFileRoot/doc/public";
+if (!isset($docType)) {
+    $docType = "docs";
+}
+if (!isset($srcDir)) {
+    $srcDir = "public";
+}
+
+if ($docType === 'help') {
+    $docPath = DIR_ROOT . "/" . $docType;
+    $docUrl =  "/" . $docType;
+}
+else {
+    $docPath = DIR_APPLICATION . "/" . $docType;
+    $docUrl = URL_APPLICATION . "/" . $docType;
+}
+$srcPath = "$projectFileRoot/doc/$srcDir";
+$commonPath = "$projectFileRoot/doc/common";
 
 include_once DIR_PEANUT_ROOT."/src/tops/sys/TStrings.php";
 include_once DIR_PEANUT_ROOT."/src/tops/sys/TParseDown.php";
 
+if (!isset($source)) {
+    $source = 'all';
+}
 /*print "Source path: $srcPath\n";
 print "Doc path: $docPath\n";*/
-
 if($source === 'all') {
     $sections = [];
     $dirs = scandir($srcPath);
@@ -56,7 +75,7 @@ else {
     array_shift($files);
 }
 
-$template = file_get_contents("$srcPath/doc-template.html");
+$template = file_get_contents("$commonPath/doc-template.html");
 if (empty($template)) {
     print "Template not found.\n";
     exit;
@@ -76,9 +95,11 @@ foreach($files as $filename) {
     print "\n";
     $title = 'Peanut Documentation';
     $content = sprintf($template,$title,$content);
+
     $outFile = str_ireplace('.md','.html',"$docPath/$filename");
     print "\nWriting: $outFile...";
     $outDir = dirname($outFile);
+
     if (!is_dir($outDir) && !mkdir($outDir, 0777, true) && !is_dir($outDir)) {
         throw new RuntimeException("Failed to create directory: $outDir");
     }
@@ -88,7 +109,12 @@ foreach($files as $filename) {
 
 if ($source === 'all') {
     $srcFile = "$srcPath/index.md";
-    $outFile = DIR_APPLICATION."/content/pages/doc-index.php";
+    if ($docType === 'help') {
+        $outFile = DIR_ROOT."/help/index.html";
+    }
+    else {
+        $outFile = DIR_APPLICATION."/content/pages/$docType-index.php";
+    }
     print  "Processing: $srcFile...";
     $content = \Tops\sys\TParseDown::ParseMdFile($srcFile);
     $content = str_ireplace('.md', '.html', $content);
@@ -118,9 +144,10 @@ if ($source === 'all') {
     }
     print "\nWriting index file: $outFile...\n";
     file_put_contents($outFile,$content);
-    print "\nWriting css file: $outFile...\n";
-    $sourceFile = "$srcPath/markdown.css";
+
+    $sourceFile = "$commonPath/markdown.css";
     $destFile = "$docPath/markdown.css";
+    print "\nWriting css file: $destFile...\n";
     copy($sourceFile, $destFile);
 
     $htaccess_path ="$docPath/.htaccess";

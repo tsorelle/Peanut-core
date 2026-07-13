@@ -20,6 +20,7 @@
 - [Multi-Select](components/multiselect.md)
 - [Search List](components/searchlist.md)
 - [Search List Observable](components/selectlistobservable.md)
+- [Content Management Components](components/content-management-components.md)
 
 ## ConcreteCMS / AustinQuakers.org
 
