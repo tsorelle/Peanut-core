@@ -205,6 +205,7 @@ class Bootstrap
         $response->optimize = (
             TConfiguration::getValue('optimize','peanut',0)) == 1;
         $response->loader = $loader;
+        self::testAutoload();
         return $response;
     }
 
