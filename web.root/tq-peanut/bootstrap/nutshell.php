@@ -26,7 +26,7 @@ if (!empty($_SERVER['REQUEST_URI'])) {
 // If peanut istallation is elsewhere, change this require_once statement.
 // require_once  __DIR__ . '/../../tq-peanut/bootstrap/definitions.php';
 require_once  __DIR__ . '\definitions.php';
-require_once DIR_APPLICATION . '/config/peanut-bootstrap.php';
+require_once DIR_PNUT_BOOTSTRAP . '/peanut-bootstrap.php';
 $bootResponse  = \Peanut\Bootstrap::initialize();
 if (!class_exists('Tops\cms\TRouteFinder')) {
     throw new \Exception('Initialization failed');

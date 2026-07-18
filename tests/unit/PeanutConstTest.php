@@ -27,9 +27,9 @@ class PeanutConstTest extends TestCase
         $expected = "/$expectedPeanutRoot";
         $this->assertEquals($expected,URL_PEANUT_ROOT);
 
-        $this->assertTrue(defined('DIR_APPLICATION'));
+        $this->assertTrue(defined('PNUT_APPLICATON'));
         $expected = "$docRoot/$expectedAppRoot";
-        $this->assertEquals($expected,DIR_APPLICATION);
+        $this->assertEquals($expected,PNUT_APPLICATON);
 
         $this->assertTrue(defined('URL_APPLICATION'));
         $expected = "/$expectedAppRoot";

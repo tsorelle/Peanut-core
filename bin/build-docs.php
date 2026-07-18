@@ -28,7 +28,7 @@ if ($docType === 'help') {
     $docUrl =  "/" . $docType;
 }
 else {
-    $docPath = DIR_APPLICATION . "/" . $docType;
+    $docPath = PNUT_APPLICATON . "/" . $docType;
     $docUrl = URL_APPLICATION . "/" . $docType;
 }
 $srcPath = "$projectFileRoot/doc/$srcDir";
@@ -113,7 +113,7 @@ if ($source === 'all') {
         $outFile = DIR_ROOT."/help/index.html";
     }
     else {
-        $outFile = DIR_APPLICATION."/content/pages/$docType-index.php";
+        $outFile = PNUT_APPLICATON."/content/pages/$docType-index.php";
     }
     print  "Processing: $srcFile...";
     $content = \Tops\sys\TParseDown::ParseMdFile($srcFile);

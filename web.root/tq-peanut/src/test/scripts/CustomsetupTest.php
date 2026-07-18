@@ -22,7 +22,7 @@ class CustomsetupTest extends TestScript
             exit('Not authorized to run this test.');
         }
 
-        $bootstrapPath = TPath::fromFileRoot('application/bootstrap');
+        $bootstrapPath = TPath::fromFileRoot('tq-peanut/bootstrap');
         // unlink("$bootstrapPath/app.php");
         // copy("$bootstrapPath/original-app.txt","$bootstrapPath/app.php");
         $installer = new Concrete5PeanutInstaller();

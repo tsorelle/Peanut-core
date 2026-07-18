@@ -35,7 +35,12 @@ class Bootstrap
     public static function readPeanutSettings($configPath = null): array
     {
         if ($configPath === null) {
-            $configPath = __DIR__;
+            if (defined('DIR_CONFIGURATION')) {
+                $configPath = DIR_CONFIGURATION;
+            }
+            else {
+                $configPath = __DIR__;
+            }
         }
         $ini = parse_ini_file($configPath. '/settings.ini', true);
         if ($ini === false) {
@@ -132,8 +137,8 @@ class Bootstrap
         $loader->addPsr4('Peanut', DIR_PEANUT_ROOT.'/src/peanut');
 
         // todo: this mapping probably obsolete check for classes with namespace Peanut\Application
-        // $loader->addPsr4('Peanut\Application',DIR_APPLICATION.'/src');
-        $loader->addPsr4('Application', DIR_APPLICATION.'/src');
+        // $loader->addPsr4('Peanut\Application',PNUT_APPLICATION.'/src');
+        $loader->addPsr4('Application', PNUT_APPLICATION.'/src');
         return $loader;
     }
 
@@ -162,7 +167,7 @@ class Bootstrap
         foreach ($autoloadItems as $namespace => $srcRoot) {
             // todo: review and consider nested str_replace
             $srcRoot = str_replace('[pnut-src]',DIR_PEANUT_ROOT.'/src',$srcRoot);
-            $srcRoot = str_replace('[app-src]',DIR_APPLICATION.'/src',$srcRoot);
+            $srcRoot = str_replace('[app-src]',PNUT_APPLICATION.'/src',$srcRoot);
             // $srcRoot = str_replace('\\',DIRECTORY_SEPARATOR,$srcRoot);
             $loader->addPsr4($namespace, $srcRoot);
         }

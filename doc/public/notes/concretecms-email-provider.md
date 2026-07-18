@@ -27,7 +27,7 @@ See [Email](../peanut/email.md) for more details.
 
 ```php
 <?php
-include_once (DIR_APPLICATION . '/' . DIRNAME_CLASSES . '/providers/TopsMailServiceProvider.php');
+include_once (PNUT_APPLICATON . '/' . DIRNAME_CLASSES . '/providers/TopsMailServiceProvider.php');
 
 return [
     'providers' => array(
