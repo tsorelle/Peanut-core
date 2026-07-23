@@ -85,7 +85,7 @@ class Bootstrap
                     $testPaths[] = 'Tops\concrete5\Concrete5AccountManager';
                     break;
                 case 'WordPress':
-                    $testPaths[] = 'Tops\wordpress\TWordpressUser';
+                    $testPaths[] = 'Tops\cms\wordpress\WordpressUser';
                     break;
                 Case 'Nutshell' :
                     $testPaths[] = 'Nutshell\cms\SiteMap';

@@ -63,8 +63,8 @@ class ServiceRequestHandler
 
     public function getSettings() : void{
         $bootstrapDir = (defined('DIR_PNUT_BOOTSTRAP'))  ?
-            DIR_PNUT_BOOTSTRAP : // old peanut
-            TPath::getConfigPath(); // new peanut
+            DIR_PNUT_BOOTSTRAP : // new peanut
+            TPath::getConfigPath(); // old peanut
         include($bootstrapDir.'/settings.php');
     }
 
