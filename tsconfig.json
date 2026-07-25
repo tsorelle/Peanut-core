@@ -1,13 +1,19 @@
 {
   "compilerOptions": {
-    "module" : "ES6",
-    "target" : "ES2019",
+      "module" : "ESNext",
+      "target" : "ES2022",
     "removeComments": true,
     "preserveConstEnums": true,
-    "sourceMap": true
+    "sourceMap": true,
+      "skipLibCheck": true,
+      "strict" : false
   },
   "include"  : [
       "web.root/tq-peanut/application/peanut/**/*",
       "web.root/tq-peanut/pnut/**/*"
-  ]
+  ],
+    "exclude": [
+        "web.root/tq-peanut/typings/**/*",
+        "web.root/tq-peanut/application/assets/js/libraries"
+    ]
 }
