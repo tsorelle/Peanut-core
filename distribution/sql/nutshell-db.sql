@@ -1,5 +1,9 @@
-/*Table structure for table `pnut_contacts` */
+/* Tables structues required for Nutshell authentication system */
 
+/*Table structure for table `pnut_contacts` */
+/* Repository: web.root/tq-peanut/pnut/packages/peanut-contacts/src/db/model/repository/ContactsRepository.php
+   web.root/tq-peanut/pnut/packages/peanut-contacts/src/db/model/repository/ContactSubscriptionAssociation.php
+   */
 CREATE TABLE `pnut_contacts` (
     `id` int unsigned NOT NULL AUTO_INCREMENT,
     `fullname` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -21,7 +25,9 @@ CREATE TABLE `pnut_contacts` (
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Table structure for table `pnut_roles` */
-
+/* Repository: web.root/tq-peanut/pnut/packages/peanut-roles/src/db/model/repository/RolesRepository.php
+   web.root/tq-peanut/pnut/packages/peanut-users/src/db/model/repository/UserRolesAssociation.php
+   */
 CREATE TABLE `pnut_roles` (
     `id` int unsigned NOT NULL AUTO_INCREMENT,
     `name` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -35,7 +41,7 @@ CREATE TABLE `pnut_roles` (
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Table structure for table `pnut_userprofiles` */
-
+/* Repository: web.root/tq-peanut/pnut/packages/peanut-users/src/db/model/repository/UserProfilesRepository.php */
 CREATE TABLE `pnut_userprofiles` (
      `id` int unsigned NOT NULL AUTO_INCREMENT,
      `fullname` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -57,14 +63,17 @@ CREATE TABLE `pnut_userprofiles` (
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Table structure for table `pnut_userroles` */
-
+/* Repository: web.root/tq-peanut/pnut/packages/peanut-users/src/db/model/repository/UserRolesAssociation.php
+   web.root/tq-peanut/pnut/packages/peanut-users/src/db/model/repository/UserProfilesRepository.php
+   web.root/tq-peanut/pnut/packages/peanut-users/src/db/model/repository/RolesRepository.php
+   */
 CREATE TABLE `pnut_userroles` (
         `userId` int unsigned NOT NULL,
         `roleId` int unsigned NOT NULL
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Table structure for table `pnut_users` */
-
+/* Repository: web.root/tq-peanut/pnut/packages/peanut-users/src/db/model/repository/UsersRepository.php */
 CREATE TABLE `pnut_users` (
       `id` int unsigned NOT NULL AUTO_INCREMENT,
       `username` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -79,7 +88,7 @@ CREATE TABLE `pnut_users` (
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Table structure for table `pnut_usersessions` */
-
+/* Repository: web.root/tq-peanut/pnut/packages/peanut-users/src/db/model/repository/UserSessionsRepository.php */
 CREATE TABLE `pnut_usersessions` (
      `id` int unsigned NOT NULL AUTO_INCREMENT,
      `sessionid` varchar(255) NOT NULL,

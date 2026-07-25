@@ -1,7 +1,12 @@
-/* 
+/*
 Create test database for Peanut
-Assumes empty database 
+Assumes empty database
 */
+
+/*Table structure for table `tops_mailboxes` */
+/* Repository
+   web.root/tq-peanut/src/tops/db/model/repository/MailboxRepository.php
+ */
 CREATE TABLE `tops_mailboxes` (
   `id` int NOT NULL AUTO_INCREMENT,
   `mailboxcode` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
@@ -20,7 +25,9 @@ CREATE TABLE `tops_mailboxes` (
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Table structure for table `tops_permissions` */
-
+/* Repository
+   web.root/tq-peanut/src/tops/db/model/repository/BasicPermissionsRepository.php
+ */
 CREATE TABLE `tops_permissions` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `permissionName` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -30,8 +37,8 @@ CREATE TABLE `tops_permissions` (
   UNIQUE KEY `uk_permissions_name` (`permissionName`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-/*Table structure for table `tops_process_log` */
-
+/* Table structure for table `tops_process_log` */
+/* REPOSITORY web.root/tq-peanut/src/tops/db/model/repository/ProcessLogRepository.php*/
 CREATE TABLE `tops_process_log` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `processCode` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -44,7 +51,9 @@ CREATE TABLE `tops_process_log` (
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Table structure for table `tops_processes` */
-
+/* Repository
+   web.root/tq-peanut/src/tops/db/model/repository/ProcessRepository.php
+ */
 CREATE TABLE `tops_processes` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `code` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -56,7 +65,8 @@ CREATE TABLE `tops_processes` (
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Table structure for table `tops_rolepermissions` */
-
+/* Repository
+   web.root/tq-peanut/src/tops/db/model/repository/PermissionsRepository.php     */
 CREATE TABLE `tops_rolepermissions` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `permissionId` int DEFAULT NULL,
@@ -66,7 +76,7 @@ CREATE TABLE `tops_rolepermissions` (
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Table structure for table `tops_tasklog` */
-
+/* Repository: web.root/tq-peanut/pnut/packages/peanut-tasks/src/TaskLogRepository.php */
 CREATE TABLE `tops_tasklog` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `time` datetime DEFAULT NULL,
@@ -78,7 +88,7 @@ CREATE TABLE `tops_tasklog` (
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Table structure for table `tops_taskqueue` */
-
+/* Repository: web.root/tq-peanut/pnut/packages/peanut-tasks/src/TaskQueueRepository.php */
 CREATE TABLE `tops_taskqueue` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `frequency` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '24 Hours',
@@ -93,8 +103,31 @@ CREATE TABLE `tops_taskqueue` (
   PRIMARY KEY (`id`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-/*Table structure for table `pnut_content` */
+/*Table structure for table `qnut_email_failures` */
+/* web.root/tq-peanut/src/tops/db/model/repository/EmailFailuresRepository.php */
+CREATE TABLE `qnut_email_failures` (
+    `id` int unsigned NOT NULL AUTO_INCREMENT,
+    `reportedDate` datetime DEFAULT NULL,
+    `recipient` varchar(128) DEFAULT NULL,
+    `errorlevel` int unsigned NOT NULL DEFAULT '1',
+    `smtpCode` varchar(16) DEFAULT NULL,
+    `statusMessage` varchar(256) DEFAULT NULL,
+    `messageId` varchar(128) DEFAULT NULL,
+    `event` varchar(32) DEFAULT NULL,
+    `eventId` varchar(64) DEFAULT NULL,
+    `category` varchar(16) NOT NULL DEFAULT 'unknown',
+    `attemptNumber` int unsigned NOT NULL DEFAULT '1',
+    `sender` varchar(128) DEFAULT NULL,
+    `subject` varchar(128) DEFAULT NULL,
+    `from` varchar(128) DEFAULT NULL,
+    `to` varchar(128) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_eventId` (`eventId`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+/*Table structure for table `pnut_content` */
+/* Repository: web.root/tq-peanut/pnut/packages/peanut-content/src/db/model/repository/ContentRepository.php */
 CREATE TABLE `pnut_content` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `description` varchar(256) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -108,7 +141,8 @@ CREATE TABLE `pnut_content` (
   PRIMARY KEY (`id`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
+/*Table structure for table `tops_tokens` */
+/* Repository: web.root/tq-peanut/src/tops/db/TTokens.php */
 CREATE TABLE `tops_tokens` (
    `id` int unsigned NOT NULL AUTO_INCREMENT,
    `value` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -118,18 +152,21 @@ CREATE TABLE `tops_tokens` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `tops_mailboxes` */
-insert  into `tops_mailboxes`(`id`,`mailboxcode`,`address`,`displaytext`,`description`,`createdby`,`createdon`,`changedby`,`changedon`,`active`,`public`,`published`) values 
+/* Repository:  web.root/tq-peanut/src/tops/db/model/repository/MailboxesRepository.php
+    web.root/tq-peanut/pnut/packages/peanut-mailings/src/db/model/repository/EmailListsRepository.php
+*/
+insert  into `tops_mailboxes`(`id`,`mailboxcode`,`address`,`displaytext`,`description`,`createdby`,`createdon`,`changedby`,`changedon`,`active`,`public`,`published`) values
 (1,'admin','terry.sorelle@outlook.com','Site Administrator','Web site administrator','Terry','2024-12-29 14:42:35','Terry','2024-12-29 14:42:35',1,1,0),
 (2,'dev','twoquakedev@outlook.com','Development','Feature requests, questions and bug reports','Terry','2024-12-29 14:43:39','Terry','2025-01-01 13:35:35',1,0,0),
 (3,'contact-form','twoquakedev@outlook.com','Peanut Website','For contact form return address','Terry','2024-12-29 15:13:54','Terry','2024-12-29 15:13:54',1,0,0),
 (4,'support','twoquakedev@outlook.com','Website Support','Support address','Terry','2026-04-16 07:16:10','Terry', '2024-12-29 15:13:54',1,0,0);
 
 /*Data for the table `tops_processes` */
-
-insert  into `tops_processes`(`id`,`code`,`name`,`description`,`paused`,`enabled`) values 
+/* Repository: web.root/tq-peanut/src/tops/db/model/repository/ProcessesRepository.php */
+insert  into `tops_processes`(`id`,`code`,`name`,`description`,`paused`,`enabled`) values
 (2,'email-queue-send','Send email','Process outgoing email in queue',NULL,NULL);
 
 /*Data for the table `tops_taskqueue` */
-
-insert  into `tops_taskqueue`(`id`,`frequency`,`intervalType`,`taskname`,`namespace`,`startdate`,`enddate`,`inputs`,`comments`,`active`) values 
+/* Repository: web.root/tq-peanut/pnut/packages/peanut-tasks/src/TaskQueueRepository.php */
+insert  into `tops_taskqueue`(`id`,`frequency`,`intervalType`,`taskname`,`namespace`,`startdate`,`enddate`,`inputs`,`comments`,`active`) values
 (102,'1 minutes',2,'processMessageQueue','Peanut\\PeanutMailings','2025-01-01',NULL,'','',1);

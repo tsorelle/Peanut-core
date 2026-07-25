@@ -3,6 +3,7 @@ node_modules/
 /temp/
 /novcs/
 /build/
+/distribution/
 /web.root/application/assets/js/libraries/
 /images/
 /maildrop/
