@@ -102,7 +102,8 @@ class Bootstrap
         }
         if (!empty($failed)) {
             $list = implode('; ',$failed);
-            throw new \Exception('Failed to load test paths: '.$list);
+            exit('Failed to load test paths: '.$list);
+            // throw new \Exception('Failed to load test paths: '.$list);
         }
     }
 
