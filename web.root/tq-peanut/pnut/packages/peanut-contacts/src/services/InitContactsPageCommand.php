@@ -42,7 +42,7 @@ class InitContactsPageCommand extends \Tops\services\TServiceCommand
         $response->contacts = $manager->getContactList();
         $response->listingTypes = $manager->getListingTypes();
 
-        $subscriptionManager = new SubscriptionManager();
+        $subscriptionManager = SubscriptionManager::getInstance();
         $response->emailLists = $subscriptionManager->getEmailSubscriptionList();
 
         $accounts = new AccountManager();

@@ -15,8 +15,16 @@ use Tops\sys\TUser;
 class SubscriptionManager
 {
     private IContactManager $contactManager;
+    private static SubscriptionManager $instance;
+    public static function getInstance()
+    {
+        if (!isset(self::$instance)) {
+            self::$instance = new SubscriptionManager();
+        }
+        return self::$instance;
+    }
 
-    protected function getContactManager(): IContactManager
+    public function getContactManager(): IContactManager
     {
         if (!isset($this->contactManager)) {
             $this->contactManager = TObjectContainer::Get('contact.manager');
@@ -159,6 +167,38 @@ class SubscriptionManager
     public function getEmailSubscriptionList()
     {
         return $this->getEmailListsRepository()->getAll();
+    }
+    public function queueEmailRecipients($messageId, $listId): int {
+        return $this->getContactManager()->queueEmailRecipients($messageId, $listId);
+    }
+
+    public function getEmailSubscriberByAccount($accountId) {
+        return $this->getContactManager()->getPersonByAccountId($accountId);
+    }
+
+    public function getSubscriber($personId)
+    {
+        return $this->getContactManager()->getPersonById($personId);
+    }
+
+    public function updateSubscriber(\Tops\db\IBasicContact $person)
+    {
+        return $this->getContactManager()->updatePerson($person);
+    }
+
+    public function getSubscriberByUid($uid)
+    {
+        return $this->getContactManager()->getPersonByUid($uid);
+    }
+
+    public function getSubcriberByEmailAddress($emailAddress)
+    {
+        return $this->getContactManager()->getPersonByEmailAddress($emailAddress);
+    }
+
+    public function getAllSubscibersByEmail(string $emailAddress)
+    {
+        return $this->getContactManager()->getAllPersonsByEmail($emailAddress);
     }
 
 

@@ -9,12 +9,9 @@
 namespace Peanut\PeanutMailings\services;
 
 
-use Peanut\PeanutMailings\db\DirectoryManager;
 use Peanut\PeanutMailings\sys\SubscriptionManager;
 use Tops\services\TServiceCommand;
 use Tops\sys\TConfiguration;
-use Tops\sys\TLanguage;
-use Tops\sys\TUser;
 
 /**
  * Class GetUserSubscriptionsCommand
@@ -50,7 +47,7 @@ class GetUserSubscriptionsCommand extends TServiceCommand
         }
         $request = $this->getRequest();
         $userId = $request && !empty($request->userId) ? $request->userId : $user->getId();
-        $subsciptionManager = new SubscriptionManager();
+        $subsciptionManager = SubscriptionManager::getInstance();
         $response = $subsciptionManager->getUserSubscriptions($userId);
         if ($response === false) {
             $this->addErrorMessage('Cannot find user account.');

@@ -8,8 +8,6 @@
 
 namespace Peanut\PeanutMailings\services;
 
-
-use Peanut\PeanutMailings\db\DirectoryManager;
 use Peanut\PeanutMailings\sys\SubscriptionManager;
 use Tops\services\TServiceCommand;
 use Tops\sys\TConfiguration;
@@ -46,7 +44,7 @@ class UpdatePersonSubscriptionsCommand extends TServiceCommand
             }
         }
 
-        $manager = new SubscriptionManager();
+        $manager = SubscriptionManager::getInstance();
         $manager->updateEmailSubscriptions($personId,$request->emailSubscriptions);
 
         $postalSubscriptionsSupported = TConfiguration::getBoolean('postalSubscriptions','features');

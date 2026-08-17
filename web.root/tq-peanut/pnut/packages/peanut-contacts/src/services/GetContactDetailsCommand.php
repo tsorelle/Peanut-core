@@ -16,7 +16,7 @@ class GetContactDetailsCommand extends \Tops\services\TServiceCommand
             return;
         }
         $response = new \stdClass();
-        $subscriptionManager = new SubscriptionManager();
+        $subscriptionManager = SubscriptionManager::getInstance();
         $response->subscriptions = $subscriptionManager->getEmailSubscriptions($id);
         $this->setReturnValue($response);
     }

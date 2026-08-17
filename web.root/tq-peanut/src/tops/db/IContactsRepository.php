@@ -10,4 +10,5 @@ interface IContactsRepository
     public function getAllByEmail($email) : array;
     public function getByUid($uid);
 
+
 }

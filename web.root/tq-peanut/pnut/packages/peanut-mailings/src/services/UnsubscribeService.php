@@ -8,8 +8,6 @@
 
 namespace Peanut\PeanutMailings\services;
 
-
-use Peanut\PeanutMailings\db\DirectoryManager;
 use Peanut\PeanutMailings\sys\SubscriptionManager;
 use Tops\mail\TPostOffice;
 use Tops\sys\TConfiguration;
@@ -25,8 +23,8 @@ class UnsubscribeService
             "Action: User:$uid\nList: $listId\n"
         );*/
 
-        $manager = new SubscriptionManager();
-        $person = $manager->getPersonByUid($uid);
+        $manager = SubscriptionManager::getInstance();
+        $person = $manager->getSubscriberByUid($uid);
         if (!$person) {
             return;
         }
