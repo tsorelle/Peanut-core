@@ -23,6 +23,10 @@ class SubscriptionManager
         }
         return $this->contactManager;
     }
+    public function getEmailSubscriptions($personId)
+    {
+        return $this->getEmailSubscriptionsAssociation()->getListValues($personId);
+    }
     public function getUserSubscriptions($userId)
     {
         $manager = $this->getContactManager();
@@ -89,7 +93,7 @@ class SubscriptionManager
         return $this->getEmailSubscriptionsAssociation()->getListValues($person->getId());
     }
     private $subscriptionsAssociation;
-    private function getEmailSubscriptionsAssociation()
+    public function getEmailSubscriptionsAssociation()
     {
         if (!isset($this->subscriptionsAssociation)) {
             $definitions = $this->getContactManager()->getContactDefinitions();
@@ -150,6 +154,11 @@ class SubscriptionManager
 
     public function updatePostalSubscriptions($addressId,array $newSubscriptions) {
         // todo: implement postal subscription support
+    }
+
+    public function getEmailSubscriptionList()
+    {
+        return $this->getEmailListsRepository()->getAll();
     }
 
 

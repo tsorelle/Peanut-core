@@ -7,6 +7,7 @@ use Peanut\PeanutMailings\db\model\repository\EmailListsRepository;
 use Peanut\contacts\db\model\repository\ContactSubscriptionAssociation;
 use Peanut\PeanutMailings\db\model\repository\EmailSubscriptionAssociation;
 use Peanut\PeanutMailings\sys\ISubscriptionManager;
+use Peanut\PeanutMailings\sys\SubscriptionManager;
 use Tops\db\IBasicContact;
 use Tops\db\model\repository\LookupTableRepository;
 use Tops\services\IMessageContainer;
@@ -15,8 +16,6 @@ use Tops\sys\IContactManager;
 
 class ContactsManager implements IContactManager
 {
-
-
     private ContactsRepository $contactsRepository;
 
     private function getContactsRepository(): ContactsRepository
@@ -27,36 +26,19 @@ class ContactsManager implements IContactManager
         return $this->contactsRepository;
     }
 
-    private $emailListsRepository;
-
-    private function getEmailListsRepository()
+    public function getContactList()
     {
-        if (!isset($this->emailRepository)) {
-            $this->emailListsRepository = new EmailListsRepository();
-        }
-        return $this->emailListsRepository;
+        return $this->getContactsRepository()->getContactList();
     }
 
-
-    public function getContactsAndLookups()
+    public function getListingTypes()
     {
-        $result = new \stdClass();
-        $contactsRepo = $this->getContactsRepository();
-        $result->contacts = $contactsRepo->getContactList();
-        $result->emailLists = $this->getEmailListsRepository()->getAll();
-        $result->listingTypes = $contactsRepo->getListingTypes();
-        return $result;
+        return $this->getContactsRepository()->getListingTypes();
     }
 
     public function getContacts($filter = null, $activeOnly = true)
     {
         return $this->getContactsRepository()->getContactList($filter);
-    }
-
-    public function getContactSubscriptions($id)
-    {
-        $association = $this->getEmailSubscriptionsAssociation();
-        return $association->getListValues($id);
     }
 
     public function updateContact($contactDTO, array $subscriptions = null)
@@ -105,11 +87,6 @@ class ContactsManager implements IContactManager
         return true;
     }
 
-
-    /*private function getPersonByUid($userId)
-    {
-        return $this->getContactsRepository()->getEntityByUid($userId);
-    }*/
     public function getEmailListLookup($includeAdminOnly = false, $translate = false)
     {
         $filter = 'cansubscribe=1';
@@ -120,17 +97,12 @@ class ContactsManager implements IContactManager
         return $repository->getLookupList($translate, $filter);
     }
 
-    public function updateEmailSubscriptions($personId, $emailSubscriptions)
-    {
-        $this->getEmailSubscriptionsAssociation()->updateSubscriptions($personId, $emailSubscriptions);
-    }
-
     public function getContactDefinitions(): array
     {
         return $this->getContactsRepository()->getContactDefinitions();
     }
 
-    public function getPersonById($personId, array $includes = [], array $addressIncludes = []): IBasicContact | false
+    public function getPersonById($personId, array $includes = [], array $addressIncludes = []): IBasicContact|false
     {
         return $this->getContactsRepository()->getEntityById($personId);
     }
@@ -145,11 +117,12 @@ class ContactsManager implements IContactManager
         return []; // postal lists not supported
     }
 
-    public function getPersonByAccountId($accountId): IBasicContact | false
+    public function getPersonByAccountId($accountId): IBasicContact|false
     {
         return $this->getContactsRepository()->getByAccountId($accountId);
     }
 
+    // todo: consider redesign
     public function receivesNotifications($uid): bool
     {
         return true;  // everybody receives notifications
@@ -168,10 +141,5 @@ class ContactsManager implements IContactManager
     public function getAllByEmail($email): array
     {
         return $this->getContactsRepository()->getAllByEmail($email);
-    }
-
-    public function unsubscribeByUid($uid, $listId): bool|\stdClass
-    {
-        return $this->getContactsRepository()->unsubscribeByUid($uid, $listId);
     }
 }

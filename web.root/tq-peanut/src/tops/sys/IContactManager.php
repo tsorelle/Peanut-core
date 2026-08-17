@@ -17,5 +17,4 @@ interface IContactManager
     public function getPostalSubscriptions($addressId) : array;
     public function getAllByEmail($email) : array;
     public function getContactDefinitions(): array;
-    public function unsubscribeByUid($uid,$listId) : bool | \stdClass;
 }

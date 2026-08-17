@@ -243,6 +243,7 @@ class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfile
         return $result === false ? [] : $result;
     }
 
+    // todo: is it used? refactor to subscription manager
     public function getEmailSubscribersList($listId) {
         $sql  = "SELECT c.id, c.`fullname`, IFNULL(c.`email`, 'error no email') AS emailAddress,".
         ' IF(c.`email` IS NULL,1,0) AS noEmail,0 as unsubscribe'.
@@ -253,6 +254,8 @@ class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfile
         $stmt = $this->executeStatement($sql,[$listId]);
         return $stmt->fetchAll(pdo::FETCH_OBJ);
     }
+
+    // todo: is it used? refactor to subscription manager
     public function removeEmailSubscriptions($listId, array $contactList) {
         if (count($contactList) == 0) {
             return false;
@@ -263,6 +266,7 @@ class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfile
         return true;
     }
 
+    // todo: is it used? add to IBasic contact
     public function getUid($subscriberId): string
     {
         $contact = $this->get($subscriberId);
@@ -272,6 +276,7 @@ class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfile
         return '';
     }
 
+    // todo: is it used? refactor to subscription manager
     public function queueEmailRecipients($messageId, $listId): int
     {
         $count = 0;
@@ -292,6 +297,8 @@ class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfile
      * @param array $recipients
      * @return int
      */
+
+    // todo: is it used? refactor to subscription manager
     public function queueEmailRecipientList($messageId, array $recipients): int
     {
         $count = 0;

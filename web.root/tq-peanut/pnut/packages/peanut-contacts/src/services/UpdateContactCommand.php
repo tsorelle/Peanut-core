@@ -28,7 +28,7 @@ class UpdateContactCommand extends \Tops\services\TServiceCommand
             return;
         }
         $manager = new ContactsManager();
-        if (!empty($request->subscriptions)) {
+        if (isset($request->subscriptions)) {
             $subscriptionManager = new SubscriptionManager();
             $result = $subscriptionManager->updateContactAndSubscriptions($request->contact,$request->subscriptions);
         }
