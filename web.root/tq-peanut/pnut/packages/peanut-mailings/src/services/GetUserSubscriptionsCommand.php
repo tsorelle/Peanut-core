@@ -10,6 +10,7 @@ namespace Peanut\PeanutMailings\services;
 
 
 use Peanut\PeanutMailings\db\DirectoryManager;
+use Peanut\PeanutMailings\sys\SubscriptionManager;
 use Tops\services\TServiceCommand;
 use Tops\sys\TConfiguration;
 use Tops\sys\TLanguage;
@@ -40,45 +41,21 @@ class GetUserSubscriptionsCommand extends TServiceCommand
      */
     protected function run()
     {
-        $manager = new DirectoryManager();
         $user = $this->getUser();
-        $request = $this->getRequest();
-        $response = false;
-
-        if ($request && !empty($request->userId)) {
-            $response = $manager->getSubscriptionValues($request->userId);
-        }
-        else if ($user->isAuthenticated()) {
-            $response = $manager->getSubscriptionValues($user->getId());
-        }
-        if ($response === false) {
+        if (!$user->isAuthenticated()) {
             $response = new \stdClass();
-            if (!$user->isAuthenticated()) {
-                $response->redirect = TConfiguration::getValue('login-page','pages','/login');
-            }
-            else {
-                $this->addErrorMessage('Cannot find user account.');
-            }
+            $response->redirect = TConfiguration::getValue('login-page', 'pages', '/login');
             $this->setReturnValue($response);
             return;
         }
-        if ($user->isAuthenticated() && ($user->getId() == $response->accountId)) {
-            $response->pageHeading = TLanguage::text('subscription-header-default');
+        $request = $this->getRequest();
+        $userId = $request && !empty($request->userId) ? $request->userId : $user->getId();
+        $subsciptionManager = new SubscriptionManager();
+        $response = $subsciptionManager->getUserSubscriptions($userId);
+        if ($response === false) {
+            $this->addErrorMessage('Cannot find user account.');
+            return;
         }
-        else {
-            $response->pageHeading = TLanguage::formatText('subscription-header-format',$response->personName);
-        }
-        $response->emailLists = $manager->getEmailListLookup($user->isAdmin());
-        $response->postalLists = $manager->getPostalListLookup();
-        $response->translations =
-            TLanguage::getTranslations([
-            'label-email-lists',
-            'label-postal-lists',
-            'label-save-changes',
-                'label-notifications',
-                'notifications-description'
-        ]);
-
         $this->setReturnValue($response);
     }
 }

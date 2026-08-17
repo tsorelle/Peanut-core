@@ -35,5 +35,8 @@
 	<help title="Help" description="Help and documentation">
 		<docs title="Documentation" description="Technical Documentation"/>
 	</help>
+    <user title="User" description="" roles="authenticated" uri="site/user">
+        <subscriptions title="Subscriptions" description="" roles="" uri="user/subscriptions"/>
+    </user>
 	<!-- page title='' uri='' description='' roles='' / -->
 </site-map>

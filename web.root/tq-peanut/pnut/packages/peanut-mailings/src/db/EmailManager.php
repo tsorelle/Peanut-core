@@ -13,6 +13,7 @@ use Peanut\PeanutMailings\db\model\repository\EmailCorrectionsRepository;
 use Peanut\PeanutMailings\db\model\repository\EmailFailuresRepository;
 use Peanut\PeanutMailings\db\model\repository\EmailListsRepository;
 use Peanut\PeanutMailings\db\model\repository\PersonsRepository;
+use Peanut\PeanutMailings\sys\SubscriptionManager;
 use Tops\mail\TEmailAddress;
 use Tops\mail\TPostOffice;
 use Tops\sys\TCmsEvents;
@@ -25,15 +26,18 @@ class EmailManager
     const defaultPersonFormUrl = '/community/directory/members?pid=';
 
 
-    private $personsRepository;
+    private $subscriptionManager;
 
-    private function getPersonsRepository()
+    private function getSubscriptionManager()
     {
-        if (!isset($this->personsRepository)) {
-            $this->personsRepository = new PersonsRepository();
+        if (!isset($this->subscriptionManager)) {
+            // $this->subscriptionManager = new SubscriptionManager();
+            $this->subscriptionManager = new SubscriptionManager();
         }
-        return $this->personsRepository;
+        return $this->subscriptionManager;
     }
+
+
 
     /**
      * @var EmailCorrectionsRepository
@@ -110,7 +114,7 @@ class EmailManager
     public function logEmailProblem($emailAddress, $errorLevel, $errorMessage, $username = 'system')
     {
         $correctionsRepository = $this->getEmailCorrectionsRepository();
-        $personsRepository = $this->getPersonsRepository();
+        $subscriptionManager = $this->getSubscriptionManager();
         TCmsEvents::Enable(false);
         $user = TUser::getByEmail($emailAddress);
         try {
@@ -119,9 +123,9 @@ class EmailManager
                 // if no entry, create new one
                 $accountId = $user ? $user->getId() : 0;
                 $entry = new EmailCorrection();
-                $person = $personsRepository->getByAccountId($accountId);
+                $person = $subscriptionManager->getByAccountId($accountId);
                 if (!$person) {
-                    $persons = $personsRepository->getPersonsByEmail($emailAddress);
+                    $persons = $subscriptionManager->getPersonsByEmail($emailAddress);
                     if (!empty($persons)) {
                         $person = array_shift($persons);
                     }
@@ -148,12 +152,12 @@ class EmailManager
             }
 
             // blank email address in persons table and cms account
-            $people = $personsRepository->getPersonsByEmail($emailAddress);
+            $people = $subscriptionManager->getPersonsByEmail($emailAddress);
             if (!empty($people)) {
                 foreach ($people as $person) {
                     if ($person->email) {
                         $person->email = null;
-                        $personsRepository->updatePerson($person);
+                        $subscriptionManager->updatePerson($person);
                     }
                 }
             }
@@ -184,7 +188,7 @@ class EmailManager
         }
         $accountId = $correction->accountId;
         $personId = $correction->personId;
-        $personsRepository = $this->getPersonsRepository();
+        $subscriptionManager = $this->getSubscriptionManager();
 
         try {
             if ($accountId) {
@@ -203,10 +207,10 @@ class EmailManager
             }
 
             if ($personId) {
-                $person = $personsRepository->get($personId);
+                $person = $subscriptionManager->get($personId);
                 if ($person && ($person->email != $emailAddress)) {
                     $person->email = $emailAddress;
-                    $personsRepository->update($person);
+                    $subscriptionManager->update($person);
                 }
             }
         } catch (\Exception $ex) {
@@ -231,12 +235,12 @@ class EmailManager
      */
     public function updatePersonEmail($email, $personId, $username = 'admin')
     {
-        $person = $this->getPersonsRepository()->get($personId);
+        $person = $this->getSubscriptionManager()->get($personId);
         if (!$person) {
             return false;
         }
         $person->email = $email;
-        $this->getPersonsRepository()->update($person, $username);
+        $this->getSubscriptionManager()->update($person, $username);
         if (empty($person->accountId)) {
             return false;
         }
@@ -284,17 +288,17 @@ class EmailManager
     {
         $emailAddress = TEmailAddress::FromString($recipient)->getAddress();
         $correctionsRepository = $this->getEmailCorrectionsRepository();
-        $personsRepository = $this->getPersonsRepository();
+        $subscriptionManager = $this->getSubscriptionManager();
         $user = TUser::getByEmail($emailAddress);
         TCmsEvents::Enable(false);
         try {
-            $people = $personsRepository->getPersonsByEmail($emailAddress);
+            $people = $subscriptionManager->getPersonsByEmail($emailAddress);
             if (!empty($people)) {
                 foreach ($people as $person) {
                     if ($person->email) {
                         $correctionsRepository->unsubscribeAll($person->id);
                         $person->email = null;
-                        $personsRepository->updatePerson($person);
+                        $subscriptionManager->updatePerson($person);
                     }
                 }
             }

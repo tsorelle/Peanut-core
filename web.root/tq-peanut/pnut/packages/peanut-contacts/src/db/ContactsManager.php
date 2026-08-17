@@ -5,15 +5,21 @@ use Peanut\contacts\db\model\entity\Contact;
 use Peanut\contacts\db\model\repository\ContactsRepository;
 use Peanut\PeanutMailings\db\model\repository\EmailListsRepository;
 use Peanut\contacts\db\model\repository\ContactSubscriptionAssociation;
+use Peanut\PeanutMailings\db\model\repository\EmailSubscriptionAssociation;
 use Peanut\PeanutMailings\sys\ISubscriptionManager;
+use Tops\db\IBasicContact;
 use Tops\db\model\repository\LookupTableRepository;
+use Tops\services\IMessageContainer;
+use Tops\services\NullMessageContainer;
+use Tops\sys\IContactManager;
 
-class ContactsManager
+class ContactsManager implements IContactManager
 {
-    private $subscriptionsAssociation;
 
-    private $contactsRepository;
-    private function getContactsRepository ()
+
+    private ContactsRepository $contactsRepository;
+
+    private function getContactsRepository(): ContactsRepository
     {
         if (!isset($this->contactsRepository)) {
             $this->contactsRepository = new ContactsRepository();
@@ -22,7 +28,9 @@ class ContactsManager
     }
 
     private $emailListsRepository;
-    private function getEmailListsRepository() {
+
+    private function getEmailListsRepository()
+    {
         if (!isset($this->emailRepository)) {
             $this->emailListsRepository = new EmailListsRepository();
         }
@@ -40,7 +48,8 @@ class ContactsManager
         return $result;
     }
 
-    public function getContacts($filter=null,$activeOnly = true) {
+    public function getContacts($filter = null, $activeOnly = true)
+    {
         return $this->getContactsRepository()->getContactList($filter);
     }
 
@@ -48,14 +57,6 @@ class ContactsManager
     {
         $association = $this->getEmailSubscriptionsAssociation();
         return $association->getListValues($id);
-    }
-
-    private function getEmailSubscriptionsAssociation()
-    {
-        if (!isset($this->subscriptionsAssociation)) {
-            $this->subscriptionsAssociation = new ContactSubscriptionAssociation();
-        }
-        return $this->subscriptionsAssociation;
     }
 
     public function updateContact($contactDTO, array $subscriptions = null)
@@ -68,10 +69,10 @@ class ContactsManager
         }
         if (empty($contactDTO->sortkey)) {
             $name = $contactDTO->fullname;
-            $parts = explode(' ',$contactDTO->fullname);
+            $parts = explode(' ', $contactDTO->fullname);
             $last = array_pop($parts);
             if (count($parts)) {
-                $name = $last.', '.implode(' ',$parts);
+                $name = $last . ', ' . implode(' ', $parts);
             }
             $contactDTO->sortkey = $name;
         }
@@ -81,19 +82,15 @@ class ContactsManager
         }
         if ($isNew) {
             $id = $repo->insert($contact);
-        }
-        else {
+        } else {
             $repo->update($contact);
             $id = $contact->id;
         }
         if ($id === false) {
             return false;
         }
-        $subscriptionsRepo = $this->getEmailSubscriptionsAssociation();
-        if (is_array($subscriptions)) {
-            $subscriptionsRepo->updateSubscriptions($id,$subscriptions);
-        }
-        return true;
+
+        return $id;
     }
 
     public function setContactSiteAccount($contactId, $accountId)
@@ -108,60 +105,11 @@ class ContactsManager
         return true;
     }
 
-    public function unsubscribeEmail($uid,$listId) {
-        $repository = $this->getEmailListsRepository();
-        $result = $this->unsubscribeByUid($uid,$listId);
-        if ($result === false) {
-            $result = new \stdClass();
-            $result->removed = false;
-            $person = $this->getContactsRepository()->getEntityByUid($uid);
-            $result->personName = $person ? $person->fullname : null;
-            $list = $repository->get($listId);
-            $result->listName = $list ? $list->name : null;
-        }
-        else {
-            $result->removed = true;
-        }
-        return $result;
-    }
 
-    public function getSubscriptionValues($userId)
-    {
-        $response = new \stdClass();
-        $response->emailSubscriptions = [];
-        $response->postalSubscriptions = [];
-        $response->personId = 0;
-        $response->addressId = 0;
-        $response->personName = '';
-        $response->accountId = 0;
-
-        $personsRepository = $this->getContactsRepository();
-        if (is_numeric($userId)) {
-            $person = $personsRepository->getByAccountId($userId);
-        }
-        else {
-            $person = $this->getPersonByUid($userId);
-        }
-
-        if (!$person) {
-            return false;
-        }
-
-        if ($person) {
-            $response->personName = $person->fullname;
-            $response->personId = $person->id;
-            $response->accountId = $person->accountId;
-            $response->emailSubscriptions = $this->getEmailSubscriptionsAssociation()->getListValues($response->personId);
-            // $response->notifications = $personsRepository->recievesNotifications($person->uid);
-        }
-        return $response;
-
-    }
-
-    private function getPersonByUid($userId)
+    /*private function getPersonByUid($userId)
     {
         return $this->getContactsRepository()->getEntityByUid($userId);
-    }
+    }*/
     public function getEmailListLookup($includeAdminOnly = false, $translate = false)
     {
         $filter = 'cansubscribe=1';
@@ -174,7 +122,56 @@ class ContactsManager
 
     public function updateEmailSubscriptions($personId, $emailSubscriptions)
     {
-        $this->getEmailSubscriptionsAssociation()->updateSubscriptions($personId,$emailSubscriptions);
+        $this->getEmailSubscriptionsAssociation()->updateSubscriptions($personId, $emailSubscriptions);
     }
 
+    public function getContactDefinitions(): array
+    {
+        return $this->getContactsRepository()->getContactDefinitions();
+    }
+
+    public function getPersonById($personId, array $includes = [], array $addressIncludes = []): IBasicContact | false
+    {
+        return $this->getContactsRepository()->getEntityById($personId);
+    }
+
+    public function getPersonByUid($uid): IBasicContact|false
+    {
+        return $this->getContactsRepository()->getByUid($uid);
+    }
+
+    public function getPostalListLookup($translate = false)
+    {
+        return []; // postal lists not supported
+    }
+
+    public function getPersonByAccountId($accountId): IBasicContact | false
+    {
+        return $this->getContactsRepository()->getByAccountId($accountId);
+    }
+
+    public function receivesNotifications($uid): bool
+    {
+        return true;  // everybody receives notifications
+    }
+
+    public function getAddressId($userId): int
+    {
+        return 0; // addresses not supported
+    }
+
+    public function getPostalSubscriptions($addressId): array
+    {
+        return []; // addresses not supported
+    }
+
+    public function getAllByEmail($email): array
+    {
+        return $this->getContactsRepository()->getAllByEmail($email);
+    }
+
+    public function unsubscribeByUid($uid, $listId): bool|\stdClass
+    {
+        return $this->getContactsRepository()->unsubscribeByUid($uid, $listId);
+    }
 }

@@ -1,14 +1,15 @@
-<?php 
-/** 
- * Created by /tools/create-model.php 
+<?php
+/**
+ * Created by /tools/create-model.php
  * Time:  2022-05-11 14:51:59
- */ 
+ */
 namespace Peanut\contacts\db\model\repository;
 
 use \PDO;
 use PDOStatement;
 use Peanut\contacts\db\model\entity\Contact;
 use Peanut\PeanutMailings\sys\ISubscriptionManager;
+use stdClass;
 use Tops\db\IBasicContact;
 use Tops\db\IContactsRepository;
 use Tops\db\IProfilesRepository;
@@ -308,7 +309,7 @@ class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfile
         return $count;
     }
 
-    public function unsubscribeByUid($uid,$listId) {
+    public function unsubscribeByUid($uid,$listId) : bool | \stdClass {
         $findQuery = 'SELECT p.fullname as personName, l.name AS listName '.
             'FROM qnut_email_subscriptions s '.
             'JOIN pnut_contacts p ON s.personId = p.id '.
@@ -336,5 +337,17 @@ class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfile
     public function getByUid($uid): IBasicContact
     {
         return $this->getSingleEntity('uid = ?',[$uid]);
+    }
+
+    public function getContactDefinitions(): array
+    {
+        return [
+            'table' => $this->getTableName(),
+            'entity' => $this->getClassName()
+        ];
+    }
+    public function getEntityById($id): IBasicContact
+    {
+        return $this->getEntityById($id);
     }
 }

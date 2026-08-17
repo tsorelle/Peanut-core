@@ -3,6 +3,7 @@
 namespace Peanut\contacts\services;
 
 use Peanut\contacts\db\ContactsManager;
+use Peanut\PeanutMailings\sys\SubscriptionManager;
 
 class UpdateContactCommand extends \Tops\services\TServiceCommand
 {
@@ -26,18 +27,20 @@ class UpdateContactCommand extends \Tops\services\TServiceCommand
             $this->addErrorMessage('No subscriptions received');
             return;
         }
-
-
         $manager = new ContactsManager();
-
-        if ($manager->updateContact($request->contact,$request->subscriptions) === false) {
+        if (!empty($request->subscriptions)) {
+            $subscriptionManager = new SubscriptionManager();
+            $result = $subscriptionManager->updateContactAndSubscriptions($request->contact,$request->subscriptions);
+        }
+        else {
+            $result = $manager->updateContact($request->contact);
+        }
+        if ($result === false) {
             $this->addErrorMessage('Not able to update contact');
             return;
         }
-
         $response = new \stdClass();
         $response = $manager->getContacts();
         $this->setReturnValue($response);
-
     }
 }
