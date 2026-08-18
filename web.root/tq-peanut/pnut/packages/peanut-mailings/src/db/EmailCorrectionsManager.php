@@ -5,7 +5,7 @@
  * Date: 3/17/2019
  * Time: 5:15 AM
  */
-
+//todo: review after email corrections are implemented
 namespace Peanut\PeanutMailings\db;
 
 use Peanut\PeanutMailings\db\model\entity\EmailCorrection;
@@ -19,7 +19,7 @@ use Tops\sys\TCmsEvents;
 use Tops\sys\TConfiguration;
 use Tops\sys\TUser;
 
-class EmailManager
+class EmailCorrectionsManager
 {
 
     const defaultPersonFormUrl = '/community/directory/members?pid=';

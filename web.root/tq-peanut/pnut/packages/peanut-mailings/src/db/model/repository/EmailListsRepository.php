@@ -1,8 +1,8 @@
-<?php 
-/** 
- * Created by /tools/create-model.php 
+<?php
+/**
+ * Created by /tools/create-model.php
  * Time:  2017-11-15 13:11:28
- */ 
+ */
 namespace Peanut\PeanutMailings\db\model\repository;
 
 
@@ -60,6 +60,7 @@ class EmailListsRepository extends \Tops\db\TNamedEntitiesRepository
             'cansubscribe' => PDO::PARAM_INT,
             // todo: introduce cansend when calendar notifications enabled
             // 'cansend' => PDO::PARAM_INT,
+            'notificationTypeCode' => PDO::PARAM_STR,
             'adminonly' => PDO::PARAM_INT,
             'createdby' => PDO::PARAM_STR,
             'createdon' => PDO::PARAM_STR,

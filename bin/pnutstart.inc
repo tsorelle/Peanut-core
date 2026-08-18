@@ -4,14 +4,15 @@
  */
 
 // update this to match your project structure
-$bootstrapDir = '/tq-peanut/bootstrap';
+
 
 $projectFileRoot =   str_replace('\\','/', realpath(__DIR__.'/..')).'/web.root/';
+$bootstrapDir = $projectFileRoot.'tq-peanut/bootstrap';
 print "Document root: $projectFileRoot\n";
-include_once $projectFileRoot.$bootstrapDir.'/definitions.php';
+include_once $bootstrapDir.'/definitions.php';
 include_once DIR_PEANUT_ROOT.'/src/tops/sys/TPath.php';
-\Tops\sys\TPath::Initialize(PNUT_APPLICATON.'/config');
-include_once PNUT_APPLICATON.'/config/peanut-bootstrap.php';
+\Tops\sys\TPath::Initialize(DIR_CONFIGURATION);
+require $bootstrapDir.'/peanut-bootstrap.php';
 \Peanut\Bootstrap::initialize($projectFileRoot);
 print class_exists('\Tops\services\TServiceCommand') ? "Ready.\n" : "Initialization Failed\n";
 

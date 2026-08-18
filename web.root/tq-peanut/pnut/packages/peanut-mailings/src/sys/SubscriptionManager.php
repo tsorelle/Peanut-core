@@ -154,6 +154,12 @@ class SubscriptionManager
         if ($person) {
             $this->getEmailSubscriptionsAssociation()->unsubscribe($person->id,$listId);
         }
+        return $person;
+    }
+
+    function unsubscribe($personId,$listId)
+    {
+        $this->getEmailSubscriptionsAssociation()->unsubscribe($personId,$listId);
     }
 
     public function updateEmailSubscriptions($personId,array $newSubscriptions) {
@@ -199,6 +205,11 @@ class SubscriptionManager
     public function getAllSubscibersByEmail(string $emailAddress)
     {
         return $this->getContactManager()->getAllPersonsByEmail($emailAddress);
+    }
+
+    public function getEmailList($listId)
+    {
+        return $this->getEmailListsRepository()->get($listId);
     }
 
 

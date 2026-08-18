@@ -8,9 +8,8 @@
 
 namespace Peanut\PeanutMailings\services;
 
-
-use Peanut\PeanutMailings\db\DirectoryManager;
 use Peanut\PeanutMailings\sys\SubscriptionManager;
+use stdClass;
 use Tops\services\TServiceCommand;
 use Tops\sys\TConfiguration;
 use Tops\sys\TL;
@@ -27,9 +26,8 @@ class UnsubscribeListCommand extends TServiceCommand
         $response->translations = TLanguage::getTranslations([
             'manage-subscriptions'
         ]);
-        $response->subscriptionsLink = TConfiguration::getValue('subscriptionsUrl','pages','/subscriptions');
+        $response->subscriptionsLink = TConfiguration::getValue('subscriptionsUrl','pages','user/subscriptions');
         $response->message = TLanguage::text('unsubscribe-failed');
-
 
         if (empty($request)) {
             $this->addErrorMessage('service-no-request');
@@ -45,24 +43,24 @@ class UnsubscribeListCommand extends TServiceCommand
         }
 
         $submanager = SubscriptionManager::getInstance();
-        $result = $submanager->unsubscribeByUid($request->uid,$request->listId);
-        // $result = (new DirectoryManager())->unsubscribeEmail($request->uid,$request->listId);
-        if (empty($result->personName)) {
-            $this->addErrorMessage('dir-no-person-found');
-            return;
-        }
-        if (empty($result->listName)) {
+        $list = $submanager->getEmailList($request->listId);
+        if (empty($list)) {
             $this->addErrorMessage('unsubscribe-error-no-list');
             return;
         }
-
-        if (empty($result->removed)) {
-            $format = TLanguage::text('already-unsubscribed-message');
+        $person = $submanager->getSubscriberByUid($request->uid);
+        if (empty($person)) {
+            $this->addErrorMessage('dir-no-person-found');
+            return;
+        }
+        $subscriptions = $submanager->getEmailSubscriptions($person->getId());
+        if (in_array($request->listId,$subscriptions)) {
+            $submanager->unsubscribe($person->getId(),$request->listId);
+            $response->message = sprintf('Unsubscribed %s from %s list.',$person->getFullName(),$list->name);
         }
         else {
-            $format = TLanguage::text('unsubscribed-message');
+            $response->message = sprintf('%s is not subscribed to list "%s"',$person->getFullName(),$list->name);
         }
-        $response->message = sprintf($format,$result->personName, $result->listName);
         $this->setReturnValue($response);
     }
 }

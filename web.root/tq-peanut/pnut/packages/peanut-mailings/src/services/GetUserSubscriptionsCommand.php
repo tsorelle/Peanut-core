@@ -38,15 +38,23 @@ class GetUserSubscriptionsCommand extends TServiceCommand
      */
     protected function run()
     {
-        $user = $this->getUser();
-        if (!$user->isAuthenticated()) {
-            $response = new \stdClass();
-            $response->redirect = TConfiguration::getValue('login-page', 'pages', '/login');
-            $this->setReturnValue($response);
+        $request = $this->getRequest();
+        if (!$request) {
+            $this->addErrorMessage('Invalid request');
             return;
         }
-        $request = $this->getRequest();
-        $userId = $request && !empty($request->userId) ? $request->userId : $user->getId();
+        $userId = $request->userId;
+        // if not user id in request and current user is not authenticated, redirect to login page.
+        if (!$userId) {
+            $user = $this->getUser();
+            if (!$user->isAuthenticated()) {
+                $response = new \stdClass();
+                $response->redirect = TConfiguration::getValue('login-page', 'pages', '/login');
+                $this->setReturnValue($response);
+                return;
+            }
+            $userId = $user->getId();
+        }
         $subsciptionManager = SubscriptionManager::getInstance();
         $response = $subsciptionManager->getUserSubscriptions($userId);
         if ($response === false) {

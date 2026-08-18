@@ -8,10 +8,9 @@ namespace Peanut\contacts\db\model\repository;
 use \PDO;
 use Peanut\contacts\db\model\entity\Contact;
 use Tops\db\IBasicContact;
-use Tops\db\IContactsRepository;
 use Tops\db\IProfilesRepository;
 
-class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfilesRepository, IContactsRepository
+class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfilesRepository
 {
     protected function getTableName() {
         return 'pnut_contacts';
