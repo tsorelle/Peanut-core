@@ -14,5 +14,4 @@ class EmailList  extends NamedEntity
     public $mailBox;
     public $cansubscribe;
     public $adminonly;
-    public $notificationTypeCode;
 }
