@@ -148,6 +148,11 @@ class ContactsManager implements IContactManager
         return $this->getContactsRepository()->queueEmailRecipients($messageId, $listId);
     }
 
+    public function queueEmailRecipientList($messageId, array $recipients): int
+    {
+        return $this->getContactsRepository()->queueEmailRecipientList($messageId, $recipients);
+    }
+
     public function updatePerson(IBasicContact $person)
     {
         $this->getContactsRepository()->update($person);

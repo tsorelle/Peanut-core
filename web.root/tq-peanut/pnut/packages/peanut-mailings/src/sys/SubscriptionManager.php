@@ -2,8 +2,13 @@
 
 namespace Peanut\PeanutMailings\sys;
 
+use Peanut\PeanutMailings\db\EMailQueue;
+use Peanut\PeanutMailings\db\model\entity\EmailList;
+use Peanut\PeanutMailings\db\model\entity\EmailMessage;
 use Peanut\PeanutMailings\db\model\repository\EmailListsRepository;
+use Peanut\PeanutMailings\db\model\repository\EmailMessagesRepository;
 use Peanut\PeanutMailings\db\model\repository\EmailSubscriptionAssociation;
+use stdClass;
 use Tops\db\TEntityRepository;
 use Tops\services\IMessageContainer;
 use Tops\sys\IContactManager;
@@ -174,8 +179,52 @@ class SubscriptionManager
     {
         return $this->getEmailListsRepository()->getAll();
     }
-    public function queueEmailRecipients($messageId, $listId): int {
-        return $this->getContactManager()->queueEmailRecipients($messageId, $listId);
+
+    public function queueEmailMessage($messageDto, array $recipients=null) : \stdClass
+    {
+        $response = new \stdClass();
+        $response->count = 0;
+        $response->messageId = 0;
+        $response->errorMessage = null;
+
+        $username = TUser::getCurrent()->getUserName();
+        /**
+         * @var $list EmailList
+         */
+        $list = (new EmailListsRepository())->get($messageDto->listId);
+        if (empty($list)) {
+            $response->errorMessage = "Email list not found";
+            return $response;
+        }
+        $messageDto->tags = $list->getCode();
+        $messageDto->sender = $list->mailBox;
+        /**
+         * @var $message EmailMessage
+         */
+        $message = EmailMessage::Create($messageDto, $username);
+        $messagesRepo = new EmailMessagesRepository();
+        $message->id = $messagesRepo->insert($message);
+        if (empty($message->id)) {
+            $response->errorMessage = "Failed to create email message";
+            return $response;
+        }
+
+        if ($recipients===null) {
+            $queueCount = $this->getContactManager()->queueEmailRecipients($message->id, $message->listId);
+        }
+        else {
+            $queueCount = $this->getContactManager()->queueEmailRecipientList($message->id, $recipients);
+        }
+
+        if ($queueCount == 0) {
+            // no recipients, roll back
+            $messagesRepo->delete($message->id);
+        }
+        $response->count = $queueCount;
+        $response->messageId = $message->id;
+        $messagesRepo->updateRecipientCount($message->id, $queueCount);
+
+        return $response;
     }
 
     public function getEmailSubscriberByAccount($accountId) {

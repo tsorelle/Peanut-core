@@ -100,14 +100,21 @@ class SendMailingListMessageCommand extends TServiceCommand
             $this->sendTestMessage($request);
         }
         else {
-            $queue = new EMailQueue();
-            $queueResult = EMailQueue::QueueMessageList($request, $this->getUser()->getUserName());
+
+            $subscriptionManager = new SubscriptionManager();
+            $queueResult = $subscriptionManager->queueEmailMessage($request);
+            if ($queueResult->errorMessage !== null) {
+                $this->addErrorMessage($queueResult->errorMessage);
+                return;
+            }
+
+            // $queueResult = EMailQueue::QueueMessageList($request, $this->getUser()->getUserName());
             $queueMailings = TConfiguration::getBoolean('queuemailings', 'mail', true);
             if ($queueMailings) {
                 $count = $queueResult->count;
                 $action = 'submitted to message queue';
             } else {
-                $count = EMailQueue::Send($queueResult->messageId,$queue);
+                $count = EMailQueue::Send($queueResult->messageId);
                 $action = 'sent';
             }
             $plural = $count > 1 ? 's were' : ' was';

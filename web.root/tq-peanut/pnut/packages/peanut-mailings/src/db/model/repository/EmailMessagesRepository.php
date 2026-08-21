@@ -1,13 +1,14 @@
-<?php 
-/** 
- * Created by /tools/create-model.php 
+<?php
+/**
+ * Created by /tools/create-model.php
  * Time:  2017-11-15 13:11:28
- */ 
+ */
 namespace Peanut\PeanutMailings\db\model\repository;
 
 
 use \PDO;
 use PDOStatement;
+use Peanut\PeanutMailings\db\EMailQueue;
 use Peanut\PeanutMailings\db\model\entity\EmailList;
 use Peanut\PeanutMailings\db\model\entity\EmailMessage;
 use Peanut\PeanutMailings\db\model\entity\EmailMessageRecipient;
@@ -22,6 +23,12 @@ class EmailMessagesRepository extends \Tops\db\TEntityRepository
         $sql = 'DELETE FROM qnut_email_queue WHERE mailMessageId = ?';
         $this->executeStatement($sql,[$messageId]);
         $this->delete($messageId);
+    }
+
+    public function updateRecipientCount(int $messageId, int $queueCount)
+    {
+        $sql = 'UPDATE qnut_email_messages SET recipientCount = ? WHERE id = ?';
+        return $this->executeUpdateStatement($sql,[$queueCount,$messageId]);
     }
 
     /**
@@ -81,38 +88,8 @@ class EmailMessagesRepository extends \Tops\db\TEntityRepository
         return $result;
     }
 
-    public function queueMessageList(EmailMessage $message,array $recipients=null) {
-        $submanager = SubscriptionManager::getInstance();
-        /**
-         * @var $list EmailList
-         */
-        $list = (new EmailListsRepository())->get($message->listId);
-        if (empty($list)) {
-            return -1;
-        }
-        $message->tags = $list->getCode();
-        $message->sender = $list->mailBox;
-        $messageId = $this->insert($message);
-        $queueCount = 0;
-        if ($recipients===null) {
-            $queueCount = $submanager->queueEmailRecipients($messageId, $message->listId);
-        }
-        else {
-            $queueCount = $submanager->queueEmailRecipientList($messageId, $recipients);
-        }
-
-        if ($queueCount == 0) {
-            // no recipients, roll back
-            $this->delete($messageId);
-            return 0;
-        }
-
-        $sql = 'UPDATE qnut_email_messages SET recipientCount = ? WHERE id = ?';
-        $stmt = $this->executeStatement($sql,[$queueCount,$messageId]);
-        $result = new \stdClass();
-        $result->messageId = $messageId;
-        $result->count = $queueCount;
-        return $result;
+    public function queueMessageList(EmailMessage $message,array $recipients=null) : int {
+        throw new \Exception('queueMessageList not supported refactored to SubscriptionManager::queueEmailMessageList');
     }
 
     /**
