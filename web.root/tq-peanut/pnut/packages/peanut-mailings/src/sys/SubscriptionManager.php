@@ -180,6 +180,33 @@ class SubscriptionManager
         return $this->getEmailListsRepository()->getAll();
     }
 
+    public function getEmailList($arg)
+    {
+        $listRepository = $this->getEmailListsRepository();
+        if (is_numeric($arg)) {
+            return $listRepository->get($arg);
+        } else {
+            return $listRepository->getEmailList($arg);
+        }
+    }
+
+    public function createMessageListRequest($listArg, $subject, $content, $contentType='html', $template='Unsubscribe.html'): \stdClass | null
+    {
+        $list = is_object($listArg) ? $listArg : $this->getEmailList($listArg);
+        if (empty($list)) {
+            return null;
+        }
+        $messageDto = new \stdClass();
+        $messageDto->tags = $list->getCode();
+        $messageDto->sender = $list->mailBox;
+        $messageDto->listId = $list->id;
+        $messageDto->subject = $subject;
+        $messageDto->messageText = $content;
+        $messageDto->contentType = $contentType;
+        $messageDto->template = $template;
+        return $messageDto;
+    }
+
     public function queueEmailMessage($messageDto, array $recipients=null) : \stdClass
     {
         $response = new \stdClass();
@@ -188,16 +215,6 @@ class SubscriptionManager
         $response->errorMessage = null;
 
         $username = TUser::getCurrent()->getUserName();
-        /**
-         * @var $list EmailList
-         */
-        $list = (new EmailListsRepository())->get($messageDto->listId);
-        if (empty($list)) {
-            $response->errorMessage = "Email list not found";
-            return $response;
-        }
-        $messageDto->tags = $list->getCode();
-        $messageDto->sender = $list->mailBox;
         /**
          * @var $message EmailMessage
          */
@@ -254,11 +271,6 @@ class SubscriptionManager
     public function getAllSubscibersByEmail(string $emailAddress)
     {
         return $this->getContactManager()->getAllPersonsByEmail($emailAddress);
-    }
-
-    public function getEmailList($listId)
-    {
-        return $this->getEmailListsRepository()->get($listId);
     }
 
 
