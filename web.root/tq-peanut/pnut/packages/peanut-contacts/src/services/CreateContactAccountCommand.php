@@ -4,6 +4,9 @@ namespace Peanut\contacts\services;
 
 use Peanut\contacts\db\ContactsManager;
 use Peanut\users\AccountManager;
+use Tops\sys\IUserAccountManager;
+use Tops\sys\TObjectContainer;
+use Tops\sys\TUser;
 
 class CreateContactAccountCommand extends \Tops\services\TServiceCommand
 {
@@ -11,6 +14,7 @@ class CreateContactAccountCommand extends \Tops\services\TServiceCommand
     protected function run()
     {
         $request = $this->getRequest();
+
         if (empty($request)) {
             $this->addErrorMessage('No request received');
             return;
@@ -34,9 +38,27 @@ class CreateContactAccountCommand extends \Tops\services\TServiceCommand
         }
         $contactId = $request->contactId ?? null;
 
-        $accountManager = new AccountManager();
-        $account = $accountManager->addAccount($request->username, $request->password,null,$request->roles);
-        if ($account->errorCode ?? false) {
+        $profile = [];
+        if (!empty($request->fullName)) {
+             $profile[TUser::profileKeyFullName] = $request->fullName;
+        }
+        $email = $request->email ?? null;
+        // todo: validate email
+        if (empty($email)) {
+             $this->addErrorMessage('Email is required.');
+        }
+
+        if (!TObjectContainer::HasDefinition('account.manager')) {
+            $this->addErrorMessage('Account manager not defined');
+            return;
+        }
+        /**
+         * @var IUserAccountManager
+         */
+        $accountManager = TObjectContainer::Get('account.manager');
+        $account = $accountManager->addAccount($request->username, $request->password,$email,$request->roles,$profile);
+        $error = $account->errorCode ?? false;
+        if ($error !== false) {
             $this->addErrorMessage($account->errorCode);
             return;
         }

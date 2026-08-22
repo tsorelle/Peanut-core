@@ -91,11 +91,13 @@ class TPath
                 $configDir = DIR_CONFIGURATION;
             }
             else {
-                $configLocation = 'application/config';
+                $configLocation = 'tq-peanut/config';
+                // $configLocation = 'application/config';
                 $configDir = self::$fileRoot.self::fixSlashes($configLocation);
             }
             if (!is_dir($configDir)) {
-                throw new Exception("Config path not found: ".self::$configPath);
+                return;
+                // throw new Exception("Config path not found: ".self::$configPath);
             }
             if (str_ends_with($configDir,'/')) {
                 self::$configPath = $configDir;

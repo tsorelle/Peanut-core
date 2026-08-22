@@ -186,7 +186,7 @@ class SubscriptionManager
         if (is_numeric($arg)) {
             return $listRepository->get($arg);
         } else {
-            return $listRepository->getEmailList($arg);
+            return $listRepository->getListByCode($arg);
         }
     }
 
