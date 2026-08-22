@@ -393,7 +393,7 @@ class AccountManager implements IUserAccountManager
      * @return Role[]|false
      */
     public function getRoles() {
-        return $this->getRolesRepository()->getAll();
+        return $this->getRolesRepository()->getRolesLookup();
     }
 
     public function getUserRoleNames($usr) {

@@ -51,7 +51,7 @@ namespace PeanutContacts {
             let result = {
                 username: this.username().trim(),
                 password: this.password().trim(),
-                roles : this.rolesController.getNames(),
+                roles : this.rolesController.getCodes(),
                 contactId: null,
                 fullName: null,
                 email: null
