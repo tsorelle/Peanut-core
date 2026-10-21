@@ -24,4 +24,5 @@ interface IContactManager
     public function getPersonByEmailAddress($emailAddress);
 
     public function getAllPersonsByEmail(string $emailAddress): array;
+    public function createPersonObject() : IBasicContact;
 }

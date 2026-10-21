@@ -330,7 +330,11 @@ class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfile
 
     public function getAllByEmail($email): array
     {
-        return $this->getEntityCollection('email = ?',[$email]);
+        $result = $this->getEntityCollection('email = ?',[$email]);
+        if (!$result) {
+            return [];
+        }
+        return $result;
     }
 
     public function getByUid($uid): IBasicContact

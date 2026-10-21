@@ -5,6 +5,7 @@ namespace Peanut\contacts\services;
 use Peanut\contacts\db\ContactsManager;
 use Peanut\users\AccountManager;
 use Tops\sys\IUserAccountManager;
+use Tops\sys\TCmsEvents;
 use Tops\sys\TObjectContainer;
 use Tops\sys\TUser;
 
@@ -56,11 +57,17 @@ class CreateContactAccountCommand extends \Tops\services\TServiceCommand
          * @var IUserAccountManager
          */
         $accountManager = TObjectContainer::Get('account.manager');
-        $account = $accountManager->addAccount($request->username, $request->password,$email,$request->roles,$profile);
-        $error = $account->errorCode ?? false;
-        if ($error !== false) {
-            $this->addErrorMessage($account->errorCode);
-            return;
+        TCmsEvents::Enable(false);
+        try {
+            $account = $accountManager->addAccount($request->username, $request->password, $email, $request->roles, $profile);
+            $error = $account->errorCode ?? false;
+            if ($error !== false) {
+                $this->addErrorMessage($account->errorCode);
+                return;
+            }
+        }
+        finally {
+            TCmsEvents::Enable(true);
         }
 
         $contactManager = new ContactsManager();

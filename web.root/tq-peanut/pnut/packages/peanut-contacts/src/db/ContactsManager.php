@@ -13,9 +13,18 @@ use Tops\db\model\repository\LookupTableRepository;
 use Tops\services\IMessageContainer;
 use Tops\services\NullMessageContainer;
 use Tops\sys\IContactManager;
+use Tops\sys\TObjectContainer;
 
 class ContactsManager implements IContactManager
 {
+    private IContactManager $contactManager;
+    private function getContactManager(): IContactManager
+    {
+        if (!isset($this->contactManager)) {
+            $this->contactManager = TObjectContainer::Get('contact.manager');
+        }
+        return $this->contactManager;
+    }
     private ContactsRepository $contactsRepository;
 
     private function getContactsRepository(): ContactsRepository
@@ -41,7 +50,7 @@ class ContactsManager implements IContactManager
         return $this->getContactsRepository()->getContactList($filter);
     }
 
-    public function updateContact($contactDTO, array $subscriptions = null)
+    public function updateContact($contactDTO, array $subscriptions = [])
     {
         $repo = $this->getContactsRepository();
         $isNew = empty($contactDTO->id);
@@ -140,7 +149,11 @@ class ContactsManager implements IContactManager
 
     public function getAllByEmail($email): array
     {
-        return $this->getContactsRepository()->getAllByEmail($email);
+        $result = $this->getContactsRepository()->getAllByEmail($email);
+        if (!$result) {
+            return [];
+        }
+        return $result;
     }
 
     public function queueEmailRecipients($messageId, $listId): int
@@ -166,5 +179,10 @@ class ContactsManager implements IContactManager
     public function getAllPersonsByEmail(string $emailAddress) : array
     {
         return $this->getContactsRepository()->getAllByEmail($emailAddress);
+    }
+
+    public function createPersonObject(): IBasicContact
+    {
+        return new Contact();
     }
 }

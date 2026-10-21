@@ -52,18 +52,28 @@ class SubscriptionManager
         $response->personName = '';
         $response->accountId = 0;
 
+
         if (is_numeric($userId)) {
             // when person is current user. Value from TUser->getCurrentUser()->getId()
             $person = $manager->getPersonByAccountId($userId);
+            if (!$person) {
+                //no contact for account, create one.
+                $person = $manager->createPersonObject();
+                $user = TUser::getById($userId);
+                if (!$user) {
+                    return false;
+                }
+            }
         }
     else {
             // when using person unique id, as from an email link
             $person = $manager->getPersonByUid($userId);
+            if (!$person) {
+                // contact was deleted
+                return false;
+            }
         }
 
-        if (!$person) {
-            return false;
-        }
         $response->personName = $person->getFullName();
         $response->personId = $person->getId();
         $response->accountId = $person->getAccountId();
@@ -88,23 +98,6 @@ class SubscriptionManager
 
     }
 
-    public function getSubscriptionValues($userId): false| array
-    {
-        $contactManager = $this->getContactManager();
-        if (is_numeric($userId)) {
-            $person = $contactManager->getPersonByAccountId($userId);
-        }
-        else {
-            // $person = $this->getPersonByUid($userId);
-            $person =  $contactManager->getPersonByUid($userId);
-        }
-
-        if (!$person) {
-            return false;
-        }
-
-        return $this->getEmailSubscriptionsAssociation()->getListValues($person->getId());
-    }
     private $subscriptionsAssociation;
     public function getEmailSubscriptionsAssociation()
     {
