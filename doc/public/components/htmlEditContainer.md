@@ -47,7 +47,7 @@ to the constructor.
 
 ```typescript
 me.application.loadResources([
-    '@lib:tinymce',
+    '@lib:tinymce8',
     '@pnut/ViewModelHelpers.js',
     '@pnut/htmlEditContainer'
 ], () => {
@@ -135,7 +135,7 @@ any TinyMce initialization options.  This is frequently used to set the height o
 ```
 
 For a full list and documentation of other options see:
-[TinyMce Documentation](https://www.tiny.cloud/docs/tinymce/5/configure/)
+[TinyMce Documentation](https://www.tiny.cloud/docs/tinymce/latest/configure/)
 
 ## TinyMce inside Bootstrap 5 Modal
 

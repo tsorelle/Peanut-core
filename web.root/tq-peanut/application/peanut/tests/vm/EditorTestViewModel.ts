@@ -46,13 +46,13 @@ namespace Peanut {
             let me = this;
             Peanut.logger.write('VmName Init');
             me.application.loadResources([
-                '@pnut/htmlEditor'
+                '@pnut/htmlEditContainer'
             ], () => {
                 // configure editor
-                me.htmlEditor =  new Peanut.htmlEditor(me);
+                me.htmlEditor =  new Peanut.htmlEditContainer(me);
                 me.htmlEditor.addOptions({height: '40ex'})
                 me.htmlEditor.includeDesignTools()
-                // passing null signals, don't initialize the editor you
+                // passing null signals, don't initialize the editor yet
                 me.htmlEditor.initialize(null, () => {
                 me.bindDefaultSection();
                 successFunction();

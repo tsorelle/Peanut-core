@@ -104,17 +104,17 @@ namespace Peanut {
 
         /**
          * Add or overwrite any TinyMce options,  See:
-         * https://www.tiny.cloud/docs/tinymce/5/configure/
+         * https://www.tiny.cloud/docs/tinymce/latest/configure/
          *
          * @param newOptions
          */
         public addOptions = (newOptions : { [key: string]: any }) => {
             if (newOptions.selector !== undefined) {
-                console.log("WARNING: Cannot assign selector in custorm options. Use InitEditor()");
+                console.log("WARNING: Cannot assign selector in custom options. Use InitEditor()");
                 delete newOptions.selector;
             }
             if (newOptions.setup !== undefined) {
-                console.log("WARNING: Cannot assign setup in custorm options. Use InitEditor()");
+                console.log("WARNING: Cannot assign setup in custom options. Use InitEditor()");
                 delete newOptions.setup;
             }
 
@@ -133,11 +133,11 @@ namespace Peanut {
 
 
         /**
-         * Initialize the obervable object by loading script dependencies and optionally call followup function
+         * Initialize the observable object by loading script dependencies and optionally call followup function
          *
          * @param selector
          *      String ID of textarea used by Tiny mce if NULL skip editor initialization and
-         *      use initEditor() later. Delayed initalization if sometimes required.
+         *      use initEditor() later. Delayed initialization is sometimes required.
          * @param onInitialized
          *      Function to invoke on successful editor initialization. If used, should include the statement,
          *      instance.confirmEditorInit()  where instance is an instance of htmlEditor to test for success.
@@ -146,7 +146,7 @@ namespace Peanut {
             let me = this;
             me.selector = selector
             me.application.loadResources([
-                '@lib:tinymce',
+                '@lib:tinymce8',
                 '@pnut/ViewModelHelpers.js'
             ], () => {
                 if (selector) {
@@ -170,6 +170,9 @@ namespace Peanut {
         isEmpty() : boolean {
             let me = this;
             let content = me.getContent();
+            if (!content) {
+                return true;
+            }
             content = content
                 .replace(/<[^>]*>/g, "")
                 .replace(/\s/g, "").
@@ -178,7 +181,11 @@ namespace Peanut {
         }
         hasUnsavedChanges = () => {
             let me = this;
-            let dirty = tinymce.get(me.selector).isDirty() ;
+            let editor = tinymce.get(me.selector);
+            if (!editor) {
+                return false;
+            }
+            let dirty = editor.isDirty();
             if (dirty) {
                 dirty = !me.isEmpty();
             }
@@ -187,7 +194,10 @@ namespace Peanut {
 
         setDirty(enabled: boolean) : void {
             let me = this;
-            tinymce.get(me.selector).setDirty(enabled);
+            let editor = tinymce.get(me.selector);
+            if (editor) {
+                editor.setDirty(enabled);
+            }
         }
 
         enableUnsavedWarning = () => {
@@ -212,36 +222,34 @@ namespace Peanut {
 
 
         onSave = (editor: any) => {
-            if (editor) {
+            if (editor && this.editController) {
                 this.editController.saveDocument();
-
             }
         }
         onSaveAs = (editor: any) => {
-            if (editor) {
+            if (editor && this.editController) {
                 this.editController.saveDocumentAs();
-
             }
         }
-        onFetchContent = (editor ) => {
-            if (editor) {
+        onFetchContent = (editor: any) => {
+            if (editor && this.editController) {
                 this.editController.openDocument();
             }
         }
 
-        onSetUp = (editor) => {
+        onSetUp = (editor: any) => {
             // editor.on('init', onInitialized);
 
             let me = this;
             editor.ui.registry.addMenuItem('getcontent', {
                 text: 'Load content...',
-                onAction:  me.onFetchContent
+                onAction:  () => me.onFetchContent(editor)
             });
         }
 
-        onNewDocument = (editor) => {
+        onNewDocument = (editor: any) => {
             let me = this;
-            if (editor) {
+            if (editor && me.editController) {
                 me.editController.newDocument();
             }
         }
@@ -253,35 +261,39 @@ namespace Peanut {
                 onInitialized = me.confirmEditorInit;
             }
 
-            let options = {
+            let options: { [key: string]: any } = {
                 // required options
                 selector: '#' + selector,
+                license_key: 'gpl',
                 setup: function (editor: any) {
                     editor.on('init', onInitialized);
 
                     if (me.showFileControls) {
-                        editor.on('ExecCommand', function (e) {
+                        editor.on('ExecCommand', function (e: any) {
                             if (e.command === 'mceNewDocument') {
                                 // Runs before TinyMCE clears the editor content
                                 me.onNewDocument(editor);
-
-                                // Your custom function here
-                                // myNewDocumentHandler(editor);
                             }
                         });
 
-                        editor.addMenuItem('fileopen', {
+                        editor.ui.registry.addButton('save', {
+                            icon: 'save',
+                            tooltip: 'Save',
+                            onAction: function () {
+                                me.onSave(editor);
+                            }
+                        });
+
+                        editor.ui.registry.addMenuItem('fileopen', {
                             text: 'Open...',
-                            context: 'file',
-                            onclick: function () {
+                            onAction: function () {
                                 me.onFetchContent(editor);
                             }
                         });
 
-                        editor.addMenuItem('filesave', {
+                        editor.ui.registry.addMenuItem('filesave', {
                             text: 'Save as...',
-                            context: 'file',
-                            onclick: function () {
+                            onAction: function () {
                                 me.onSaveAs(editor);
                             }
                         });
@@ -294,8 +306,7 @@ namespace Peanut {
                 // these options can be overridden
                 document_base_url : Peanut.Helper.getHostUrl() + '/',
                 branding: false,
-                paste_word_valid_elements: "b,strong,i,em,h1,h2,h3,p,a,ul,li"
-
+                promotion: false
             }
 
             if (me.configurationType == this.configEmail) {
@@ -306,7 +317,7 @@ namespace Peanut {
             else {
                 // set defaults for contentEditing
                 options['relative_urls'] = false;
-                options['default_link_target'] = '_blank'
+                options['default_link_target'] = '_blank';
                 options['remove_script_host']  = true;
             }
 
@@ -316,25 +327,22 @@ namespace Peanut {
                     if (prop == 'toolbar') {
                         customToolbar = true;
                     }
-                    options[prop] = this.additionalOptions[prop]
+                    options[prop] = this.additionalOptions[prop];
                 }
             }
 
             if (!customToolbar) {
-                // let toolbar = 'undo redo | styleselect | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent ';
-                let toolbar = 'undo redo | styleselect | bold italic underline';
-                // let blockControls =' | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent';
-                // private plugins = "image imagetools link lists code paste textcolor";
-                let plugins = "link lists paste";
+                let toolbar = 'undo redo | blocks | bold italic underline';
+                let plugins = "link lists";
 
                 if (me.showColorTools) {
                     toolbar += ' | forecolor backcolor';
-                    plugins += ' textcolor'
                 }
 
                 if (me.showFontSizes) {
-                    toolbar += ' | fontsizeselect'
+                    toolbar += ' | fontsize';
                     options['fontsize_formats'] = '8pt 10pt 12pt 14pt 18pt 24pt 36pt';
+                    options['font_size_formats'] = '8pt 10pt 12pt 14pt 18pt 24pt 36pt';
                 }
 
                 // block controls
@@ -342,60 +350,54 @@ namespace Peanut {
 
                 if (me.showHr) {
                     toolbar += ' | hr';
-                    plugins += ' hr';
                 }
 
                 if (me.showTableTools) {
                     toolbar += ' | table';
-                        // ' | table tabledelete | tableprops tablerowprops tablecellprops | tableinsertrowbefore '+
-                        // 'tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol'
                     plugins += ' table';
                 }
 
                 if (me.showImageTools) {
                     toolbar += ' | image';
-                    plugins += ' image imagetools ' + plugins;
+                    plugins = 'image ' + plugins;
                 }
 
-                toolbar += ' | link'
+                toolbar += ' | link';
 
                 if (me.showCodeButton) {
-                    toolbar += ' | code'
-                    plugins += ' code'
+                    toolbar += ' | code';
+                    plugins += ' code';
                 }
 
                 if (me.showFileControls) {
                     toolbar += ' | save';
-                    plugins += ' save';
-                    options['save_onsavecallback'] = this.onSave;
-
 
                     options['menu'] =
                     {
                         file: {
                             title: 'File',
-                                items: 'newdocument fileopen filesave'
+                            items: 'newdocument fileopen filesave'
                         },
                         edit: {
                             title: 'Edit',
-                                items: 'undo redo | cut copy paste pastetext | selectall'
+                            items: 'undo redo | cut copy paste pastetext | selectall'
                         },
                         insert: {
                             title: 'Insert',
-                                items: 'link'
+                            items: 'link'
                         },
                         format: {
                             title: 'Format',
-                                items: 'bold italic underline | formats'
+                            items: 'bold italic underline | formats'
                         }
-                    }
-
-
+                    };
                 }
 
                 options['toolbar'] = toolbar;
                 options['plugins'] = plugins;
             }
+
+            options['license_key'] = 'gpl';
 
             tinymce.init(options);
         };
