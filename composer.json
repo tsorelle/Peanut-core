@@ -1,7 +1,7 @@
 {
     "name": "twoquakers/peanut-core",
     "description": "Reference Application for Peanut Framework",
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "license": "GPL-3.0+",
     "authors": [
@@ -11,19 +11,19 @@
         }
     ],
     "require": {
+        "ext-calendar": "*",
+        "ext-dom": "*",
+        "ext-json": "*",
+        "ext-openssl": "*",
+        "ext-pdo": "*",
+        "ext-simplexml": "*",
+        "mailgun/mailgun-php": "*",
+        "nyholm/psr7": "*",
+        "phpmailer/phpmailer": "*",
         "phpunit/phpunit": "*",
         "smalot/pdfparser": "*",
-        "ext-pdo": "*",
-        "phpmailer/phpmailer": "*",
-        "ext-json": "*",
         "soundasleep/html2text": "*",
-        "ext-openssl": "*",
-        "mailgun/mailgun-php": "*",
-        "symfony/http-client": "*",
-        "nyholm/psr7": "*",
-      "ext-calendar": "*",
-      "ext-dom": "*",
-        "ext-simplexml": "*"
+        "symfony/http-client": "*"
     },
     "config": {
         "allow-plugins": {
