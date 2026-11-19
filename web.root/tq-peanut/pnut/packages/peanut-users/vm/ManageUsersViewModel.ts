@@ -247,10 +247,12 @@ namespace PeanutUsers {
                 accountId: this.selectedUser.accountId,
                 new : this.userForm.username().trim()
             }
+/*
             if (request.new.length < 6) {
                 this.userForm.errorMessage('Password must be at least 5 characters long.')
                 return;
             }
+*/
 
             this.userPanel('wait');
             me.services.executeService('peanut.users::ChangeUserName',request,

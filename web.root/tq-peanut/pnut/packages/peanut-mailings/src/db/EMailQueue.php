@@ -480,4 +480,26 @@ class EMailQueue
         (self::getMessagesRepository())->removeMessage($messageId);
     }
 
+    public static function GetHistory($pageSize = 0,$pageNumber=0) : \stdClass
+    {
+        $response = new \stdClass();
+
+        $repository = new EmailMessagesRepository();
+        $count = $repository->getCount();
+        $response->maxPages = $pageSize == 0 ? 0 : ceil($count / $pageSize);
+        $response->items = $repository->getMessageHistory($pageNumber,$pageSize);
+        $isPaused = EMailQueue::isPaused();
+        if ($isPaused) {
+            $response->status = 'paused';
+            $response->pausedUntil = $isPaused;
+        }
+        else {
+            $response->status = EMailQueue::GetActiveStatus();
+            $response->pausedUntil  = '';
+        }
+
+        return $response;
+
+    }
+
 }

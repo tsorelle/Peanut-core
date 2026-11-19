@@ -224,16 +224,69 @@ class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfile
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
-    public function getContactList($filter=null,$activeOnly = true) {
-        if ($filter) {
-            $where = "fullname LIKE ?";
-            $params = ["%$filter%"];
+    /**
+     * Split an email address into name (local part) and domain,
+     * and report whether the domain is missing or looks partial.
+     */
+    function getFilterSelector($value,$nameColumn='fullname',$emailColumn='email'): \stdclass | false | null
+    {
+        $result = new \stdclass;
+        $result->type = 'all';
+        $result->where = '';
+        $result->params = [];
+
+        $value = trim($value ?? '');
+
+        if ($value === '') {
+            return $result;
+        }
+        $at = strrpos($value, '@');   // last @, since quoted local parts can contain @
+        if ($at === false) {
+            $result->type = 'name';
+            $result->where = "fullname LIKE ?";
+            $result->params = ["%$value%"];
+            return $result;
+        }
+        $result->type = 'email';
+
+        $name = substr($value, 0, $at);
+        $domain = strtolower(substr($value, $at + 1));
+        $incomplete = false;
+        if ($domain === '') {
+            // no domain
+            $incomplete = true;
         }
         else {
-            $where = '';
-            $params = [];
+            // Partial: no dot (user@gmail), leading/trailing dot, consecutive dots,
+            // or a TLD shorter than 2 chars (user@gmail.c)
+            $labels = explode('.', $domain);
+            $tld    = end($labels);
+            if (
+                strpos($domain, '.') === false ||
+                $domain[0] === '.' ||
+                substr($domain, -1) === '.' ||
+                strpos($domain, '..') !== false ||
+                strlen($tld) < 2 ||
+                in_array('', $labels, true)
+            ) {
+                // partial domain
+                $incomplete = true;
+            }
         }
-        $result = $this->getEntityCollection($where,$params,!$activeOnly,'ORDER BY IFNULL(sortkey,fullname)');
+        if ($incomplete) {
+            $result->where = $emailColumn.' LIKE ?';
+            $result->params[] = $value.'%';
+        }
+        else {
+            $result->where = $emailColumn.' = ?';
+            $result->params[] = $value;
+        }
+        return $result;
+    }
+
+    public function getContactList($filter=null,$activeOnly = true) {
+        $selector = $this->getFilterSelector($filter);
+        $result = $this->getEntityCollection($selector->where,$selector->params,!$activeOnly,'ORDER BY IFNULL(sortkey,fullname)');
         return $result === false ? [] : $result;
     }
 
@@ -283,6 +336,18 @@ class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfile
         $stmt = $this->executeStatement($sql, [$listId]);
         $count = $stmt->rowCount();
         return $count;
+    }
+    public function getEmailSubscribers($listId): array
+    {
+        $count = 0;
+        $sql =
+            "SELECT p.id, p.uid, p.email,p.fullname " .
+            'FROM qnut_email_subscriptions s JOIN pnut_contacts p ON s.personId = p.id ' .
+            "WHERE (p.email IS NOT NULL AND TRIM(p.email) <> '') " .
+            'AND s.listId = ? ORDER by p.fullName';
+
+        $stmt = $this->executeStatement($sql, [$listId]);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
     /**
@@ -351,6 +416,6 @@ class ContactsRepository extends \Tops\db\TEntityRepository  implements IProfile
     }
     public function getEntityById($id): IBasicContact
     {
-        return $this->getEntityById($id);
+        return $this->get($id);
     }
 }

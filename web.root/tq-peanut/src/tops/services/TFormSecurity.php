@@ -388,7 +388,7 @@ class TFormSecurity
         /**
          * @var $contactsManager IContactManager
          */
-        $contactsManager = TObjectContainer::Get('contacts.manager');
+        $contactsManager = TObjectContainer::Get('contact.manager');
 
         /**
          * @var $persons IBasicContact[]

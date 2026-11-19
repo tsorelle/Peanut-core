@@ -42,14 +42,13 @@ class GetEmailListHistoryCommand extends TServiceCommand
 {
     public function __construct()
     {
-        $this->addAuthorization(TPermissionsManager::mailAdminPermissionName);
+        // $this->addAuthorization(TPermissionsManager::mailAdminPermissionName);
     }
 
     protected function run()
     {
         $pageSize = 0;
         $pageNumber = 0;
-        $includeInactive = false;
         $request = $this->getRequest();
         if (!empty($request)) {
             if (!empty($request->pageSize)) {
@@ -59,22 +58,7 @@ class GetEmailListHistoryCommand extends TServiceCommand
                 $pageNumber = $request->pageNumber;
             }
         }
-
-        $response = new \stdClass();
-
-        $repository = new EmailMessagesRepository();
-        $count = $repository->getCount();
-        $response->maxPages = $pageSize == 0 ? 0 : ceil($count / $pageSize);
-        $response->items = $repository->getMessageHistory($pageNumber,$pageSize);
-        $isPaused = EMailQueue::isPaused();
-        if ($isPaused) {
-            $response->status = 'paused';
-            $response->pausedUntil = $isPaused;
-        }
-        else {
-            $response->status = EMailQueue::GetActiveStatus();
-            $response->pausedUntil  = '';
-        }
+        $response = EMailQueue::GetHistory($pageSize,$pageNumber);
         $this->setReturnValue($response);
     }
 }

@@ -9,10 +9,12 @@
 namespace Tops\services;
 
 // use Concrete\Core\Http\Request;
+use Peanut\PeanutMailings\sys\SubscriptionManager;
 use Peanut\PeanutTasks\TaskManager;
 use Peanut\sys\ViewModelPageBuilder;
 use Tops\sys\IHttpRequest;
 use Tops\sys\TConfiguration;
+use Tops\sys\TDates;
 use Tops\sys\TObjectContainer;
 use Tops\sys\TPath;
 use Tops\sys\TUser;
@@ -80,7 +82,8 @@ class ServiceRequestHandler
 
 // todo: review if needed. not occuring in FMA project
     public function runScheduledTasks($taskId = 0) {
-        set_exception_handler('Nutshell\cms\ServiceRequestHandler::exceptionHandler');
+        // set_exception_handler('Nutshell\cms\ServiceRequestHandler::exceptionHandler');
+        set_exception_handler('Tops\services\ServiceRequestHandler::exceptionHandler');
         (new TaskManager())->runJobs($taskId);
         exit;
     }
@@ -168,8 +171,8 @@ class ServiceRequestHandler
         $listId = array_pop($request);
         $uid = implode('-',$request);
 
-        $service = new UnsubscribeService();
-        $service->unsubscribe($uid,$listId);
+        $service = new SubscriptionManager();
+        $service->unsubscribeByUid($uid,$listId);
     }
 
     public static function exceptionHandler($ex) {

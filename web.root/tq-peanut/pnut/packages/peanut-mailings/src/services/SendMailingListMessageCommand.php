@@ -40,7 +40,6 @@ class SendMailingListMessageCommand extends TServiceCommand
     }
 
     private function sendTestMessage($request) {
-        $user = $this->getUser();
         $recipient = EMailQueue::UserToEmailRecipient($user);
         if (empty($request->testAddress) || $request->testAddress == $user->getEmail()) {
             // get UID for current user

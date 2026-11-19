@@ -3,6 +3,7 @@
 namespace Peanut\users;
 
 use Peanut\users\db\model\entity\User;
+use Tops\sys\TPermissionsManager;
 use Tops\sys\TUser;
 
 class CmsUser extends \Tops\sys\TAbstractUser
@@ -72,6 +73,24 @@ class CmsUser extends \Tops\sys\TAbstractUser
     {
         $id = $this->accountManager->getCmsUserIdByEmail($email);
         return $this->setUser($this->accountManager->getUserData($id));
+    }
+
+    public function isAuthorized($permissionName = '') {
+        if (parent::isAuthorized($permissionName)) {
+            return true;
+        }
+        $permissionManager = TPermissionsManager::getPermissionManager();
+        $permission = $permissionManager->getPermission($permissionName);
+        if (empty($permission)) {
+            return false;
+        }
+        $permissionRoles = $permission->getRoles();
+        foreach ($permissionRoles as $role) {
+            if ($this->isMemberOf($role)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

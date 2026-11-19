@@ -7,6 +7,7 @@ namespace Peanut {
     {
         readonly configEmail = 1;
         readonly configContent = 2;
+        readonly configTemplate = 3;
         private application : IPeanutClient;
         public editorInitialized = false;
         private selector : string;
@@ -54,6 +55,15 @@ namespace Peanut {
          */
         public configureForContentEditing = () => {
             this.configurationType = this.configContent
+            this.includeDesignTools();
+        }
+
+        /**
+         * Set up editor for editing message/content templates containing replaceable tokens.
+         * Disables automatic URL conversion so tokens like [[time-link]] remain intact.
+         */
+        public configureForTemplate = () => {
+            this.configurationType = this.configTemplate;
             this.includeDesignTools();
         }
 
@@ -311,6 +321,12 @@ namespace Peanut {
 
             if (me.configurationType == this.configEmail) {
                 // set defaults for email
+                options['relative_urls'] = false;
+                options['remove_script_host'] = false;
+            }
+            else if (me.configurationType == this.configTemplate) {
+                // set defaults for template editing
+                options['convert_urls'] = false;
                 options['relative_urls'] = false;
                 options['remove_script_host'] = false;
             }

@@ -4,7 +4,6 @@
         <div class="col-md-12">
             <ul class="nav nav-tabs">
                 <li class="nav-item"><a class="nav-link" href="#" data-bind="css:{active: tab()=='message'},click:showMessageTab"><translate params="code:'label-message',translator:self"></translate></a></li>
-                <li class="nav-item"><a class="nav-link" href="#" data-bind="css:{active: tab()=='queue'},click:refreshQueue"><translate params="code:'dir-label-email-queue',translator:self"></translate></a></li>
                 <li class="nav-item"><a class="nav-link" href="#" data-bind="css:{active: tab()=='lists'},click:showLists"><translate params="code:'mailing-heading-lists',translator:self"></translate></a></li>
                 <li class="nav-item"><a class="nav-link" href="#" data-bind="css:{active: tab()=='mailboxes'},click:showMailboxes"><translate params="code:'mailbox-entity-plural',case:'ucfirst',translator:self"></translate></a></li>
             </ul>
@@ -67,62 +66,6 @@
             </form>
         </div>
     </div>
-    <div class="row"  data-bind="visible:tab()==='queue'">
-        <div class="col-md-12">
-            <h4><translate params="code:'mailing-control-heading',translator:self"></translate></h4>
-            <div class="row">
-                <div class="col-sm-5">
-                    <p>
-                        <strong><translate params="code:'label-status',translator:self"></translate>: </strong>
-                        <span data-bind="visible:queueStatus()==='active'"><translate params="code:'status-active',translator:self"></translate></span>
-                        <span data-bind="visible:queueStatus()==='ready'" ><translate params="code:'process-status-ready',translator:self"></translate></span>
-                        <span data-bind="visible:queueStatus()==='paused'"><translate params="code:'process-status-paused',translator:self"></translate></span>
-                        <span data-bind="visible:queueStatus()==='paused'" > <translate params="code:'label-until',translator:self"></translate> <span data-bind="text:pausedUntil"></span></span>
-                    </p>
-                </div>
-                <div class="col-sm-7">
-                    <div style="float: right">
-                        <button class="btn btn-default btn-secondary" style="margin-right: 10px" data-bind="click:refreshQueue"><span class="fas fa-sync" aria-hidden="true"></span> <translate params="code:'label-refresh',translator:self"></translate></button>
-                        <button class="btn btn-default btn-secondary" data-bind="visible:queueStatus()==='active',click:pauseQueue"><translate params="code:'process-command-pause',translator:self"></translate> <translate params="code:'dir-label-queue-processing',translator:self"></translate></button>
-                        <button class="btn btn-default btn-secondary" data-bind="visible:queueStatus()==='paused',click:restartQueue"><translate params="code:'process-command-continue',translator:self"></translate> <translate params="code:'dir-label-queue-processing',translator:self"></translate></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row" id="queue-control-panel">
-        </div>
-        <div class="row" id="queue-history-panel">
-            <div class="col-md-12">
-                <h4><translate params="code:'mailing-history-heading',translator:self"></translate></h4>
-                <div data-bind="css: {'table-responsive':bootstrapVersion() < 4}">
-                    <table class="table" data-bind="css: {'table-responsive':bootstrapVersion() > 3}">
-                    <thead>
-                        <tr>
-                            <th><translate params="code:'dir-label-posted',translator:self"></translate></th>
-                            <th><translate params="code:'dir-label-sender',translator:self"></translate></th>
-                            <th><translate params="code:'label-subject',translator:self"></translate></th>
-                            <th><translate params="code:'label-count',translator:self"></translate></th>
-                            <th>&nbsp</th>
-                        </tr>
-                    </thead>
-                    <tbody data-bind="foreach:messageHistory">
-                        <tr data-bind="css: {success:(recipientCount > sentCount)}">
-                            <td data-bind="text:timeSent"></td><td  data-bind="text:sender"></td><td  data-bind="text:subject"></td>
-                            <td><span  data-bind="text:sentCount"></span> <translate params="code:'label-of',translator:$parent.self"></translate> <span  data-bind="text:recipientCount"></span></td>
-                            <td><span  data-bind="visible:$parent.queueStatus()=='paused'">
-                                <a href="#" data-bind="visible:(recipientCount > sentCount),click:$parent.removeQueuedMessage" style="margin-right: 5px"><translate params="code:'label-remove',translator:$parent.self"></translate></a>
-                                <a href="#" data-bind="visible:(recipientCount > sentCount),click:$parent.editQueuedMessage"><translate params="code:'label-edit',translator:$parent.self"></translate></a>
-                            </span></td>
-                        </tr>
-                    </tbody>
-                </table>
-                </div>
-                <div id="queue-pager">
-                    <pager params='click:onQueuePaged,page:currentQueuePage,max:maxQueuePages,waiter:refreshingQueue,owner:self'></pager>
-                </div>
-            </div>
-        </div>
-    </div>
     <div class="row"  data-bind="visible:tab()==='lists'">
             <div class="col-md-12">
                 <p style="margin-top: 5px">
@@ -169,43 +112,7 @@
 
     <modal-confirm params="id:'confirm-send-modal',headerText: confirmCaption, bodyText: confirmSendMessage, confirmClick: doSend"></modal-confirm>
     <modal-confirm params="id:'confirm-resend-modal',headerText: confirmCaption, bodyText: confirmResendMessage, confirmClick: doSend"></modal-confirm>
-    <div class="modal" id="edit-message-modal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form>
-                    <div class="modal-header">
-                        <h4 class="modal-title"><translate params="code:'label-update',translator:self"></translate>&nbsp;<translate params="code:'dir-label-message',translator:self"></translate></h4>
-                        <button type="button" class="close btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
 
-                        <form>
-
-                            <div class="form-group" data-bind="css: {'has-error': messageEditForm.subjectError}">
-                                <label class="control-label" for="editsubject"><translate params="code:'label-subject',translator:self"></translate></label>
-                                <span class="error" data-bind="visible: subjectError, text: subjectError"></span>
-                                <input type="text" class="form-control" id="editsubject" data-bind="value: messageEditForm.subject" />
-                            </div>
-
-                            <div class="form-group"  data-bind="css: {'has-error': messageEditForm.bodyError() != ''}">
-                                <label class="control-label" for="edit-messagetext"><translate params="code:'label-message',translator:self"></translate></label>
-                                <span class="error" data-bind="visible: messageEditForm.bodyError, text: bodyError"></span>
-                                <textarea rows="10"  class="form-control" id="edit-messagetext" data-bind="value:messageEditForm.messageText"></textarea>
-                            </div>
-
-                        </form>
-
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-bind="click:updateQueuedMessage"><translate params="code:'label-save',translator:self"></translate> </button>
-                        <button type="button" class="btn btn-default btn-secondary"  data-bs-dismiss="modal"><translate params="code:'label-cancel',translator:self"></translate></button>
-                    </div>
-                </form>
-            </div><!-- /.modal-content -->
-        </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
     <div class="modal" id="edit-list-modal">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -276,7 +183,6 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
-    <modal-confirm params="id:'confirm-remove-modal',headerText: messageRemoveHeader, bodyText: messageRemoveText, confirmClick: doRemoveMessage"></modal-confirm>
 
 </div>
 <!-- end div container -->

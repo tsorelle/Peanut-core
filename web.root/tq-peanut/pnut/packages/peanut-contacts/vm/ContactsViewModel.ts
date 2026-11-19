@@ -201,6 +201,12 @@ namespace PeanutContacts {
         }
 
         changePage = (move: number = 0) => {
+            if (this.contacts.length === 0) {
+                this.currentPage(1);
+                this.contactList([]);
+                this.pageview('hide');
+                return;
+            }
             let current = this.currentPage() + move;
             let start = this.itemsPerPage * (current - 1)
             let end = start + this.itemsPerPage;

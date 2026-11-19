@@ -12,6 +12,7 @@ namespace Peanut\PeanutMailings\services;
 use Peanut\PeanutMailings\db\EMailQueue;
 use Tops\services\TServiceCommand;
 use Tops\sys\TPermissionsManager;
+use Tops\sys\TUser;
 
 /**
  * Class PauseMessageProcessCommand

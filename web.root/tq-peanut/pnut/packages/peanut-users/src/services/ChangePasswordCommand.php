@@ -19,7 +19,12 @@ class ChangePasswordCommand extends \Tops\services\TServiceCommand
             $this->addErrorMessage('No password received');
             return;
         }
-        $id = $request->accountId;
+        if ($request->accountId === 'current') {
+            $id = TUser::getCurrent()->getId();
+        }
+        else {
+            $id = $request->accountId;
+        }
         $pwd = $request->new;
         $target = TUser::getById($id);
         $user = TUser::getCurrent()->getUserName();

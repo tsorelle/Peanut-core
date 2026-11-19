@@ -28,30 +28,6 @@ namespace PeanutMailings {
         sendTest: boolean;
     }
 
-    interface IEmailListMessgeUpdate {
-        messageId: any;
-        subject: string;
-        template: string;
-        messageText: string;
-    }
-
-    interface IMessageHistoryItem {
-        messageId: any;
-        timeSent: string;
-        listName: string;
-        recipientCount: number;
-        sentCount: number;
-        sender: string;
-        subject: string;
-    }
-
-    interface IGetMessageHistoryResponse {
-        status: string;
-        pausedUntil: string;
-        items: IMessageHistoryItem[];
-        maxPages: number;
-    }
-
     interface IEmailListItem extends ILookupItem {
         mailBox: string;
         mailboxName?: string;
@@ -80,11 +56,6 @@ namespace PeanutMailings {
 
 
         private htmlEditor : Peanut.htmlEditContainer;
-        private queuePageSize = 10;
-
-        currentQueuePage = ko.observable(1);
-        maxQueuePages = ko.observable(1);
-        refreshingQueue = ko.observable(false);
 
         mailingListLookup = ko.observableArray<ILookupItem>([]);
         mailingLists = ko.observableArray<IEmailListItem>([]);
@@ -105,22 +76,7 @@ namespace PeanutMailings {
         //  selectedMessageTemplate = ko.observable();
         editorView = ko.observable('html');
         tab=ko.observable('message');
-        queueStatus=ko.observable('active');
-        messageHistory = ko.observableArray<IMessageHistoryItem>([]);
-        pausedUntil = ko.observable('');
-        messageRemoveText = ko.observable('');
-        messageRemoveHeader = ko.observable('');
-        messageRemoveId = 0;
-        
-        messageEditForm = {
-            messageId: 0,
-            subject: ko.observable(''),
-            template: ko.observable(''),
-            messageText: ko.observable(''),
-            // selectedTemplate: ko.observable(),
-            bodyError: ko.observable(''),
-            subjectError: ko.observable('')
-        };
+
 
         listEditForm = {
             listId: ko.observable(0),
@@ -156,6 +112,7 @@ namespace PeanutMailings {
                 me.htmlEditor = new Peanut.htmlEditContainer(me);
                 me.htmlEditor.includeDesignTools();
                 me.htmlEditor.includeFileControls();
+
                 me.mailboxes = new Mailboxes.MailboxListObservable(me);
                 me.application.registerComponents([
                     '@pnut/modal-confirm',
@@ -173,7 +130,8 @@ namespace PeanutMailings {
                             }
                             switch(startTab) {
                                 case 'queue' :
-                                    me.getMessageQueue(1);
+                                    // me.getMessageQueue(1);
+                                    // todo: redirect to new page
                                     break;
                                 case 'mailboxes' :
                                     me.showMailboxes();
@@ -376,158 +334,6 @@ namespace PeanutMailings {
             this.tab('message');
         };
 
-        onQueuePaged = (moved: number) => {
-            this.getMessageQueue(this.currentQueuePage() + moved);
-        };
-
-        refreshQueue = () => {
-            let me = this;
-            me.getMessageQueue(1);
-        };
-
-        getMessageQueue = (pageNumber) => {
-            let me = this;
-            me.refreshingQueue(true);
-            if (pageNumber == 1) {
-                me.showWaiter('Getting email history');
-            }
-            let request = {pageSize: me.queuePageSize, pageNumber: pageNumber};
-            me.services.executeService( 'peanut.peanut-mailings::GetEmailListHistory',
-                request,
-                function (serviceResponse: Peanut.IServiceResponse) {
-                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                        if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                            let response = <IGetMessageHistoryResponse>serviceResponse.Value;
-                            me.currentQueuePage(pageNumber);
-                            me.maxQueuePages(response.maxPages);
-                            me.showQueueTab(response);
-                        }
-                    }
-                }).fail(() => {
-                let trace = me.services.getErrorInformation();
-            }).always(() => {
-                if (pageNumber == 1) {
-                    me.hideWaiter();
-                }
-                me.refreshingQueue(false);
-            });
-        };
-
-        controlQueue = (action: string) => {
-            let me = this;
-            me.application.showBannerWaiter('mailing-get-history');
-            me.services.executeService('peanut.peanut-mailings::ControlMessageProcess', action,
-                function (serviceResponse: Peanut.IServiceResponse) {
-                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                        if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                            let response = <IGetMessageHistoryResponse>serviceResponse.Value;
-                            me.currentQueuePage(1);
-                            me.showQueueTab(response);
-                        }
-                    }
-                }).fail(() => {
-                let trace = me.services.getErrorInformation();
-            }).always(() => {
-                me.application.hideWaiter();
-            });
-        };
-
-        pauseQueue = () => {
-            this.controlQueue('pause');
-        };
-
-        restartQueue = () => {
-            this.controlQueue('start');
-        };
-
-        removeQueuedMessage = (item: IMessageHistoryItem) => {
-            let me = this;
-            me.messageRemoveText(
-                me.translate('mailing-remove-queue').replace('%s',item.subject)
-            );
-            me.messageRemoveHeader(
-                me.translate('mailing-remove-header')
-            );
-            me.messageRemoveId = item.messageId;
-            Peanut.ui.helper.showModal("#confirm-remove-modal");
-        };
-
-        doRemoveMessage = () => {
-            let me = this;
-            Peanut.ui.helper.hideModal("#confirm-remove-modal");
-            me.showActionWaiterBanner('remove','mailing-message-entity');
-            // me.application.showBannerWaiter('wait-remove-message');
-            me.services.executeService('peanut.peanut-mailings::RemoveQueuedMessage', me.messageRemoveId,
-                function (serviceResponse: Peanut.IServiceResponse) {
-                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                        if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                            let response = <IGetMessageHistoryResponse>serviceResponse.Value;
-                            me.currentQueuePage(1);
-                            me.showQueueTab(response);
-                        }
-                    }
-                }).fail(() => {
-                let trace = me.services.getErrorInformation();
-            }).always(() => {
-                me.application.hideWaiter();
-            });
-
-        };
-
-        editQueuedMessage = (item: IMessageHistoryItem) => {
-            let me = this;
-            me.messageEditForm.messageId = item.messageId;
-            me.messageEditForm.subject(item.subject);
-            me.services.executeService('peanut.peanut-mailings::GetQueuedMessageText', item.messageId,
-                function (serviceResponse: Peanut.IServiceResponse) {
-                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                        if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                            let response = <string>serviceResponse.Value;
-                            me.messageEditForm.messageText(response);
-                            Peanut.ui.helper.showModal('#edit-message-modal');
-                        }
-                    }
-                }).fail(() => {
-                let trace = me.services.getErrorInformation();
-            }).always(() => {
-            });
-
-
-        };
-        
-        updateQueuedMessage = () => {
-            let me = this;
-            Peanut.ui.helper.hideModal('#edit-message-modal');
-            let request = <IEmailListMessgeUpdate> {
-                messageId: me.messageEditForm.messageId,
-                subject: me.messageEditForm.subject(),
-                // template: me.messageEditForm.selectedTemplate(),
-                messageText: me.messageEditForm.messageText()
-            };
-            me.showActionWaiterBanner('update','mailing-message-entity');
-            me.services.executeService('peanut.peanut-mailings::UpdateQueuedMessage', request,
-                function (serviceResponse: Peanut.IServiceResponse) {
-                    if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                        if (serviceResponse.Result == Peanut.serviceResultSuccess) {
-                            let response = <IGetMessageHistoryResponse>serviceResponse.Value;
-                            me.currentQueuePage(1);
-                            me.showQueueTab(response);
-                        }
-                    }
-                }).fail(() => {
-                let trace = me.services.getErrorInformation();
-            }).always(() => {
-                me.application.hideWaiter();
-            });
-        };
-
-        showQueueTab = (response: IGetMessageHistoryResponse) => {
-            let me = this;
-            me.queueStatus(response.status);
-            me.messageHistory(response.items);
-            me.pausedUntil(response.pausedUntil);
-            me.tab('queue');
-        };
 
         showLists = () => {
             let me = this;
@@ -658,6 +464,7 @@ namespace PeanutMailings {
         saveEditorContent(): void {
             alert('saveEditorContent');
         }
+
     }
 }
 

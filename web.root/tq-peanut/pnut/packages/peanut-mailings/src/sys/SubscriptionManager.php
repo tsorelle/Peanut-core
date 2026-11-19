@@ -9,6 +9,7 @@ use Peanut\PeanutMailings\db\model\repository\EmailListsRepository;
 use Peanut\PeanutMailings\db\model\repository\EmailMessagesRepository;
 use Peanut\PeanutMailings\db\model\repository\EmailSubscriptionAssociation;
 use stdClass;
+use Tops\db\IBasicContact;
 use Tops\db\TEntityRepository;
 use Tops\services\IMessageContainer;
 use Tops\sys\IContactManager;
@@ -118,6 +119,25 @@ class SubscriptionManager
         return $this->emailListsRepository;
     }
 
+    public function removeEmail($email)
+    {
+        $subscriptions = $this->getEmailSubscriptionsAssociation();
+        $contacts = $this->getContactManager()->getAllPersonsByEmail($email);
+        foreach ($contacts as $contact) {
+            $subscriptions->removeSubscriber($contact->getId());
+        }
+    }
+    public function unsubscribeByEmail($email,$listId)
+    {
+        $contacts = $this->getContactManager()->getAllPersonsByEmail($email);
+        $subscriptions = $this->getEmailSubscriptionsAssociation();
+        if (empty($contacts)) {
+            return;
+        }
+        foreach ($contacts as $contact) {
+            $subscriptions->unsubscribe($contact->getId(),$listId);
+        }
+    }
     public function unsubscribeEmail($uid,$listId) : bool | \stdclass {
         $person = $this->getContactManager()->getPersonByUid($uid);
         if (!$person) {
@@ -146,7 +166,38 @@ class SubscriptionManager
         return $id;
     }
 
-    function unsubscribeByUid($uid,$listId)
+    public function addSubscription($personId,$listId)
+    {
+        $this->getEmailSubscriptionsAssociation()->subscribe($personId,$listId);
+    }
+
+    public function subscribe($email, $name, $listId)
+    {
+        $contacts = $this->getContactManager()->getAllPersonsByEmail($email);
+        if (empty($contacts)) {
+            $contact = $this->getContactManager()->createPersonObject();
+            $contact->setFullName($name);
+            $contact->setEmail($email);
+            $id = $this->getContactManager()->updateContact($contact);
+            $this->addSubscription($id,$listId);
+        }
+        else {
+            $contact = null;
+            /** @var IBasicContact $contact */
+            foreach ($contacts as $acontact) {
+                if ($acontact->getFullName() == $name) {
+                    $contact = $acontact;
+                    break;
+                }
+            }
+            if ($contact == null) {
+                $contact = $contacts[0];
+            }
+            $this->addSubscription($contact->getId(),$listId);
+        }
+    }
+
+    public function unsubscribeByUid($uid,$listId)
     {
         $person = $this->getContactManager()->getPersonByUid($uid);
         if ($person) {
@@ -155,7 +206,7 @@ class SubscriptionManager
         return $person;
     }
 
-    function unsubscribe($personId,$listId)
+    public function unsubscribe($personId,$listId)
     {
         $this->getEmailSubscriptionsAssociation()->unsubscribe($personId,$listId);
     }
@@ -264,6 +315,20 @@ class SubscriptionManager
     public function getAllSubscibersByEmail(string $emailAddress)
     {
         return $this->getContactManager()->getAllPersonsByEmail($emailAddress);
+    }
+    public function isSubscribed(string $email, $listId)
+    {
+        $contactManager = $this->getContactManager();
+        $contacts = $contactManager->getAllPersonsByEmail($email);
+        foreach ($contacts as $contact) {
+            $subs = $this->getEmailSubscriptions($contact->getId());
+            foreach ($subs as $sub) {
+                if ($sub->listId == $listId) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 

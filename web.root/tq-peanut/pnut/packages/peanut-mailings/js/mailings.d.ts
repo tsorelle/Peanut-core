@@ -13,6 +13,7 @@ namespace PeanutMailings {
         emailSubscriptions: ISubscriptionListItem[];
         translations: string[];
         redirect: string;
+        personName?: string;
     }
 
     interface IUpdateSubscriptionsRequest {

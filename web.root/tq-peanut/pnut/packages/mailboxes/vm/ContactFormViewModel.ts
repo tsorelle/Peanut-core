@@ -71,7 +71,8 @@ namespace Mailboxes {
                     if (me.userIsAnonymous()) {
                         me.protector.start();
                         me.bindDefaultSection();
-                        successFunction();
+                        if (successFunction)
+                            successFunction();
                     }
                     else {
                         me.protector.setEnabled(false);

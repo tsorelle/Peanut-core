@@ -1,15 +1,15 @@
-<?php 
-/** 
- * Created by /tools/create-model.php 
+<?php
+/**
+ * Created by /tools/create-model.php
  * Time:  2022-05-11 14:51:59
- */ 
+ */
 
 namespace Peanut\contacts\db\model\entity;
 
 use Tops\db\IBasicContact;
 
 class Contact  extends \Tops\db\TimeStampedEntity implements IBasicContact
-{ 
+{
     public $id;
     public $fullname;
     public $email;
@@ -31,12 +31,12 @@ class Contact  extends \Tops\db\TimeStampedEntity implements IBasicContact
         return $this->fullname;
     }
 
-    public function getAccountId(): string
+    public function getAccountId(): int | null
     {
         return $this->accountId;
     }
 
-    public function getId(): string
+    public function getId(): int | null | false
     {
         return $this->id;
     }
@@ -44,5 +44,15 @@ class Contact  extends \Tops\db\TimeStampedEntity implements IBasicContact
     public function getUid(): string
     {
         return $this->uid;
+    }
+
+    public function setFullName(string $fullName): void
+    {
+        $this->fullname = $fullName;
+    }
+
+    public function setEmail(string $email): void
+    {
+        $this->email = $email;
     }
 }

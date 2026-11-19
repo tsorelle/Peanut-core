@@ -18,6 +18,7 @@ interface IContactManager
     public function getAllByEmail($email) : array;
     public function getContactDefinitions(): array;
     public function queueEmailRecipients($messageId, $listId): int;
+    public function getEmailSubscriptions($listId): array;
     public function queueEmailRecipientList($messageId, array $recipients): int;
     public function updatePerson(IBasicContact $person);
 

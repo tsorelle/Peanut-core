@@ -14,6 +14,16 @@ use \Tops\db\TNamedEntitiesRepository;
 
 class EmailListsRepository extends \Tops\db\TNamedEntitiesRepository
 {
+    public function getEmailListLookup($activeOnly=true)
+    {
+        $sql = 'SELECT id,`code`,name,description FROM qnut_email_lists';
+        if ($activeOnly) {
+            $sql .= ' WHERE active = 1';
+        }
+        $stmt = $this->executeStatement($sql);
+        return $stmt->fetchAll(\PDO::FETCH_OBJ);
+    }
+
     protected function getTableName() {
         return 'qnut_email_lists';
     }

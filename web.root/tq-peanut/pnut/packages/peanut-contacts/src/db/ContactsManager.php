@@ -161,6 +161,11 @@ class ContactsManager implements IContactManager
         return $this->getContactsRepository()->queueEmailRecipients($messageId, $listId);
     }
 
+    public function getEmailSubscriptions($listId): array
+    {
+        return $this->getContactsRepository()->getEmailSubscribers($listId);
+    }
+
     public function queueEmailRecipientList($messageId, array $recipients): int
     {
         return $this->getContactsRepository()->queueEmailRecipientList($messageId, $recipients);
@@ -183,6 +188,9 @@ class ContactsManager implements IContactManager
 
     public function createPersonObject(): IBasicContact
     {
-        return new Contact();
+        $contact = new Contact();
+        $contact->active = 1;
+        $contact->id = 0;
+        return $contact;
     }
 }

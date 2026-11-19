@@ -52,7 +52,8 @@ class NutshellRouter extends TRouter
         // $routeData['themeIncludePath'] = DIR_ROOT."/application/themes/$theme/inc";
         $routeData['themeIncludePath'] = PNUT_APPLICATION."/themes/$theme/inc";
         $user = TUser::getCurrent();
-        $routeData['editorsignedin'] = $user->isAuthorized('editsongs');
+        // this only used in songs site. Fix there.
+        // $routeData['editorsignedin'] = $user->isAuthorized('editsongs');
         $routeData['signin'] = $user->isAuthenticated() ?
             $user->getFullName().' | '.'<a class="ms-2" href="/signout">Sign Out</a>' :
             '<a id="footer-signin-link" href="/signin">Sign in</a>';
